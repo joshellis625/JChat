@@ -10,6 +10,7 @@ struct ChatListView: View {
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
     @Bindable var viewModel: ChatViewModel
     @Environment(\.modelContext) private var modelContext
+    @State private var chatToDelete: Chat?
 
     var body: some View {
         List(selection: $viewModel.selectedChat) {
@@ -20,10 +21,24 @@ struct ChatListView: View {
                 .tag(chat)
                 .contextMenu {
                     Button("Delete", role: .destructive) {
-                        viewModel.deleteChat(chat, in: modelContext)
+                        chatToDelete = chat
                     }
                 }
             }
+        }
+        .alert("Delete Chat", isPresented: Binding(
+            get: { chatToDelete != nil },
+            set: { if !$0 { chatToDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { chatToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let chat = chatToDelete {
+                    viewModel.deleteChat(chat, in: modelContext)
+                    chatToDelete = nil
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this chat? All messages will be lost.")
         }
         .listStyle(.sidebar)
         .toolbar {

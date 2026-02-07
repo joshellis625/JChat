@@ -10,10 +10,13 @@ struct MessageBubble: View {
     let message: Message
     var onCopy: (() -> Void)?
     var onRegenerate: (() -> Void)?
+    var onSaveEdit: ((String) -> Void)?
     var onDelete: (() -> Void)?
 
     @Environment(\.textSizeMultiplier) private var multiplier
-    @State private var isHovered = false
+    @State private var showDeleteConfirmation = false
+    @State private var isEditing = false
+    @State private var editText = ""
 
     private var isUser: Bool { message.role == .user }
 
@@ -33,41 +36,91 @@ struct MessageBubble: View {
                         .clipShape(Capsule())
                 }
 
-                // Message content
-                Group {
-                    if isUser {
-                        Text(message.content)
+                // Message content — display or edit mode
+                if isEditing {
+                    VStack(alignment: .trailing, spacing: 6) {
+                        TextEditor(text: $editText)
                             .font(.system(size: 13 * multiplier))
-                            .textSelection(.enabled)
-                    } else {
-                        MarkdownTextView(content: message.content)
-                    }
-                }
-                .padding(12)
-                .background(bubbleBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .scrollContentBackground(.hidden)
+                            .frame(minHeight: 40)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(8)
+                            .background(Color(.textBackgroundColor))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.accentColor, lineWidth: 2)
+                            )
 
-                // Action bar for assistant messages (hover only)
-                if !isUser, isHovered {
+                        HStack(spacing: 8) {
+                            Button {
+                                isEditing = false
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.secondary)
+                            .help("Cancel editing")
+
+                            Button {
+                                let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                guard !trimmed.isEmpty else { return }
+                                onSaveEdit?(trimmed)
+                                isEditing = false
+                            } label: {
+                                Image(systemName: "checkmark")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(Color.accentColor)
+                            .help("Save edit")
+                        }
+                    }
+                } else {
+                    Group {
+                        if isUser {
+                            Text(message.content)
+                                .font(.system(size: 13 * multiplier))
+                                .textSelection(.enabled)
+                        } else {
+                            MarkdownTextView(content: message.content)
+                        }
+                    }
+                    .padding(12)
+                    .background(bubbleBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+
+                // Action bar — always visible, hidden during editing
+                if !isEditing {
                     MessageActionBar(
                         message: message,
+                        isUser: isUser,
                         onCopy: { onCopy?() },
-                        onRegenerate: { onRegenerate?() },
-                        onDelete: { onDelete?() }
+                        onRegenerate: isUser ? nil : { onRegenerate?() },
+                        onEdit: {
+                            editText = message.content
+                            isEditing = true
+                        },
+                        onDelete: { showDeleteConfirmation = true }
                     )
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                     .padding(.horizontal, 4)
-                }
-            }
-            .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    isHovered = hovering
                 }
             }
 
             if !isUser { Spacer(minLength: 60) }
         }
         .padding(.horizontal)
+        .alert("Delete Message", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                onDelete?()
+            }
+        } message: {
+            Text("Are you sure you want to delete this message? This cannot be undone.")
+        }
     }
 
     // MARK: - Helpers

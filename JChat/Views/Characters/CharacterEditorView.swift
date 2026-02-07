@@ -18,7 +18,6 @@ struct CharacterEditorView: View {
     @State private var systemPrompt: String = ""
     @State private var preferredModelID: String? = nil
     @State private var isDefault: Bool = false
-    @State private var showingModelPicker = false
 
     private var isEditing: Bool { character != nil }
 
@@ -26,7 +25,7 @@ struct CharacterEditorView: View {
         NavigationStack {
             Form {
                 // MARK: - Identity
-                Section("Identity") {
+                Section {
                     TextField("Name", text: $name)
                 }
 
@@ -35,7 +34,7 @@ struct CharacterEditorView: View {
                     TextEditor(text: $systemPrompt)
                         .font(.body)
                         .scrollContentBackground(.hidden)
-                        .frame(minHeight: 150)
+                        .frame(minHeight: 80, idealHeight: 120)
                         .padding(4)
                         .background(Color(.textBackgroundColor))
                         .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -50,22 +49,11 @@ struct CharacterEditorView: View {
                 // MARK: - Preferred Model
                 Section("Preferred Model") {
                     HStack {
-                        if let modelID = preferredModelID {
-                            Text(displayName(for: modelID))
-                                .lineLimit(1)
-                            Spacer()
-                            Button("Clear") {
-                                preferredModelID = nil
-                            }
-                            .foregroundStyle(.red)
-                        } else {
-                            Text("None")
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                        }
-
-                        Button("Choose Model...") {
-                            showingModelPicker = true
+                        InlineModelPicker(selectedModelID: $preferredModelID, modelManager: modelManager)
+                        Spacer()
+                        if preferredModelID != nil {
+                            Button("Clear") { preferredModelID = nil }
+                                .foregroundStyle(.red)
                         }
                     }
                 }
@@ -81,6 +69,7 @@ struct CharacterEditorView: View {
                     }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle(isEditing ? "Edit Character" : "New Character")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -91,15 +80,6 @@ struct CharacterEditorView: View {
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
-            .sheet(isPresented: $showingModelPicker) {
-                NavigationStack {
-                    ModelPickerSheet(
-                        selectedModelID: $preferredModelID,
-                        modelManager: modelManager
-                    )
-                }
-                .frame(minWidth: 400, minHeight: 400)
-            }
             .onAppear {
                 if let character {
                     name = character.name
@@ -109,7 +89,7 @@ struct CharacterEditorView: View {
                 }
             }
         }
-        .frame(minWidth: 500, minHeight: 450)
+        .frame(minWidth: 450, minHeight: 380)
     }
 
     // MARK: - Save
@@ -149,73 +129,6 @@ struct CharacterEditorView: View {
         dismiss()
     }
 
-    // MARK: - Helpers
-
-    private func displayName(for modelID: String) -> String {
-        if let model = modelManager.filteredModels.first(where: { $0.id == modelID }) ?? modelManager.favoriteModels.first(where: { $0.id == modelID }) {
-            return model.displayName
-        }
-        if let slashIndex = modelID.lastIndex(of: "/") {
-            return String(modelID[modelID.index(after: slashIndex)...])
-        }
-        return modelID
-    }
-}
-
-// MARK: - Model Picker Sheet (simple list for selecting a model)
-
-private struct ModelPickerSheet: View {
-    @Binding var selectedModelID: String?
-    @Bindable var modelManager: ModelManager
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        List {
-            if !modelManager.favoriteModels.isEmpty {
-                Section("Favorites") {
-                    ForEach(modelManager.favoriteModels, id: \.id) { model in
-                        modelRow(model)
-                    }
-                }
-            }
-
-            Section("All Models") {
-                ForEach(Array(modelManager.filteredModels.prefix(50)), id: \.id) { model in
-                    modelRow(model)
-                }
-            }
-        }
-        .navigationTitle("Choose Model")
-        .searchable(text: $modelManager.searchText, prompt: "Search models...")
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
-            }
-        }
-    }
-
-    private func modelRow(_ model: CachedModel) -> some View {
-        Button {
-            selectedModelID = model.id
-            dismiss()
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(model.displayName)
-                        .font(.body)
-                    Text(model.providerName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                if model.id == selectedModelID {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(Color.accentColor)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 #Preview("New Character") {

@@ -57,8 +57,9 @@ Test targets (JChatTests, JChatUITests) use auto-sync and don't need manual pbxp
 
 - **AdvancedParameterPanel**: uses `ScrollView` + custom `ParamSection` views (NOT `Form` — Form caused overflow/no-scroll issues)
 - **MessageInputView**: visible rounded border, "Message..." placeholder, focus ring
-- **MessageBubble**: assistant bg = `Color(.windowBackgroundColor).opacity(0.8)`, action bar is hover-only
-- **ConversationView**: has empty state when chat has no messages
+- **MessageBubble**: assistant bg = `Color(.windowBackgroundColor).opacity(0.8)`, action bar always visible. All messages show edit/copy/delete; assistant messages also show regenerate. Buttons left-aligned for AI, right-aligned for user. Delete has confirmation dialog. Edit is inline — switches bubble to TextEditor with checkmark/cancel.
+- **ConversationView**: has empty state when chat has no messages. Edit saves in place via `onSaveEdit` callback (updates `message.content` directly).
+- **CharacterEditorView**: `.formStyle(.grouped)`, uses InlineModelPicker (not sheet), compact TextEditor
 
 ## File Tree
 
@@ -80,11 +81,8 @@ JChat/
 
 - No first-launch onboarding (must manually open Settings for API key)
 - TextEditor height in MessageInputView may misbehave with very long input
-- No confirmation dialog before deleting chats or messages
 - No Cmd+N keyboard shortcut for New Chat
 - MarkdownTextView code block backgrounds may blend with bubble backgrounds
-- CharacterEditorView model picker opens as a separate sheet — could be streamlined
-- No "edit message" functionality (deferred from Phase 6)
 
 ## Detailed Notes
 

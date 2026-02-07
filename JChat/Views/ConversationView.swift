@@ -58,6 +58,10 @@ struct ConversationView: View {
                                                 await viewModel.regenerateMessage(message, in: modelContext)
                                             }
                                         },
+                                        onSaveEdit: { newContent in
+                                            message.content = newContent
+                                            try? modelContext.save()
+                                        },
                                         onDelete: {
                                             viewModel.deleteMessage(message, in: modelContext)
                                         }
