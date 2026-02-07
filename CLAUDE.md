@@ -1,6 +1,6 @@
 # JChat — Claude Code Instructions
 
-SwiftUI/SwiftData chat app for macOS 26 using the OpenRouter.ai API. MVVM architecture with actor-based services. All 10 implementation phases are complete.
+SwiftUI/SwiftData chat app for macOS 26 using the OpenRouter.ai API. MVVM architecture with actor-based services. All 10 implementation phases complete, first UI refinement pass done.
 
 ## Build
 
@@ -18,6 +18,7 @@ Bundle ID: `joshellis625.JChat` | Team: `B26L4UNFCX` | macOS only (for now)
 - **Parameter cascade**: chat override → global fallback (2-level, no character layer)
 - **Characters are identity-only**: name, systemPrompt, preferredModelID, isDefault — NO parameter storage
 - **API calls**: raw URLRequest + JSONEncoder to `/v1/chat/completions` — no SDK
+- **Text size**: `AppSettings.textSizeMultiplier` (Double, default 1.0) → `TextSizeMultiplierKey` env key in ContentView → `.font(.system(size: 13 * multiplier))`
 
 ## Xcode Project File (pbxproj) — CRITICAL
 
@@ -37,6 +38,7 @@ Test targets (JChatTests, JChatUITests) use auto-sync and don't need manual pbxp
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` (Swift 6 approachable concurrency)
 - `SWIFT_APPROACHABLE_CONCURRENCY = YES`
 - App Sandbox + Hardened Runtime enabled
+- **Network entitlement**: `com.apple.security.network.client` required in JChat.entitlements
 - API key stored in Keychain (service: `com.josh.jchat`, account: `openrouter-api-key`) — NEVER in SwiftData/UserDefaults
 
 ## Naming Conventions
@@ -51,31 +53,38 @@ Test targets (JChatTests, JChatUITests) use auto-sync and don't need manual pbxp
 - Avoid dimming for emphasis — use text weight or badges instead
 - ModelVariant badges: green=Free, blue=Extended, red=Exacto
 
+## Key View Patterns
+
+- **AdvancedParameterPanel**: uses `ScrollView` + custom `ParamSection` views (NOT `Form` — Form caused overflow/no-scroll issues)
+- **MessageInputView**: visible rounded border, "Message..." placeholder, focus ring
+- **MessageBubble**: assistant bg = `Color(.windowBackgroundColor).opacity(0.8)`, action bar is hover-only
+- **ConversationView**: has empty state when chat has no messages
+
 ## File Tree
 
 ```
 JChat/
   Chat.swift, JChatApp.swift
-  Models/        — AppSettings, CachedModel, Character
+  Models/        — AppSettings (+ textSizeMultiplier), CachedModel, Character
   Services/      — JChatError, KeychainManager, ModelManager, OpenRouterService
   Views/
-    ChatListView, ChatToolbarView, ChatViewModel, ContentView,
-    ConversationView, MessageBubble, MessageInputView, SettingsView
+    ChatListView, ChatToolbarView, ChatViewModel, ContentView (+ TextSizeMultiplierKey),
+    ConversationView, MessageBubble, MessageInputView, SettingsView (+ Appearance section)
     Characters/  — CharacterEditorView, CharacterListView
     Components/  — AdvancedParameterPanel, CharacterPicker, InlineModelPicker,
                    MarkdownTextView, MessageActionBar
     ModelManager/ — ModelManagerView, ModelRowView (also defines BadgeCapsule)
 ```
 
-## Known Rough Edges (UI refinement targets)
+## Known Rough Edges
 
 - No first-launch onboarding (must manually open Settings for API key)
-- No empty state in ConversationView when chat has no messages
-- MessageActionBar always visible when totalTokens > 0 (should be hover-only)
 - TextEditor height in MessageInputView may misbehave with very long input
 - No confirmation dialog before deleting chats or messages
 - No Cmd+N keyboard shortcut for New Chat
 - MarkdownTextView code block backgrounds may blend with bubble backgrounds
+- CharacterEditorView model picker opens as a separate sheet — could be streamlined
+- No "edit message" functionality (deferred from Phase 6)
 
 ## Detailed Notes
 

@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03A0F7802F37409300FEC0AF /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Character.swift */; };
+		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
+		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
+		03A0F7852F37409300FEC0AF /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7842F37409300FEC0AF /* ModelManager.swift */; };
+		03A0F7872F37409300FEC0AF /* ModelManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7862F37409300FEC0AF /* ModelManagerView.swift */; };
+		03A0F7892F37409300FEC0AF /* ModelRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7882F37409300FEC0AF /* ModelRowView.swift */; };
+		03A0F78B2F37409300FEC0AF /* InlineModelPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */; };
+		03A0F78F2F37409300FEC0AF /* CharacterEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */; };
+		03A0F7912F37409300FEC0AF /* CharacterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7902F37409300FEC0AF /* CharacterListView.swift */; };
+		03A0F7932F37409300FEC0AF /* CharacterPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7922F37409300FEC0AF /* CharacterPicker.swift */; };
+		03A0F7952F37409300FEC0AF /* AdvancedParameterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */; };
+		03A0F7982F37409300FEC0AF /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */; };
+		03A0F79A2F37409300FEC0AF /* MessageActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7992F37409300FEC0AF /* MessageActionBar.swift */; };
 		03D0F7632F37409300FEC0AF /* AGENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74A2F37409300FEC0AF /* AGENTS.md */; };
 		03D0F7642F37409300FEC0AF /* COMPLETED.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74B2F37409300FEC0AF /* COMPLETED.md */; };
 		03D0F7652F37409300FEC0AF /* TODO.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74C2F37409300FEC0AF /* TODO.md */; };
@@ -25,19 +38,6 @@
 		03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75A2F37409300FEC0AF /* SettingsView.swift */; };
 		03D0F7742F37409300FEC0AF /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75E2F37409300FEC0AF /* Chat.swift */; };
 		03D0F7752F37409300FEC0AF /* JChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7612F37409300FEC0AF /* JChatApp.swift */; };
-		03A0F7802F37409300FEC0AF /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Character.swift */; };
-		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
-		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
-		03A0F7852F37409300FEC0AF /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7842F37409300FEC0AF /* ModelManager.swift */; };
-		03A0F7872F37409300FEC0AF /* ModelManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7862F37409300FEC0AF /* ModelManagerView.swift */; };
-		03A0F7892F37409300FEC0AF /* ModelRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7882F37409300FEC0AF /* ModelRowView.swift */; };
-		03A0F78B2F37409300FEC0AF /* InlineModelPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */; };
-		03A0F78F2F37409300FEC0AF /* CharacterEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */; };
-		03A0F7912F37409300FEC0AF /* CharacterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7902F37409300FEC0AF /* CharacterListView.swift */; };
-		03A0F7932F37409300FEC0AF /* CharacterPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7922F37409300FEC0AF /* CharacterPicker.swift */; };
-		03A0F7952F37409300FEC0AF /* AdvancedParameterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */; };
-		03A0F7982F37409300FEC0AF /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */; };
-		03A0F79A2F37409300FEC0AF /* MessageActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7992F37409300FEC0AF /* MessageActionBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +58,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		03A0F77D2F37409300FEC0AF /* JChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatError.swift; sourceTree = "<group>"; };
+		03A0F77E2F37409300FEC0AF /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
+		03A0F77F2F37409300FEC0AF /* CachedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModel.swift; sourceTree = "<group>"; };
+		03A0F7842F37409300FEC0AF /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
+		03A0F7862F37409300FEC0AF /* ModelManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagerView.swift; sourceTree = "<group>"; };
+		03A0F7882F37409300FEC0AF /* ModelRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelRowView.swift; sourceTree = "<group>"; };
+		03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineModelPicker.swift; sourceTree = "<group>"; };
+		03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterEditorView.swift; sourceTree = "<group>"; };
+		03A0F7902F37409300FEC0AF /* CharacterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterListView.swift; sourceTree = "<group>"; };
+		03A0F7922F37409300FEC0AF /* CharacterPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterPicker.swift; sourceTree = "<group>"; };
+		03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedParameterPanel.swift; sourceTree = "<group>"; };
+		03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextView.swift; sourceTree = "<group>"; };
+		03A0F7992F37409300FEC0AF /* MessageActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActionBar.swift; sourceTree = "<group>"; };
 		03D0F6EA2F37402A00FEC0AF /* JChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		03D0F6FB2F37402A00FEC0AF /* JChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		03D0F7052F37402A00FEC0AF /* JChatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JChatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,9 +78,6 @@
 		03D0F74B2F37409300FEC0AF /* COMPLETED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPLETED.md; sourceTree = "<group>"; };
 		03D0F74C2F37409300FEC0AF /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
 		03D0F74E2F37409300FEC0AF /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
-		03A0F77D2F37409300FEC0AF /* JChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatError.swift; sourceTree = "<group>"; };
-		03A0F77E2F37409300FEC0AF /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
-		03A0F77F2F37409300FEC0AF /* CachedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModel.swift; sourceTree = "<group>"; };
 		03D0F7502F37409300FEC0AF /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		03D0F7512F37409300FEC0AF /* OpenRouterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRouterService.swift; sourceTree = "<group>"; };
 		03D0F7532F37409300FEC0AF /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
@@ -83,16 +93,6 @@
 		03D0F75E2F37409300FEC0AF /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		03D0F7602F37409300FEC0AF /* JChat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JChat.entitlements; sourceTree = "<group>"; };
 		03D0F7612F37409300FEC0AF /* JChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatApp.swift; sourceTree = "<group>"; };
-		03A0F7842F37409300FEC0AF /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
-		03A0F7862F37409300FEC0AF /* ModelManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagerView.swift; sourceTree = "<group>"; };
-		03A0F7882F37409300FEC0AF /* ModelRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelRowView.swift; sourceTree = "<group>"; };
-		03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineModelPicker.swift; sourceTree = "<group>"; };
-		03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterEditorView.swift; sourceTree = "<group>"; };
-		03A0F7902F37409300FEC0AF /* CharacterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterListView.swift; sourceTree = "<group>"; };
-		03A0F7922F37409300FEC0AF /* CharacterPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterPicker.swift; sourceTree = "<group>"; };
-		03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedParameterPanel.swift; sourceTree = "<group>"; };
-		03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextView.swift; sourceTree = "<group>"; };
-		03A0F7992F37409300FEC0AF /* MessageActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActionBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -133,6 +133,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		03A0F78C2F37409300FEC0AF /* ModelManager */ = {
+			isa = PBXGroup;
+			children = (
+				03A0F7862F37409300FEC0AF /* ModelManagerView.swift */,
+				03A0F7882F37409300FEC0AF /* ModelRowView.swift */,
+			);
+			path = ModelManager;
+			sourceTree = "<group>";
+		};
+		03A0F78D2F37409300FEC0AF /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */,
+				03A0F7922F37409300FEC0AF /* CharacterPicker.swift */,
+				03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */,
+				03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */,
+				03A0F7992F37409300FEC0AF /* MessageActionBar.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		03A0F7962F37409300FEC0AF /* Characters */ = {
+			isa = PBXGroup;
+			children = (
+				03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */,
+				03A0F7902F37409300FEC0AF /* CharacterListView.swift */,
+			);
+			path = Characters;
+			sourceTree = "<group>";
+		};
 		03D0F6E12F37402A00FEC0AF = {
 			isa = PBXGroup;
 			children = (
@@ -200,36 +230,6 @@
 				03D0F75A2F37409300FEC0AF /* SettingsView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		03A0F78C2F37409300FEC0AF /* ModelManager */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F7862F37409300FEC0AF /* ModelManagerView.swift */,
-				03A0F7882F37409300FEC0AF /* ModelRowView.swift */,
-			);
-			path = ModelManager;
-			sourceTree = "<group>";
-		};
-		03A0F78D2F37409300FEC0AF /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */,
-				03A0F7922F37409300FEC0AF /* CharacterPicker.swift */,
-				03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */,
-				03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */,
-				03A0F7992F37409300FEC0AF /* MessageActionBar.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		03A0F7962F37409300FEC0AF /* Characters */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */,
-				03A0F7902F37409300FEC0AF /* CharacterListView.swift */,
-			);
-			path = Characters;
 			sourceTree = "<group>";
 		};
 		03D0F7622F37409300FEC0AF /* JChat */ = {
@@ -465,7 +465,17 @@
 				DEVELOPMENT_TEAM = B26L4UNFCX;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
@@ -515,7 +525,17 @@
 				DEVELOPMENT_TEAM = B26L4UNFCX;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";

@@ -24,37 +24,53 @@ struct ConversationView: View {
                     onShowParameters: { showAdvancedParams = true }
                 )
 
-                // Messages
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(chat.sortedMessages, id: \.id) { message in
-                                MessageBubble(
-                                    message: message,
-                                    onCopy: {
-                                        #if canImport(AppKit)
-                                        NSPasteboard.general.clearContents()
-                                        NSPasteboard.general.setString(message.content, forType: .string)
-                                        #endif
-                                    },
-                                    onRegenerate: {
-                                        Task {
-                                            await viewModel.regenerateMessage(message, in: modelContext)
-                                        }
-                                    },
-                                    onDelete: {
-                                        viewModel.deleteMessage(message, in: modelContext)
-                                    }
-                                )
-                                .id(message.id)
-                            }
-                        }
-                        .padding(.vertical)
+                // Messages or empty state
+                if chat.sortedMessages.isEmpty {
+                    Spacer()
+                    VStack(spacing: 12) {
+                        Image(systemName: "bubble.left.and.text.bubble.right")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.tertiary)
+                        Text("Start a conversation")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                        Text("Type a message below to begin.")
+                            .font(.callout)
+                            .foregroundStyle(.tertiary)
                     }
-                    .onChange(of: chat.messages.count) { _, _ in
-                        if let lastMessage = chat.sortedMessages.last {
-                            withAnimation {
-                                proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                    Spacer()
+                } else {
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            LazyVStack(spacing: 16) {
+                                ForEach(chat.sortedMessages, id: \.id) { message in
+                                    MessageBubble(
+                                        message: message,
+                                        onCopy: {
+                                            #if canImport(AppKit)
+                                            NSPasteboard.general.clearContents()
+                                            NSPasteboard.general.setString(message.content, forType: .string)
+                                            #endif
+                                        },
+                                        onRegenerate: {
+                                            Task {
+                                                await viewModel.regenerateMessage(message, in: modelContext)
+                                            }
+                                        },
+                                        onDelete: {
+                                            viewModel.deleteMessage(message, in: modelContext)
+                                        }
+                                    )
+                                    .id(message.id)
+                                }
+                            }
+                            .padding(.vertical)
+                        }
+                        .onChange(of: chat.messages.count) { _, _ in
+                            if let lastMessage = chat.sortedMessages.last {
+                                withAnimation {
+                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                                }
                             }
                         }
                     }
@@ -65,15 +81,15 @@ struct ConversationView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(.orange)
-                            .font(.caption)
+                            .font(.body)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(error)
-                                .font(.caption)
+                                .font(.callout)
                                 .foregroundStyle(.primary)
                             if let suggestion = viewModel.errorSuggestion {
                                 Text(suggestion)
-                                    .font(.caption2)
+                                    .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -86,7 +102,7 @@ struct ConversationView: View {
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundStyle(.secondary)
-                                .font(.caption)
+                                .font(.body)
                         }
                         .buttonStyle(.plain)
                     }

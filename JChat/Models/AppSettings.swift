@@ -13,10 +13,12 @@ final class AppSettings {
     var defaultModelID: String?
     var modelCacheMaxAge: TimeInterval
     var lastModelFetchDate: Date?
+    var textSizeMultiplier: Double
 
     init() {
         self.id = UUID()
         self.modelCacheMaxAge = 86400 // 24 hours
+        self.textSizeMultiplier = 1.0
     }
 
     static func fetchOrCreate(in context: ModelContext) -> AppSettings {

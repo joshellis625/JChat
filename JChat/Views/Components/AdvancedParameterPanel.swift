@@ -12,228 +12,265 @@ struct AdvancedParameterPanel: View {
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
-        NavigationStack {
-            Form {
-                // MARK: - Sampling
-                Section("Sampling") {
-                    ParameterSliderRow(
-                        label: "Temperature",
-                        description: "Controls randomness. Higher = more creative, lower = more focused.",
-                        value: Binding(
-                            get: { chat.temperatureOverride },
-                            set: { chat.temperatureOverride = $0 }
-                        ),
-                        defaultValue: 1.0,
-                        range: 0.0...2.0,
-                        step: 0.05
-                    )
-
-                    ParameterSliderRow(
-                        label: "Top P",
-                        description: "Nucleus sampling. Considers tokens with cumulative probability up to this value.",
-                        value: Binding(
-                            get: { chat.topPOverride },
-                            set: { chat.topPOverride = $0 }
-                        ),
-                        defaultValue: 1.0,
-                        range: 0.0...1.0,
-                        step: 0.05
-                    )
-
-                    ParameterIntRow(
-                        label: "Top K",
-                        description: "Limits to top K tokens. 0 = disabled.",
-                        value: Binding(
-                            get: { chat.topKOverride },
-                            set: { chat.topKOverride = $0 }
-                        ),
-                        defaultValue: 0,
-                        range: 0...500
-                    )
-
-                    ParameterSliderRow(
-                        label: "Min P",
-                        description: "Minimum probability threshold relative to the top token.",
-                        value: Binding(
-                            get: { chat.minPOverride },
-                            set: { chat.minPOverride = $0 }
-                        ),
-                        defaultValue: 0.0,
-                        range: 0.0...1.0,
-                        step: 0.05
-                    )
-
-                    ParameterSliderRow(
-                        label: "Top A",
-                        description: "Adaptive sampling threshold.",
-                        value: Binding(
-                            get: { chat.topAOverride },
-                            set: { chat.topAOverride = $0 }
-                        ),
-                        defaultValue: 0.0,
-                        range: 0.0...1.0,
-                        step: 0.05
-                    )
+        VStack(spacing: 0) {
+            // Title bar
+            HStack {
+                Text("Advanced Parameters")
+                    .font(.headline)
+                Spacer()
+                Button("Done") {
+                    try? modelContext.save()
+                    dismiss()
                 }
-
-                // MARK: - Penalties
-                Section("Penalties") {
-                    ParameterSliderRow(
-                        label: "Frequency Penalty",
-                        description: "Penalizes tokens based on frequency in the text so far.",
-                        value: Binding(
-                            get: { chat.frequencyPenaltyOverride },
-                            set: { chat.frequencyPenaltyOverride = $0 }
-                        ),
-                        defaultValue: 0.0,
-                        range: -2.0...2.0,
-                        step: 0.1
-                    )
-
-                    ParameterSliderRow(
-                        label: "Presence Penalty",
-                        description: "Penalizes tokens based on whether they appear in the text so far.",
-                        value: Binding(
-                            get: { chat.presencePenaltyOverride },
-                            set: { chat.presencePenaltyOverride = $0 }
-                        ),
-                        defaultValue: 0.0,
-                        range: -2.0...2.0,
-                        step: 0.1
-                    )
-
-                    ParameterSliderRow(
-                        label: "Repetition Penalty",
-                        description: "Penalizes repeated tokens. 1.0 = no penalty.",
-                        value: Binding(
-                            get: { chat.repetitionPenaltyOverride },
-                            set: { chat.repetitionPenaltyOverride = $0 }
-                        ),
-                        defaultValue: 1.0,
-                        range: 0.0...2.0,
-                        step: 0.05
-                    )
-                }
-
-                // MARK: - Output
-                Section("Output") {
-                    ParameterIntRow(
-                        label: "Max Tokens",
-                        description: "Maximum number of tokens to generate.",
-                        value: Binding(
-                            get: { chat.maxTokensOverride },
-                            set: { chat.maxTokensOverride = $0 }
-                        ),
-                        defaultValue: 4096,
-                        range: 1...128000
-                    )
-
-                    ParameterToggleRow(
-                        label: "Stream",
-                        description: "Stream responses token by token.",
-                        value: Binding(
-                            get: { chat.streamOverride },
-                            set: { chat.streamOverride = $0 }
-                        ),
-                        defaultValue: true
-                    )
-                }
-
-                // MARK: - Reasoning
-                Section {
-                    ParameterToggleRow(
-                        label: "Enabled",
-                        description: "Enable reasoning/thinking for supported models.",
-                        value: Binding(
-                            get: { chat.reasoningEnabledOverride },
-                            set: { chat.reasoningEnabledOverride = $0 }
-                        ),
-                        defaultValue: true
-                    )
-
-                    ParameterPickerRow(
-                        label: "Effort",
-                        description: "How much reasoning effort to use.",
-                        value: Binding(
-                            get: { chat.reasoningEffortOverride },
-                            set: { chat.reasoningEffortOverride = $0 }
-                        ),
-                        defaultValue: "medium",
-                        options: ["xhigh", "high", "medium", "low", "minimal", "none"]
-                    )
-
-                    ParameterIntRow(
-                        label: "Max Tokens",
-                        description: "Max reasoning tokens. Min 1024, max 128000.",
-                        value: Binding(
-                            get: { chat.reasoningMaxTokensOverride },
-                            set: { chat.reasoningMaxTokensOverride = $0 }
-                        ),
-                        defaultValue: nil,
-                        range: 1024...128000
-                    )
-
-                    Text("For Anthropic models, Effort and Max Tokens are mutually exclusive. Setting one disables the other.")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-
-                    ParameterToggleRow(
-                        label: "Exclude Output",
-                        description: "Exclude reasoning tokens from response output.",
-                        value: Binding(
-                            get: { chat.reasoningExcludeOverride },
-                            set: { chat.reasoningExcludeOverride = $0 }
-                        ),
-                        defaultValue: false
-                    )
-                } header: {
-                    Text("Reasoning")
-                }
-
-                // MARK: - Verbosity
-                Section {
-                    ParameterPickerRow(
-                        label: "Verbosity",
-                        description: "Maps to output_config.effort for Claude. Only Opus supports 'max'.",
-                        value: Binding(
-                            get: { chat.verbosityOverride },
-                            set: { chat.verbosityOverride = $0 }
-                        ),
-                        defaultValue: nil,
-                        options: ["low", "medium", "high", "max"]
-                    )
-                } header: {
-                    Text("Verbosity")
-                } footer: {
-                    Text("Default: nil (medium on OpenRouter)")
-                        .font(.caption2)
-                }
-
-                // MARK: - Reset
-                Section {
-                    Button(role: .destructive) {
-                        chat.resetAllOverrides()
-                        try? modelContext.save()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            Text("Reset All Overrides")
-                            Spacer()
-                        }
-                    }
-                }
+                .keyboardShortcut(.defaultAction)
             }
-            .navigationTitle("Advanced Parameters")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        try? modelContext.save()
-                        dismiss()
+            .padding()
+
+            Divider()
+
+            // Scrollable content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // MARK: - Sampling
+                    ParamSection("Sampling") {
+                        ParameterSliderRow(
+                            label: "Temperature",
+                            description: "Controls randomness. Higher = more creative, lower = more focused.",
+                            value: Binding(
+                                get: { chat.temperatureOverride },
+                                set: { chat.temperatureOverride = $0 }
+                            ),
+                            defaultValue: 1.0,
+                            range: 0.0...2.0,
+                            step: 0.05
+                        )
+
+                        ParameterSliderRow(
+                            label: "Top P",
+                            description: "Nucleus sampling. Considers tokens with cumulative probability up to this value.",
+                            value: Binding(
+                                get: { chat.topPOverride },
+                                set: { chat.topPOverride = $0 }
+                            ),
+                            defaultValue: 1.0,
+                            range: 0.0...1.0,
+                            step: 0.05
+                        )
+
+                        ParameterIntRow(
+                            label: "Top K",
+                            description: "Limits to top K tokens. 0 = disabled.",
+                            value: Binding(
+                                get: { chat.topKOverride },
+                                set: { chat.topKOverride = $0 }
+                            ),
+                            defaultValue: 0,
+                            range: 0...500
+                        )
+
+                        ParameterSliderRow(
+                            label: "Min P",
+                            description: "Minimum probability threshold relative to the top token.",
+                            value: Binding(
+                                get: { chat.minPOverride },
+                                set: { chat.minPOverride = $0 }
+                            ),
+                            defaultValue: 0.0,
+                            range: 0.0...1.0,
+                            step: 0.05
+                        )
+
+                        ParameterSliderRow(
+                            label: "Top A",
+                            description: "Adaptive sampling threshold.",
+                            value: Binding(
+                                get: { chat.topAOverride },
+                                set: { chat.topAOverride = $0 }
+                            ),
+                            defaultValue: 0.0,
+                            range: 0.0...1.0,
+                            step: 0.05
+                        )
                     }
+
+                    // MARK: - Penalties
+                    ParamSection("Penalties") {
+                        ParameterSliderRow(
+                            label: "Frequency Penalty",
+                            description: "Penalizes tokens based on frequency in the text so far.",
+                            value: Binding(
+                                get: { chat.frequencyPenaltyOverride },
+                                set: { chat.frequencyPenaltyOverride = $0 }
+                            ),
+                            defaultValue: 0.0,
+                            range: -2.0...2.0,
+                            step: 0.1
+                        )
+
+                        ParameterSliderRow(
+                            label: "Presence Penalty",
+                            description: "Penalizes tokens based on whether they appear in the text so far.",
+                            value: Binding(
+                                get: { chat.presencePenaltyOverride },
+                                set: { chat.presencePenaltyOverride = $0 }
+                            ),
+                            defaultValue: 0.0,
+                            range: -2.0...2.0,
+                            step: 0.1
+                        )
+
+                        ParameterSliderRow(
+                            label: "Repetition Penalty",
+                            description: "Penalizes repeated tokens. 1.0 = no penalty.",
+                            value: Binding(
+                                get: { chat.repetitionPenaltyOverride },
+                                set: { chat.repetitionPenaltyOverride = $0 }
+                            ),
+                            defaultValue: 1.0,
+                            range: 0.0...2.0,
+                            step: 0.05
+                        )
+                    }
+
+                    // MARK: - Output
+                    ParamSection("Output") {
+                        ParameterIntRow(
+                            label: "Max Tokens",
+                            description: "Maximum number of tokens to generate.",
+                            value: Binding(
+                                get: { chat.maxTokensOverride },
+                                set: { chat.maxTokensOverride = $0 }
+                            ),
+                            defaultValue: 4096,
+                            range: 1...128000
+                        )
+
+                        ParameterToggleRow(
+                            label: "Stream",
+                            description: "Stream responses token by token.",
+                            value: Binding(
+                                get: { chat.streamOverride },
+                                set: { chat.streamOverride = $0 }
+                            ),
+                            defaultValue: true
+                        )
+                    }
+
+                    // MARK: - Reasoning
+                    ParamSection("Reasoning") {
+                        ParameterToggleRow(
+                            label: "Enabled",
+                            description: "Enable reasoning/thinking for supported models.",
+                            value: Binding(
+                                get: { chat.reasoningEnabledOverride },
+                                set: { chat.reasoningEnabledOverride = $0 }
+                            ),
+                            defaultValue: true
+                        )
+
+                        ParameterPickerRow(
+                            label: "Effort",
+                            description: "How much reasoning effort to use.",
+                            value: Binding(
+                                get: { chat.reasoningEffortOverride },
+                                set: { chat.reasoningEffortOverride = $0 }
+                            ),
+                            defaultValue: "medium",
+                            options: ["xhigh", "high", "medium", "low", "minimal", "none"]
+                        )
+
+                        ParameterIntRow(
+                            label: "Max Tokens",
+                            description: "Max reasoning tokens. Min 1024, max 128000.",
+                            value: Binding(
+                                get: { chat.reasoningMaxTokensOverride },
+                                set: { chat.reasoningMaxTokensOverride = $0 }
+                            ),
+                            defaultValue: nil,
+                            range: 1024...128000
+                        )
+
+                        Text("For Anthropic models, Effort and Max Tokens are mutually exclusive.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        ParameterToggleRow(
+                            label: "Exclude Output",
+                            description: "Exclude reasoning tokens from response output.",
+                            value: Binding(
+                                get: { chat.reasoningExcludeOverride },
+                                set: { chat.reasoningExcludeOverride = $0 }
+                            ),
+                            defaultValue: false
+                        )
+                    }
+
+                    // MARK: - Verbosity
+                    ParamSection("Verbosity") {
+                        ParameterPickerRow(
+                            label: "Verbosity",
+                            description: "Maps to output_config.effort for Claude. Only Opus supports 'max'.",
+                            value: Binding(
+                                get: { chat.verbosityOverride },
+                                set: { chat.verbosityOverride = $0 }
+                            ),
+                            defaultValue: nil,
+                            options: ["low", "medium", "high", "max"]
+                        )
+
+                        Text("Default: nil (medium on OpenRouter)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    // MARK: - Reset
+                    HStack {
+                        Spacer()
+                        Button(role: .destructive) {
+                            chat.resetAllOverrides()
+                            try? modelContext.save()
+                        } label: {
+                            Text("Reset All Overrides")
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
             }
         }
-        .frame(minWidth: 500, minHeight: 600)
+        .frame(idealWidth: 520, idealHeight: 650)
+        .frame(minWidth: 450, minHeight: 400)
+    }
+}
+
+// MARK: - Section Container
+
+private struct ParamSection<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+
+            VStack(alignment: .leading, spacing: 12) {
+                content
+            }
+            .padding(12)
+            .background(Color(.controlBackgroundColor).opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
     }
 }
 
@@ -271,6 +308,7 @@ private struct ParameterSliderRow: View {
                         .font(.body.weight(.medium))
                 }
                 .toggleStyle(.switch)
+                .controlSize(.small)
 
                 Spacer()
 
@@ -297,7 +335,7 @@ private struct ParameterSliderRow: View {
             }
 
             Text(description)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }
@@ -329,6 +367,7 @@ private struct ParameterIntRow: View {
                         .font(.body.weight(.medium))
                 }
                 .toggleStyle(.switch)
+                .controlSize(.small)
 
                 Spacer()
 
@@ -354,7 +393,7 @@ private struct ParameterIntRow: View {
             }
 
             Text(description)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }
@@ -385,6 +424,7 @@ private struct ParameterToggleRow: View {
                         .font(.body.weight(.medium))
                 }
                 .toggleStyle(.switch)
+                .controlSize(.small)
 
                 Spacer()
 
@@ -394,6 +434,7 @@ private struct ParameterToggleRow: View {
                         set: { value = $0 }
                     ))
                     .toggleStyle(.switch)
+                    .controlSize(.small)
                     .labelsHidden()
                 } else {
                     Text("Default: \(defaultValue ? "ON" : "OFF")")
@@ -403,7 +444,7 @@ private struct ParameterToggleRow: View {
             }
 
             Text(description)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }
@@ -435,6 +476,7 @@ private struct ParameterPickerRow: View {
                         .font(.body.weight(.medium))
                 }
                 .toggleStyle(.switch)
+                .controlSize(.small)
 
                 Spacer()
 
@@ -457,7 +499,7 @@ private struct ParameterPickerRow: View {
             }
 
             Text(description)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }

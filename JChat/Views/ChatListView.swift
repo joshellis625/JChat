@@ -46,29 +46,16 @@ struct ChatListView: View {
                 .lineLimit(1)
                 .font(.body.weight(.medium))
 
-            // Badges row: character + model
-            HStack(spacing: 6) {
-                if let character = chat.character {
-                    HStack(spacing: 2) {
-                        Image(systemName: "person.fill")
-                            .font(.caption2)
-                        Text(character.name)
-                            .font(.caption2)
-                    }
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            // Model badge
+            if let modelID = chat.selectedModelID {
+                HStack(spacing: 2) {
+                    Image(systemName: "cpu")
+                        .font(.caption2)
+                    Text(displayModelName(modelID))
+                        .font(.caption2)
                 }
-
-                if let modelID = chat.selectedModelID {
-                    HStack(spacing: 2) {
-                        Image(systemName: "cpu")
-                            .font(.caption2)
-                        Text(displayModelName(modelID))
-                            .font(.caption2)
-                    }
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                }
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
             }
 
             // Date + message count

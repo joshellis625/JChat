@@ -28,21 +28,29 @@ struct CharacterEditorView: View {
                 // MARK: - Identity
                 Section("Identity") {
                     TextField("Name", text: $name)
+                }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("System Prompt / Instructions")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextEditor(text: $systemPrompt)
-                            .font(.body)
-                            .frame(minHeight: 150)
-                    }
+                // MARK: - System Prompt
+                Section {
+                    TextEditor(text: $systemPrompt)
+                        .font(.body)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 150)
+                        .padding(4)
+                        .background(Color(.textBackgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                } header: {
+                    Text("System Prompt")
                 }
 
                 // MARK: - Preferred Model
                 Section("Preferred Model") {
-                    if let modelID = preferredModelID {
-                        HStack {
+                    HStack {
+                        if let modelID = preferredModelID {
                             Text(displayName(for: modelID))
                                 .lineLimit(1)
                             Spacer()
@@ -50,14 +58,15 @@ struct CharacterEditorView: View {
                                 preferredModelID = nil
                             }
                             .foregroundStyle(.red)
+                        } else {
+                            Text("None")
+                                .foregroundStyle(.secondary)
+                            Spacer()
                         }
-                    } else {
-                        Text("None")
-                            .foregroundStyle(.secondary)
-                    }
 
-                    Button("Choose Model...") {
-                        showingModelPicker = true
+                        Button("Choose Model...") {
+                            showingModelPicker = true
+                        }
                     }
                 }
 
@@ -100,7 +109,7 @@ struct CharacterEditorView: View {
                 }
             }
         }
-        .frame(minWidth: 500, minHeight: 400)
+        .frame(minWidth: 500, minHeight: 450)
     }
 
     // MARK: - Save

@@ -26,7 +26,10 @@ struct MessageBubble: View {
                     Text(displayModelName(modelID))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.secondary.opacity(0.1))
+                        .clipShape(Capsule())
                 }
 
                 // Message content
@@ -42,8 +45,8 @@ struct MessageBubble: View {
                 .background(bubbleBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                // Action bar for assistant messages (shows on hover)
-                if !isUser, isHovered || showActionBarAlways {
+                // Action bar for assistant messages (hover only)
+                if !isUser, isHovered {
                     MessageActionBar(
                         message: message,
                         onCopy: { onCopy?() },
@@ -71,13 +74,8 @@ struct MessageBubble: View {
         if isUser {
             return AnyShapeStyle(Color.accentColor.opacity(0.85))
         } else {
-            return AnyShapeStyle(Color(.controlBackgroundColor))
+            return AnyShapeStyle(Color(.windowBackgroundColor).opacity(0.8))
         }
-    }
-
-    /// Always show action bar if there are tokens (message is complete)
-    private var showActionBarAlways: Bool {
-        !isUser && message.totalTokens > 0
     }
 
     private func displayModelName(_ id: String) -> String {

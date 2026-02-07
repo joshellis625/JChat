@@ -151,6 +151,13 @@ actor OpenRouterService {
             let limit: Double?
             let usage: Double?
             let limit_remaining: Double?
+            let is_free_tier: Bool?
+            let rate_limit: RateLimit?
+
+            struct RateLimit: Codable, Sendable {
+                let requests: Int?
+                let interval: String?
+            }
         }
     }
 
@@ -193,7 +200,7 @@ actor OpenRouterService {
     // MARK: - Key Validation & Credits
 
     func validateAPIKey(apiKey: String) async throws -> KeyResponse {
-        guard let url = URL(string: "\(baseURL)/auth/key") else {
+        guard let url = URL(string: "\(baseURL)/key") else {
             throw JChatError.serverError(statusCode: 0, message: "Invalid URL")
         }
 
