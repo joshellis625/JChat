@@ -12,7 +12,7 @@
 		03D0F7652F37409300FEC0AF /* TODO.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74C2F37409300FEC0AF /* TODO.md */; };
 		03D0F7662F37409300FEC0AF /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F75C2F37409300FEC0AF /* .gitignore */; };
 		03D0F7672F37409300FEC0AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F75D2F37409300FEC0AF /* Assets.xcassets */; };
-		03D0F7692F37409300FEC0AF /* APISettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F74E2F37409300FEC0AF /* APISettings.swift */; };
+		03D0F7692F37409300FEC0AF /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F74E2F37409300FEC0AF /* AppSettings.swift */; };
 		03D0F76A2F37409300FEC0AF /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7502F37409300FEC0AF /* KeychainManager.swift */; };
 		03D0F76B2F37409300FEC0AF /* OpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7512F37409300FEC0AF /* OpenRouterService.swift */; };
 		03D0F76C2F37409300FEC0AF /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7532F37409300FEC0AF /* ChatListView.swift */; };
@@ -25,6 +25,9 @@
 		03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75A2F37409300FEC0AF /* SettingsView.swift */; };
 		03D0F7742F37409300FEC0AF /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75E2F37409300FEC0AF /* Chat.swift */; };
 		03D0F7752F37409300FEC0AF /* JChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7612F37409300FEC0AF /* JChatApp.swift */; };
+		03A0F7802F37409300FEC0AF /* Assistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Assistant.swift */; };
+		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
+		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,7 +54,10 @@
 		03D0F74A2F37409300FEC0AF /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		03D0F74B2F37409300FEC0AF /* COMPLETED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPLETED.md; sourceTree = "<group>"; };
 		03D0F74C2F37409300FEC0AF /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
-		03D0F74E2F37409300FEC0AF /* APISettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APISettings.swift; sourceTree = "<group>"; };
+		03D0F74E2F37409300FEC0AF /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		03A0F77D2F37409300FEC0AF /* JChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatError.swift; sourceTree = "<group>"; };
+		03A0F77E2F37409300FEC0AF /* Assistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Assistant.swift; sourceTree = "<group>"; };
+		03A0F77F2F37409300FEC0AF /* CachedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModel.swift; sourceTree = "<group>"; };
 		03D0F7502F37409300FEC0AF /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		03D0F7512F37409300FEC0AF /* OpenRouterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRouterService.swift; sourceTree = "<group>"; };
 		03D0F7532F37409300FEC0AF /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
@@ -140,7 +146,9 @@
 		03D0F74F2F37409300FEC0AF /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				03D0F74E2F37409300FEC0AF /* APISettings.swift */,
+				03D0F74E2F37409300FEC0AF /* AppSettings.swift */,
+				03A0F77E2F37409300FEC0AF /* Assistant.swift */,
+				03A0F77F2F37409300FEC0AF /* CachedModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -148,6 +156,7 @@
 		03D0F7522F37409300FEC0AF /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				03A0F77D2F37409300FEC0AF /* JChatError.swift */,
 				03D0F7502F37409300FEC0AF /* KeychainManager.swift */,
 				03D0F7512F37409300FEC0AF /* OpenRouterService.swift */,
 			);
@@ -331,7 +340,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03D0F7692F37409300FEC0AF /* APISettings.swift in Sources */,
+				03D0F7692F37409300FEC0AF /* AppSettings.swift in Sources */,
+				03A0F7802F37409300FEC0AF /* Assistant.swift in Sources */,
+				03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */,
+				03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */,
 				03D0F76A2F37409300FEC0AF /* KeychainManager.swift in Sources */,
 				03D0F76B2F37409300FEC0AF /* OpenRouterService.swift in Sources */,
 				03D0F76C2F37409300FEC0AF /* ChatListView.swift in Sources */,

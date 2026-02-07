@@ -9,56 +9,51 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    @State private var settings: APISettings?
+
     @State private var apiKey: String = ""
-    @State private var selectedModel: String = ""
-    @State private var temperature: Double = 0.7
-    @State private var maxTokens: Int = 4096
-    @State private var availableModels: [String] = []
-    
+    @State private var isValidatingKey = false
+    @State private var keyValidationMessage: String?
+    @State private var creditsBalance: String?
+
     private let service = OpenRouterService.shared
-    
+
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     SecureField("OpenRouter API Key", text: $apiKey)
                         .textFieldStyle(.roundedBorder)
-                    Text("Your API key is stored securely in the local keychain.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } header: {
-                    Text("API Configuration")
-                }
-                
-                Section {
-                    Picker("Model", selection: $selectedModel) {
-                        ForEach(availableModels, id: \.self) { model in
-                            Text(model)
-                                .tag(model)
+
+                    HStack {
+                        Text("Your API key is stored securely in the local keychain.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if isValidatingKey {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        } else {
+                            Button("Validate") {
+                                Task { await validateKey() }
+                            }
+                            .font(.caption)
+                            .disabled(apiKey.isEmpty)
                         }
                     }
-                    .labelsHidden()
-                } header: {
-                    Text("Default Model")
-                }
-                
-                Section {
-                    Slider(value: $temperature, in: 0...2, step: 0.1) {
-                        Text("Temperature")
-                    } minimumValueLabel: {
-                        Text("0")
-                    } maximumValueLabel: {
-                        Text("2")
+
+                    if let message = keyValidationMessage {
+                        Text(message)
+                            .font(.caption)
+                            .foregroundStyle(message.contains("Valid") ? .green : .red)
                     }
-                    Text("Current: \(temperature, format: .number.precision(.fractionLength(2)))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    Stepper("Max Tokens: \(maxTokens)", value: $maxTokens, in: 256...8192, step: 256)
+
+                    if let credits = creditsBalance {
+                        Text("Credits: \(credits)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 } header: {
-                    Text("Default Parameters")
+                    Text("API Configuration")
                 }
             }
             .formStyle(.grouped)
@@ -80,35 +75,41 @@ struct SettingsView: View {
         .frame(minWidth: 400, minHeight: 300)
         .task {
             loadSettings()
-            await loadAvailableModels()
         }
     }
-    
+
     private func loadSettings() {
-        settings = APISettings.fetchOrCreate(in: modelContext)
         apiKey = loadAPIKeyFromKeychain()
-        selectedModel = settings?.selectedModel ?? "anthropic/claude-3.5-sonnet"
-        temperature = settings?.temperature ?? 0.7
-        maxTokens = settings?.maxTokens ?? 4096
     }
-    
+
     private func loadAPIKeyFromKeychain() -> String {
         do {
             return try KeychainManager.shared.loadAPIKey()
         } catch KeychainError.itemNotFound {
             return ""
         } catch {
-            print("Error loading API key from Keychain: \(error)")
             return ""
         }
     }
-    
-    private func loadAvailableModels() async {
-        availableModels = await service.availableModels()
+
+    private func validateKey() async {
+        isValidatingKey = true
+        keyValidationMessage = nil
+        creditsBalance = nil
+        do {
+            let _ = try await service.validateAPIKey(apiKey: apiKey)
+            let credits = try await service.fetchCredits(apiKey: apiKey)
+            let total = credits.data.total_credits ?? 0
+            let used = credits.data.total_usage ?? 0
+            creditsBalance = String(format: "$%.4f remaining", total - used)
+            keyValidationMessage = "Valid API key"
+        } catch {
+            keyValidationMessage = "Invalid API key"
+        }
+        isValidatingKey = false
     }
-    
+
     private func saveSettings() {
-        let s = APISettings.fetchOrCreate(in: modelContext)
         do {
             if apiKey.isEmpty {
                 try KeychainManager.shared.deleteAPIKey()
@@ -116,11 +117,9 @@ struct SettingsView: View {
                 try KeychainManager.shared.saveAPIKey(apiKey)
             }
         } catch {
-            print("Error saving API key to Keychain: \(error)")
+            // Silently handle keychain errors for now
         }
-        s.selectedModel = selectedModel
-        s.temperature = temperature
-        s.maxTokens = maxTokens
+        let _ = AppSettings.fetchOrCreate(in: modelContext)
         try? modelContext.save()
     }
 }

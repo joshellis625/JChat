@@ -10,18 +10,38 @@ import SwiftData
 class ChatViewModel {
     var selectedChat: Chat?
     var isLoading = false
+    var isStreaming = false
+    var streamingContent: String = ""
     var errorMessage: String?
-    
+    var errorSuggestion: String?
+
     private let service = OpenRouterService.shared
-    
+    private var streamingTask: Task<Void, Never>?
+
     func createNewChat(in context: ModelContext) -> Chat {
         let chat = Chat()
+        // Assign default assistant if available
+        let settingsDescriptor = FetchDescriptor<AppSettings>()
+        if let settings = try? context.fetch(settingsDescriptor).first,
+           let defaultAssistantID = settings.defaultAssistantID {
+            let assistantDescriptor = FetchDescriptor<Assistant>(predicate: #Predicate { $0.id == defaultAssistantID })
+            chat.assistant = try? context.fetch(assistantDescriptor).first
+        }
+        // Fall back to any default assistant
+        if chat.assistant == nil {
+            let defaultDescriptor = FetchDescriptor<Assistant>(predicate: #Predicate { $0.isDefault == true })
+            chat.assistant = try? context.fetch(defaultDescriptor).first
+        }
+        // Set default model
+        if let settings = try? context.fetch(settingsDescriptor).first {
+            chat.selectedModelID = settings.defaultModelID
+        }
         context.insert(chat)
         try? context.save()
         selectedChat = chat
         return chat
     }
-    
+
     func deleteChat(_ chat: Chat, in context: ModelContext) {
         if selectedChat?.id == chat.id {
             selectedChat = nil
@@ -29,61 +49,163 @@ class ChatViewModel {
         context.delete(chat)
         try? context.save()
     }
-    
+
     @MainActor
-    func sendMessage(content: String, settings: APISettings, context: ModelContext) async {
+    func sendMessage(content: String, context: ModelContext) async {
         guard let chat = selectedChat else { return }
-        
+
+        guard let modelID = chat.selectedModelID, !modelID.isEmpty else {
+            errorMessage = JChatError.noModelSelected.errorDescription
+            errorSuggestion = JChatError.noModelSelected.recoverySuggestion
+            return
+        }
+
+        let apiKey: String
+        do {
+            apiKey = try KeychainManager.shared.loadAPIKey()
+        } catch {
+            let err = JChatError.apiKeyNotConfigured
+            errorMessage = err.errorDescription
+            errorSuggestion = err.recoverySuggestion
+            return
+        }
+
+        guard !apiKey.isEmpty else {
+            let err = JChatError.apiKeyNotConfigured
+            errorMessage = err.errorDescription
+            errorSuggestion = err.recoverySuggestion
+            return
+        }
+
         isLoading = true
+        isStreaming = true
+        streamingContent = ""
         errorMessage = nil
-        
+        errorSuggestion = nil
+
         // Add user message
         let userMessage = Message(role: .user, content: content)
         userMessage.chat = chat
         chat.messages.append(userMessage)
-        
-        // Prepare conversation history
+
+        // Build message history
         var history: [(role: String, content: String)] = []
-        if chat.messages.count > 1 {
-            history = chat.messages.dropLast().map { (role: $0.role.rawValue, content: $0.content) }
+        if let systemPrompt = chat.assistant?.systemPrompt, !systemPrompt.isEmpty {
+            history.append((role: "system", content: systemPrompt))
         }
-        history.append((role: "user", content: content))
-        
-        do {
-            let result = try await service.sendMessage(messages: history, settings: settings)
-            
-            // Add assistant message
-            let assistantMessage = Message(
-                role: .assistant,
-                content: result.content,
-                promptTokens: result.promptTokens,
-                completionTokens: result.completionTokens,
-                cost: result.cost
-            )
-            assistantMessage.chat = chat
-            chat.messages.append(assistantMessage)
-            
-            // Update chat totals
-            chat.totalPromptTokens += result.promptTokens
-            chat.totalCompletionTokens += result.completionTokens
-            chat.totalCost += result.cost
-            
-            // Update title if first message
-            if chat.messages.count == 2 {
-                chat.title = String(content.prefix(30)) + (content.count > 30 ? "..." : "")
-            }
-            
-            try? context.save()
-            
-        } catch {
-            errorMessage = error.localizedDescription
-            // Remove the user message if failed
-            if let lastMessage = chat.messages.last, lastMessage.role == .user {
-                chat.messages.removeAll { $0.id == lastMessage.id }
+        for msg in chat.sortedMessages {
+            history.append((role: msg.role.rawValue, content: msg.content))
+        }
+
+        // Build parameters from chat effective values
+        let params = ChatParameters(
+            temperature: chat.effectiveTemperature,
+            maxTokens: chat.effectiveMaxTokens,
+            topP: chat.effectiveTopP,
+            topK: chat.effectiveTopK > 0 ? chat.effectiveTopK : nil,
+            frequencyPenalty: chat.effectiveFrequencyPenalty != 0 ? chat.effectiveFrequencyPenalty : nil,
+            presencePenalty: chat.effectivePresencePenalty != 0 ? chat.effectivePresencePenalty : nil,
+            repetitionPenalty: chat.effectiveRepetitionPenalty != 1.0 ? chat.effectiveRepetitionPenalty : nil,
+            minP: chat.effectiveMinP != 0 ? chat.effectiveMinP : nil,
+            topA: chat.effectiveTopA != 0 ? chat.effectiveTopA : nil
+        )
+
+        // Create placeholder assistant message for streaming
+        let assistantMessage = Message(role: .assistant, content: "", modelID: modelID)
+        assistantMessage.chat = chat
+        chat.messages.append(assistantMessage)
+
+        let capturedModelID = modelID
+        streamingTask = Task {
+            do {
+                let stream = await service.streamMessage(
+                    messages: history,
+                    modelID: capturedModelID,
+                    parameters: params,
+                    apiKey: apiKey
+                )
+                for try await event in stream {
+                    switch event {
+                    case .delta(let text):
+                        streamingContent += text
+                        assistantMessage.content = streamingContent
+                    case .usage(let prompt, let completion):
+                        assistantMessage.promptTokens = prompt
+                        assistantMessage.completionTokens = completion
+                        let modelDescriptor = FetchDescriptor<CachedModel>(predicate: #Predicate { $0.id == capturedModelID })
+                        if let cachedModel = try? context.fetch(modelDescriptor).first {
+                            assistantMessage.cost = cachedModel.calculateCost(promptTokens: prompt, completionTokens: completion)
+                        }
+                        chat.totalPromptTokens += prompt
+                        chat.totalCompletionTokens += completion
+                        chat.totalCost += assistantMessage.cost
+                    case .modelID(let id):
+                        assistantMessage.modelID = id
+                    case .done:
+                        break
+                    case .error(let jchatError):
+                        throw jchatError
+                    }
+                }
+
+                // Auto-title on first exchange
+                if chat.sortedMessages.filter({ $0.role == .user }).count == 1 {
+                    chat.title = String(content.prefix(40)) + (content.count > 40 ? "..." : "")
+                }
+
+                try? context.save()
+            } catch {
+                let jchatError = (error as? JChatError) ?? .unknown(error)
+                errorMessage = jchatError.errorDescription
+                errorSuggestion = jchatError.recoverySuggestion
+                if assistantMessage.content.isEmpty {
+                    chat.messages.removeAll { $0.id == assistantMessage.id }
+                    context.delete(assistantMessage)
+                }
                 try? context.save()
             }
+
+            isLoading = false
+            isStreaming = false
+            streamingContent = ""
         }
-        
+    }
+
+    func stopStreaming() {
+        streamingTask?.cancel()
+        streamingTask = nil
         isLoading = false
+        isStreaming = false
+        streamingContent = ""
+    }
+
+    @MainActor
+    func regenerateMessage(_ message: Message, in context: ModelContext) async {
+        guard let chat = selectedChat else { return }
+
+        let sorted = chat.sortedMessages
+        guard let index = sorted.firstIndex(where: { $0.id == message.id }),
+              index > 0,
+              sorted[index - 1].role == .user else { return }
+
+        let userContent = sorted[index - 1].content
+
+        chat.totalPromptTokens -= message.promptTokens
+        chat.totalCompletionTokens -= message.completionTokens
+        chat.totalCost -= message.cost
+        chat.messages.removeAll { $0.id == message.id }
+        context.delete(message)
+
+        await sendMessage(content: userContent, context: context)
+    }
+
+    func deleteMessage(_ message: Message, in context: ModelContext) {
+        guard let chat = selectedChat else { return }
+        chat.totalPromptTokens -= message.promptTokens
+        chat.totalCompletionTokens -= message.completionTokens
+        chat.totalCost -= message.cost
+        chat.messages.removeAll { $0.id == message.id }
+        context.delete(message)
+        try? context.save()
     }
 }

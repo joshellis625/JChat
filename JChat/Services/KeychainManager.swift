@@ -13,7 +13,7 @@ enum KeychainError: Error {
     case conversionError
 }
 
-final class KeychainManager {
+final class KeychainManager: @unchecked Sendable {
     static let shared = KeychainManager()
     
     private let service = "com.josh.jchat"

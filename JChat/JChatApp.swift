@@ -12,7 +12,9 @@ struct JChatApp: App {
         let schema = Schema([
             Chat.self,
             Message.self,
-            APISettings.self,
+            AppSettings.self,
+            Assistant.self,
+            CachedModel.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -30,20 +32,18 @@ struct JChatApp: App {
         }
         .modelContainer(sharedModelContainer)
         .defaultSize(width: 1200, height: 800)
-        .windowStyle(.automatic) // Adaptive window style for macOS 26
-        .windowResizability(.contentSize) // Content-driven resizing
-        
+        .windowStyle(.automatic)
+        .windowResizability(.contentSize)
+
         #if os(iOS)
-        // iOS 26 specific configurations
         .commands {
             CommandGroup(replacing: .help) {
                 Link("JChat Help", destination: URL(string: "https://jchat.app/help")!)
             }
         }
         #endif
-        
+
         #if os(macOS)
-        // macOS 26 specific configurations
         .commands {
             CommandGroup(replacing: .help) {
                 Link("JChat Help", destination: URL(string: "https://jchat.app/help")!)

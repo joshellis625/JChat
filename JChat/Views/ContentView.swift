@@ -9,7 +9,7 @@ import SwiftData
 struct ContentView: View {
     @State private var viewModel = ChatViewModel()
     @State private var showingSettings = false
-    
+
     var body: some View {
         NavigationSplitView {
             ChatListView(viewModel: viewModel)
@@ -34,5 +34,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Chat.self, Message.self, APISettings.self], inMemory: true)
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Assistant.self, CachedModel.self], inMemory: true)
 }
