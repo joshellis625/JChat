@@ -126,3 +126,17 @@ struct ConversationView: View {
         }
     }
 }
+
+#Preview("With Chat") {
+    let viewModel = ChatViewModel()
+    let modelManager = ModelManager()
+    ConversationView(viewModel: viewModel, modelManager: modelManager)
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+        .frame(width: 600, height: 500)
+}
+
+#Preview("Empty State") {
+    ConversationView(viewModel: ChatViewModel(), modelManager: ModelManager())
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+        .frame(width: 600, height: 500)
+}

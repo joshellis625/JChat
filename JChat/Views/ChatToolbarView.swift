@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ChatToolbarView: View {
     let chat: Chat
@@ -70,4 +71,14 @@ struct ChatToolbarView: View {
             Divider()
         }
     }
+}
+
+#Preview {
+    ChatToolbarView(
+        chat: Chat(title: "Preview Chat"),
+        modelManager: ModelManager(),
+        onShowParameters: {}
+    )
+    .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+    .frame(width: 600)
 }

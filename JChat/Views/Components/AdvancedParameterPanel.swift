@@ -237,6 +237,11 @@ struct AdvancedParameterPanel: View {
     }
 }
 
+#Preview {
+    AdvancedParameterPanel(chat: Chat(title: "Preview Chat"))
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+}
+
 // MARK: - Parameter Row Components
 
 private struct ParameterSliderRow: View {

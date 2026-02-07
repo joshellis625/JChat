@@ -142,3 +142,28 @@ struct MarkdownTextView: View {
         )
     }
 }
+
+#Preview {
+    MarkdownTextView(content: """
+    Here's some **bold** text, *italic* text, and `inline code`.
+
+    A paragraph with a [link](https://example.com) in it.
+
+    ```swift
+    struct ContentView: View {
+        var body: some View {
+            Text("Hello, world!")
+        }
+    }
+    ```
+
+    And a follow-up paragraph after the code block.
+
+    ```python
+    def hello():
+        print("Hello from Python!")
+    ```
+    """)
+    .padding()
+    .frame(width: 500)
+}

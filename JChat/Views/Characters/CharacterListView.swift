@@ -152,3 +152,8 @@ struct CharacterListView: View {
         return modelID
     }
 }
+
+#Preview {
+    CharacterListView(modelManager: ModelManager())
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+}

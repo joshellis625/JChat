@@ -170,3 +170,8 @@ struct SettingsView: View {
         try? modelContext.save()
     }
 }
+
+#Preview {
+    SettingsView()
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+}

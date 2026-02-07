@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Horizontal action bar shown below each assistant message.
 /// Displays token count, cost, and action buttons (copy, regenerate, delete).
@@ -61,4 +62,35 @@ struct MessageActionBar: View {
         .padding(.horizontal, 4)
         .padding(.vertical, 2)
     }
+}
+
+#Preview("With Tokens") {
+    MessageActionBar(
+        message: Message(
+            role: .assistant,
+            content: "Hello!",
+            promptTokens: 42,
+            completionTokens: 128,
+            cost: 0.0023,
+            modelID: "anthropic/claude-sonnet-4"
+        ),
+        onCopy: {},
+        onRegenerate: {},
+        onDelete: {}
+    )
+    .modelContainer(for: [Chat.self, Message.self], inMemory: true)
+    .frame(width: 400)
+    .padding()
+}
+
+#Preview("No Tokens") {
+    MessageActionBar(
+        message: Message(role: .assistant, content: "Streaming..."),
+        onCopy: {},
+        onRegenerate: {},
+        onDelete: {}
+    )
+    .modelContainer(for: [Chat.self, Message.self], inMemory: true)
+    .frame(width: 400)
+    .padding()
 }

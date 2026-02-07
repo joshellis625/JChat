@@ -67,3 +67,47 @@ struct MessageInputView: View {
         }
     }
 }
+
+#Preview("Empty") {
+    MessageInputView(
+        text: .constant(""),
+        isLoading: false,
+        isStreaming: false,
+        onSend: {},
+        onStop: {}
+    )
+    .frame(width: 500)
+}
+
+#Preview("With Text") {
+    MessageInputView(
+        text: .constant("Hello, how are you doing today?"),
+        isLoading: false,
+        isStreaming: false,
+        onSend: {},
+        onStop: {}
+    )
+    .frame(width: 500)
+}
+
+#Preview("Loading") {
+    MessageInputView(
+        text: .constant(""),
+        isLoading: true,
+        isStreaming: false,
+        onSend: {},
+        onStop: {}
+    )
+    .frame(width: 500)
+}
+
+#Preview("Streaming") {
+    MessageInputView(
+        text: .constant(""),
+        isLoading: false,
+        isStreaming: true,
+        onSend: {},
+        onStop: {}
+    )
+    .frame(width: 500)
+}

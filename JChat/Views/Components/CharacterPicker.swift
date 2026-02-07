@@ -139,3 +139,12 @@ struct CharacterPicker: View {
         .frame(width: 280)
     }
 }
+
+#Preview {
+    CharacterPicker(
+        selectedCharacter: .constant(nil),
+        modelManager: ModelManager()
+    )
+    .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+    .padding()
+}

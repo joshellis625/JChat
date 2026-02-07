@@ -208,3 +208,24 @@ private struct ModelPickerSheet: View {
         .buttonStyle(.plain)
     }
 }
+
+#Preview("New Character") {
+    CharacterEditorView(
+        modelManager: ModelManager(),
+        character: nil
+    )
+    .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+}
+
+#Preview("Edit Character") {
+    CharacterEditorView(
+        modelManager: ModelManager(),
+        character: Character(
+            name: "Code Assistant",
+            systemPrompt: "You are a helpful coding assistant. You write clean, well-documented code.",
+            preferredModelID: "anthropic/claude-sonnet-4",
+            isDefault: true
+        )
+    )
+    .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+}

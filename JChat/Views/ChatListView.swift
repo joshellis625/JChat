@@ -94,3 +94,9 @@ struct ChatListView: View {
         return id
     }
 }
+
+#Preview {
+    ChatListView(viewModel: ChatViewModel())
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
+        .frame(width: 250, height: 400)
+}
