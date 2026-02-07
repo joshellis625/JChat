@@ -13,7 +13,7 @@ final class AppSettings {
     var defaultModelID: String?
     var modelCacheMaxAge: TimeInterval
     var lastModelFetchDate: Date?
-    var textSizeMultiplier: Double
+    var textSizeMultiplier: Double = 1.0
 
     init() {
         self.id = UUID()
