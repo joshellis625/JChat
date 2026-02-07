@@ -1,0 +1,61 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/*.xcuserdatad/
+*.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Mac Derived Data
+DerivedData/
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/
+
+# SwiftLint
+.swiftlint.yml
+
+# App Store Connect
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Localized Resources
+en.lproj.nib
+Base.lproj.nib
+
+# .orig files
+*.orig
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# OS generated files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Thumbnails
+Thumbs.db
+
+# Environment files (if any for API keys, etc.)
+.env
+.env.local
+
+# API keys or sensitive data
+APIKeys.plist
+Secrets.swift
+
+# Build artifacts
+*.app
+*.framework
+
+# Swift Testing
+*.xctest
