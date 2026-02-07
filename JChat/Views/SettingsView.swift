@@ -15,17 +15,26 @@ struct SettingsView: View {
     @State private var keyValidationMessage: String?
     @State private var creditsBalance: String?
 
+    // Defaults
+    @Query(sort: \Character.createdAt, order: .reverse) private var characters: [Character]
+    @Query(filter: #Predicate<CachedModel> { $0.isFavorite == true },
+           sort: \CachedModel.name) private var favoriteModels: [CachedModel]
+
+    @State private var selectedCharacterID: UUID?
+    @State private var selectedModelID: String?
+
     private let service = OpenRouterService.shared
 
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: - API Configuration
                 Section {
                     SecureField("OpenRouter API Key", text: $apiKey)
                         .textFieldStyle(.roundedBorder)
 
                     HStack {
-                        Text("Your API key is stored securely in the local keychain.")
+                        Text("Stored securely in your local keychain.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -55,6 +64,36 @@ struct SettingsView: View {
                 } header: {
                     Text("API Configuration")
                 }
+
+                // MARK: - Defaults
+                Section {
+                    // Default Character picker
+                    Picker("Default Character", selection: $selectedCharacterID) {
+                        Text("None").tag(UUID?.none)
+                        ForEach(characters) { character in
+                            Text(character.name).tag(Optional(character.id))
+                        }
+                    }
+
+                    // Default Model picker (from favorites)
+                    Picker("Default Model", selection: $selectedModelID) {
+                        Text("None").tag(String?.none)
+                        ForEach(favoriteModels, id: \.id) { model in
+                            Text(model.displayName).tag(Optional(model.id))
+                        }
+                    }
+
+                    if favoriteModels.isEmpty {
+                        Text("Favorite some models in the Model Manager to see them here.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Defaults")
+                } footer: {
+                    Text("Applied when creating new chats without an explicit character or model.")
+                        .font(.caption2)
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("Settings")
@@ -72,21 +111,24 @@ struct SettingsView: View {
                 }
             }
         }
-        .frame(minWidth: 400, minHeight: 300)
+        .frame(minWidth: 450, minHeight: 350)
         .task {
             loadSettings()
         }
     }
 
+    // MARK: - Load / Save
+
     private func loadSettings() {
         apiKey = loadAPIKeyFromKeychain()
+        let settings = AppSettings.fetchOrCreate(in: modelContext)
+        selectedCharacterID = settings.defaultCharacterID
+        selectedModelID = settings.defaultModelID
     }
 
     private func loadAPIKeyFromKeychain() -> String {
         do {
             return try KeychainManager.shared.loadAPIKey()
-        } catch KeychainError.itemNotFound {
-            return ""
         } catch {
             return ""
         }
@@ -110,6 +152,7 @@ struct SettingsView: View {
     }
 
     private func saveSettings() {
+        // Save API key
         do {
             if apiKey.isEmpty {
                 try KeychainManager.shared.deleteAPIKey()
@@ -119,7 +162,11 @@ struct SettingsView: View {
         } catch {
             // Silently handle keychain errors for now
         }
-        let _ = AppSettings.fetchOrCreate(in: modelContext)
+
+        // Save defaults
+        let settings = AppSettings.fetchOrCreate(in: modelContext)
+        settings.defaultCharacterID = selectedCharacterID
+        settings.defaultModelID = selectedModelID
         try? modelContext.save()
     }
 }

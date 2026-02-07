@@ -12,13 +12,28 @@ struct MessageInputView: View {
     let onSend: () -> Void
     let onStop: () -> Void
 
+    @FocusState private var isFocused: Bool
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .bottom, spacing: 12) {
             TextEditor(text: $text)
                 .font(.body)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
-                .frame(minHeight: 20, idealHeight: min(100, max(20, CGFloat(text.count) / 2)), maxHeight: 150)
+                .frame(minHeight: 24, maxHeight: 150)
+                .fixedSize(horizontal: false, vertical: true)
+                .focused($isFocused)
+                .onKeyPress(.return, phases: .down) { keyPress in
+                    // Shift+Return inserts newline, plain Return sends
+                    if keyPress.modifiers.contains(.shift) {
+                        return .ignored // let the TextEditor handle it
+                    }
+                    if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isLoading && !isStreaming {
+                        onSend()
+                        return .handled
+                    }
+                    return .ignored
+                }
 
             if isStreaming {
                 Button(action: onStop) {
@@ -27,6 +42,7 @@ struct MessageInputView: View {
                         .foregroundStyle(.red)
                 }
                 .buttonStyle(.plain)
+                .help("Stop generating")
             } else {
                 Button(action: onSend) {
                     if isLoading {
@@ -36,14 +52,18 @@ struct MessageInputView: View {
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(text.isEmpty ? Color.secondary : Color.blue)
+                            .foregroundStyle(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.secondary : Color.accentColor)
                     }
                 }
-                .disabled(text.isEmpty || isLoading)
+                .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
                 .buttonStyle(.plain)
+                .help("Send message (Return)")
             }
         }
-        .padding()
-        .background(.ultraThinMaterial)
+        .padding(12)
+        .background(.bar)
+        .onAppear {
+            isFocused = true
+        }
     }
 }

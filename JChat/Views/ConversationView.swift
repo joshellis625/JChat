@@ -17,17 +17,36 @@ struct ConversationView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let chat = viewModel.selectedChat {
-                CostHeaderView(chat: chat)
+                // Combined toolbar: character, model, tokens/cost, params
+                ChatToolbarView(
+                    chat: chat,
+                    modelManager: modelManager,
+                    onShowParameters: { showAdvancedParams = true }
+                )
 
-                // Chat toolbar row: Character picker, Model picker, Parameters button
-                chatToolbarRow(chat: chat)
-
+                // Messages
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(chat.sortedMessages, id: \.id) { message in
-                                MessageBubble(message: message)
-                                    .id(message.id)
+                                MessageBubble(
+                                    message: message,
+                                    onCopy: {
+                                        #if canImport(AppKit)
+                                        NSPasteboard.general.clearContents()
+                                        NSPasteboard.general.setString(message.content, forType: .string)
+                                        #endif
+                                    },
+                                    onRegenerate: {
+                                        Task {
+                                            await viewModel.regenerateMessage(message, in: modelContext)
+                                        }
+                                    },
+                                    onDelete: {
+                                        viewModel.deleteMessage(message, in: modelContext)
+                                    }
+                                )
+                                .id(message.id)
                             }
                         }
                         .padding(.vertical)
@@ -41,21 +60,42 @@ struct ConversationView: View {
                     }
                 }
 
+                // Error display
                 if let error = viewModel.errorMessage {
-                    VStack(spacing: 4) {
-                        Text(error)
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
                             .font(.caption)
-                            .foregroundStyle(.red)
-                        if let suggestion = viewModel.errorSuggestion {
-                            Text(suggestion)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.primary)
+                            if let suggestion = viewModel.errorSuggestion {
+                                Text(suggestion)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+
+                        Spacer()
+
+                        Button {
+                            viewModel.errorMessage = nil
+                            viewModel.errorSuggestion = nil
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                                .font(.caption)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.orange.opacity(0.1))
                 }
 
+                // Input
                 MessageInputView(
                     text: $inputText,
                     isLoading: viewModel.isLoading,
@@ -84,51 +124,5 @@ struct ConversationView: View {
                 AdvancedParameterPanel(chat: chat)
             }
         }
-    }
-
-    // MARK: - Chat Toolbar Row
-
-    @ViewBuilder
-    private func chatToolbarRow(chat: Chat) -> some View {
-        HStack(spacing: 8) {
-            CharacterPicker(
-                selectedCharacter: Binding(
-                    get: { chat.character },
-                    set: { chat.character = $0 }
-                ),
-                modelManager: modelManager
-            )
-
-            InlineModelPicker(
-                selectedModelID: Binding(
-                    get: { chat.selectedModelID },
-                    set: { chat.selectedModelID = $0 }
-                ),
-                modelManager: modelManager
-            )
-
-            Spacer()
-
-            Button {
-                showAdvancedParams = true
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.caption)
-                    Text("Parameters")
-                        .font(.caption)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.secondary.opacity(0.12))
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 6)
-        .background(.bar)
-
-        Divider()
     }
 }

@@ -19,7 +19,7 @@
 		03D0F76D2F37409300FEC0AF /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7542F37409300FEC0AF /* ChatViewModel.swift */; };
 		03D0F76E2F37409300FEC0AF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7552F37409300FEC0AF /* ContentView.swift */; };
 		03D0F76F2F37409300FEC0AF /* ConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7562F37409300FEC0AF /* ConversationView.swift */; };
-		03D0F7702F37409300FEC0AF /* CostHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7572F37409300FEC0AF /* CostHeaderView.swift */; };
+		03D0F7702F37409300FEC0AF /* ChatToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7572F37409300FEC0AF /* ChatToolbarView.swift */; };
 		03D0F7712F37409300FEC0AF /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7582F37409300FEC0AF /* MessageBubble.swift */; };
 		03D0F7722F37409300FEC0AF /* MessageInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7592F37409300FEC0AF /* MessageInputView.swift */; };
 		03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75A2F37409300FEC0AF /* SettingsView.swift */; };
@@ -36,6 +36,8 @@
 		03A0F7912F37409300FEC0AF /* CharacterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7902F37409300FEC0AF /* CharacterListView.swift */; };
 		03A0F7932F37409300FEC0AF /* CharacterPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7922F37409300FEC0AF /* CharacterPicker.swift */; };
 		03A0F7952F37409300FEC0AF /* AdvancedParameterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */; };
+		03A0F7982F37409300FEC0AF /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */; };
+		03A0F79A2F37409300FEC0AF /* MessageActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7992F37409300FEC0AF /* MessageActionBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,7 +74,7 @@
 		03D0F7542F37409300FEC0AF /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		03D0F7552F37409300FEC0AF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		03D0F7562F37409300FEC0AF /* ConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationView.swift; sourceTree = "<group>"; };
-		03D0F7572F37409300FEC0AF /* CostHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostHeaderView.swift; sourceTree = "<group>"; };
+		03D0F7572F37409300FEC0AF /* ChatToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatToolbarView.swift; sourceTree = "<group>"; };
 		03D0F7582F37409300FEC0AF /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
 		03D0F7592F37409300FEC0AF /* MessageInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageInputView.swift; sourceTree = "<group>"; };
 		03D0F75A2F37409300FEC0AF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -89,6 +91,8 @@
 		03A0F7902F37409300FEC0AF /* CharacterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterListView.swift; sourceTree = "<group>"; };
 		03A0F7922F37409300FEC0AF /* CharacterPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterPicker.swift; sourceTree = "<group>"; };
 		03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedParameterPanel.swift; sourceTree = "<group>"; };
+		03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextView.swift; sourceTree = "<group>"; };
+		03A0F7992F37409300FEC0AF /* MessageActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActionBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -190,7 +194,7 @@
 				03D0F7542F37409300FEC0AF /* ChatViewModel.swift */,
 				03D0F7552F37409300FEC0AF /* ContentView.swift */,
 				03D0F7562F37409300FEC0AF /* ConversationView.swift */,
-				03D0F7572F37409300FEC0AF /* CostHeaderView.swift */,
+				03D0F7572F37409300FEC0AF /* ChatToolbarView.swift */,
 				03D0F7582F37409300FEC0AF /* MessageBubble.swift */,
 				03D0F7592F37409300FEC0AF /* MessageInputView.swift */,
 				03D0F75A2F37409300FEC0AF /* SettingsView.swift */,
@@ -213,6 +217,8 @@
 				03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */,
 				03A0F7922F37409300FEC0AF /* CharacterPicker.swift */,
 				03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */,
+				03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */,
+				03A0F7992F37409300FEC0AF /* MessageActionBar.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -398,7 +404,7 @@
 				03D0F76D2F37409300FEC0AF /* ChatViewModel.swift in Sources */,
 				03D0F76E2F37409300FEC0AF /* ContentView.swift in Sources */,
 				03D0F76F2F37409300FEC0AF /* ConversationView.swift in Sources */,
-				03D0F7702F37409300FEC0AF /* CostHeaderView.swift in Sources */,
+				03D0F7702F37409300FEC0AF /* ChatToolbarView.swift in Sources */,
 				03D0F7712F37409300FEC0AF /* MessageBubble.swift in Sources */,
 				03D0F7722F37409300FEC0AF /* MessageInputView.swift in Sources */,
 				03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */,
@@ -412,6 +418,8 @@
 				03A0F7912F37409300FEC0AF /* CharacterListView.swift in Sources */,
 				03A0F7932F37409300FEC0AF /* CharacterPicker.swift in Sources */,
 				03A0F7952F37409300FEC0AF /* AdvancedParameterPanel.swift in Sources */,
+				03A0F7982F37409300FEC0AF /* MarkdownTextView.swift in Sources */,
+				03A0F79A2F37409300FEC0AF /* MessageActionBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
