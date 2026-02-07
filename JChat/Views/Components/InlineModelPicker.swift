@@ -21,15 +21,15 @@ struct InlineModelPicker: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "cpu")
-                    .font(.caption)
+                    .font(.system(size: 13))
                 Text(selectedModelName)
-                    .font(.caption)
+                    .font(.system(size: 13))
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
-                    .font(.caption2)
+                    .font(.system(size: 11))
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
             .background(.secondary.opacity(0.12))
             .clipShape(Capsule())
         }
@@ -104,7 +104,7 @@ struct InlineModelPicker: View {
                         }
                     } else if !pickerSearchText.isEmpty {
                         Text("No models match \"\(pickerSearchText)\"")
-                            .font(.caption)
+                            .font(.system(size: 13))
                             .foregroundStyle(.secondary)
                             .padding()
                     }
@@ -125,7 +125,7 @@ struct InlineModelPicker: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
-                .font(.caption)
+                .font(.system(size: 13))
                 .padding(8)
             }
             .buttonStyle(.plain)
@@ -187,7 +187,7 @@ struct InlineModelPicker: View {
                     }
 
                     Text(model.providerName)
-                        .font(.caption2)
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 }
 
@@ -200,7 +200,7 @@ struct InlineModelPicker: View {
                 }
 
                 Text(model.contextLengthFormatted)
-                    .font(.caption2)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 8)

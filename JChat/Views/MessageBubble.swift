@@ -38,12 +38,11 @@ struct MessageBubble: View {
 
                 // Message content — display or edit mode
                 if isEditing {
-                    VStack(alignment: .trailing, spacing: 6) {
+                    VStack(alignment: isUser ? .trailing : .leading, spacing: 6) {
                         TextEditor(text: $editText)
                             .font(.system(size: 13 * multiplier))
                             .scrollContentBackground(.hidden)
-                            .frame(minHeight: 40)
-                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(minHeight: 32, maxHeight: 200)
                             .padding(8)
                             .background(Color(.textBackgroundColor))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -57,7 +56,7 @@ struct MessageBubble: View {
                                 isEditing = false
                             } label: {
                                 Image(systemName: "xmark")
-                                    .font(.caption)
+                                    .font(.system(size: 13))
                             }
                             .buttonStyle(.plain)
                             .foregroundStyle(.secondary)
@@ -70,7 +69,7 @@ struct MessageBubble: View {
                                 isEditing = false
                             } label: {
                                 Image(systemName: "checkmark")
-                                    .font(.caption)
+                                    .font(.system(size: 13))
                                     .fontWeight(.bold)
                             }
                             .buttonStyle(.plain)
@@ -101,7 +100,7 @@ struct MessageBubble: View {
                         onCopy: { onCopy?() },
                         onRegenerate: isUser ? nil : { onRegenerate?() },
                         onEdit: {
-                            editText = message.content
+                            editText = message.content.trimmingCharacters(in: .whitespacesAndNewlines)
                             isEditing = true
                         },
                         onDelete: { showDeleteConfirmation = true }

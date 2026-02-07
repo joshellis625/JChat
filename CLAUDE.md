@@ -55,11 +55,13 @@ Test targets (JChatTests, JChatUITests) use auto-sync and don't need manual pbxp
 
 ## Key View Patterns
 
-- **AdvancedParameterPanel**: uses `ScrollView` + custom `ParamSection` views (NOT `Form` — Form caused overflow/no-scroll issues)
-- **MessageInputView**: visible rounded border, "Message..." placeholder, focus ring
+- **AdvancedParameterPanel**: uses `ScrollView` + custom `ParamSection` views (NOT `Form` — Form caused overflow/no-scroll issues). Boolean params are single toggles (name left, switch right). Int params use string-backed TextField for easy editing. All text `.system(size: 13)` for labels, `.system(size: 11)` for descriptions.
+- **MessageInputView**: compact rounded border (cornerRadius 12), "Message..." placeholder top-left aligned, focus ring, Return-to-send, 26pt send/stop buttons
 - **MessageBubble**: assistant bg = `Color(.windowBackgroundColor).opacity(0.8)`, action bar always visible. All messages show edit/copy/delete; assistant messages also show regenerate. Buttons left-aligned for AI, right-aligned for user. Delete has confirmation dialog. Edit is inline — switches bubble to TextEditor with checkmark/cancel.
 - **ConversationView**: has empty state when chat has no messages. Edit saves in place via `onSaveEdit` callback (updates `message.content` directly).
+- **ChatToolbarView**: "Parameters" label (not "Params"), token/cost 12pt monospaced, 13pt button text
 - **CharacterEditorView**: `.formStyle(.grouped)`, uses InlineModelPicker (not sheet), compact TextEditor
+- **ChatListView**: title 15pt medium, model/date 12pt; empty chats skip delete confirmation
 
 ## File Tree
 

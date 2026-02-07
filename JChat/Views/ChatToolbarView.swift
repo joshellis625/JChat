@@ -41,12 +41,12 @@ struct ChatToolbarView: View {
                 if chat.totalTokens > 0 {
                     HStack(spacing: 6) {
                         Text("\(chat.totalTokens) tok")
-                            .font(.caption.monospacedDigit())
+                            .font(.system(size: 12).monospacedDigit())
                             .foregroundStyle(.secondary)
 
                         if chat.totalCost > 0 {
                             Text("$\(chat.totalCost, format: .number.precision(.fractionLength(4)))")
-                                .font(.caption.monospacedDigit())
+                                .font(.system(size: 12).monospacedDigit())
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -56,11 +56,11 @@ struct ChatToolbarView: View {
                 Button(action: onShowParameters) {
                     HStack(spacing: 4) {
                         Image(systemName: "slider.horizontal.3")
-                        Text("Params")
+                        Text("Parameters")
                     }
-                    .font(.caption)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
+                    .font(.system(size: 13))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
                     .background(.secondary.opacity(0.12))
                     .clipShape(Capsule())
                 }
@@ -68,7 +68,7 @@ struct ChatToolbarView: View {
                 .help("Advanced Parameters")
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
             .background(.bar)
 
             Divider()

@@ -21,15 +21,15 @@ struct CharacterPicker: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "person.fill")
-                    .font(.caption)
+                    .font(.system(size: 13))
                 Text(selectedCharacter?.name ?? "No Character")
-                    .font(.caption)
+                    .font(.system(size: 13))
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
-                    .font(.caption2)
+                    .font(.system(size: 11))
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
             .background(.secondary.opacity(0.12))
             .clipShape(Capsule())
         }
@@ -55,7 +55,7 @@ struct CharacterPicker: View {
                     } label: {
                         HStack {
                             Text("None")
-                                .font(.caption)
+                                .font(.system(size: 13))
                                 .foregroundStyle(.secondary)
                             Spacer()
                             if selectedCharacter == nil {
@@ -93,7 +93,7 @@ struct CharacterPicker: View {
 
                                     if !character.systemPrompt.isEmpty {
                                         Text(character.systemPrompt)
-                                            .font(.caption2)
+                                            .font(.system(size: 11))
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)
                                     }
@@ -131,7 +131,7 @@ struct CharacterPicker: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
-                .font(.caption)
+                .font(.system(size: 13))
                 .padding(8)
             }
             .buttonStyle(.plain)

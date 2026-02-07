@@ -15,54 +15,61 @@ struct MessageInputView: View {
     @Environment(\.textSizeMultiplier) private var multiplier
     @FocusState private var isFocused: Bool
 
+    private var canSend: Bool {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isLoading && !isStreaming
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Divider()
 
             HStack(alignment: .bottom, spacing: 10) {
+                // Text input area
                 ZStack(alignment: .topLeading) {
                     // Placeholder
                     if text.isEmpty {
                         Text("Message...")
                             .foregroundStyle(.tertiary)
-                            .font(.system(size: 13 * multiplier))
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 8)
+                            .font(.system(size: 14 * multiplier))
+                            .padding(.leading, 5)
+                            .padding(.top, 8)
                             .allowsHitTesting(false)
                     }
 
                     TextEditor(text: $text)
-                        .font(.system(size: 13 * multiplier))
+                        .font(.system(size: 14 * multiplier))
                         .scrollContentBackground(.hidden)
                         .background(.clear)
-                        .frame(minHeight: 20, maxHeight: 150)
+                        .frame(minHeight: 20, maxHeight: 120)
                         .fixedSize(horizontal: false, vertical: true)
                         .focused($isFocused)
                         .onKeyPress(.return, phases: .down) { keyPress in
                             if keyPress.modifiers.contains(.shift) {
                                 return .ignored
                             }
-                            if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isLoading && !isStreaming {
+                            if canSend {
                                 onSend()
                                 return .handled
                             }
                             return .ignored
                         }
                 }
-                .padding(6)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.textBackgroundColor))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(isFocused ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.3), lineWidth: 1)
+                        .stroke(isFocused ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.2), lineWidth: 1)
                 )
 
+                // Send / Stop button
                 if isStreaming {
                     Button(action: onStop) {
                         Image(systemName: "stop.circle.fill")
-                            .font(.title2)
+                            .font(.system(size: 26))
                             .foregroundStyle(.red)
                     }
                     .buttonStyle(.plain)
@@ -72,20 +79,20 @@ struct MessageInputView: View {
                         if isLoading {
                             ProgressView()
                                 .scaleEffect(0.8)
-                                .frame(width: 28, height: 28)
+                                .frame(width: 26, height: 26)
                         } else {
                             Image(systemName: "arrow.up.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.secondary : Color.accentColor)
+                                .font(.system(size: 26))
+                                .foregroundStyle(canSend ? Color.accentColor : Color.secondary.opacity(0.4))
                         }
                     }
-                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
+                    .disabled(!canSend)
                     .buttonStyle(.plain)
                     .help("Send message (Return)")
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
         }
         .onAppear {
             isFocused = true

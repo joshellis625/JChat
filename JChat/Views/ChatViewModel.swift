@@ -40,11 +40,20 @@ class ChatViewModel {
             chat.character = try? context.fetch(defaultDescriptor).first
         }
 
-        // Set default model (from character's preferred model, or from settings)
+        // Set default model: character preferred → settings default → inherit from most recent chat
         if let preferredModel = chat.character?.preferredModelID {
             chat.selectedModelID = preferredModel
-        } else if let settings = try? context.fetch(settingsDescriptor).first {
-            chat.selectedModelID = settings.defaultModelID
+        } else {
+            let settings = try? context.fetch(settingsDescriptor).first
+            if let defaultModel = settings?.defaultModelID {
+                chat.selectedModelID = defaultModel
+            } else {
+                // Inherit model from the most recent chat as final fallback
+                let recentChats = try? context.fetch(chatDescriptor)
+                if let mostRecentModel = recentChats?.first?.selectedModelID {
+                    chat.selectedModelID = mostRecentModel
+                }
+            }
         }
 
         context.insert(chat)
@@ -205,15 +214,124 @@ class ChatViewModel {
               index > 0,
               sorted[index - 1].role == .user else { return }
 
-        let userContent = sorted[index - 1].content
-
+        // Subtract old assistant message stats
         chat.totalPromptTokens -= message.promptTokens
         chat.totalCompletionTokens -= message.completionTokens
         chat.totalCost -= message.cost
+
+        // Delete old assistant message
         chat.messages.removeAll { $0.id == message.id }
         context.delete(message)
 
-        await sendMessage(content: userContent, context: context)
+        // Re-send using existing user message (don't create a new one)
+        guard let modelID = chat.selectedModelID, !modelID.isEmpty else {
+            errorMessage = JChatError.noModelSelected.errorDescription
+            errorSuggestion = JChatError.noModelSelected.recoverySuggestion
+            return
+        }
+
+        let apiKey: String
+        do {
+            apiKey = try KeychainManager.shared.loadAPIKey()
+        } catch {
+            let err = JChatError.apiKeyNotConfigured
+            errorMessage = err.errorDescription
+            errorSuggestion = err.recoverySuggestion
+            return
+        }
+        guard !apiKey.isEmpty else {
+            let err = JChatError.apiKeyNotConfigured
+            errorMessage = err.errorDescription
+            errorSuggestion = err.recoverySuggestion
+            return
+        }
+
+        isLoading = true
+        isStreaming = true
+        streamingContent = ""
+        errorMessage = nil
+        errorSuggestion = nil
+
+        // Build message history from existing messages (user msg is already there)
+        var history: [(role: String, content: String)] = []
+        if let systemPrompt = chat.character?.systemPrompt, !systemPrompt.isEmpty {
+            history.append((role: "system", content: systemPrompt))
+        }
+        for msg in chat.sortedMessages {
+            history.append((role: msg.role.rawValue, content: msg.content))
+        }
+
+        let params = ChatParameters(
+            temperature: chat.effectiveTemperature,
+            maxTokens: chat.effectiveMaxTokens,
+            topP: chat.effectiveTopP,
+            topK: chat.effectiveTopK > 0 ? chat.effectiveTopK : nil,
+            frequencyPenalty: chat.effectiveFrequencyPenalty != 0 ? chat.effectiveFrequencyPenalty : nil,
+            presencePenalty: chat.effectivePresencePenalty != 0 ? chat.effectivePresencePenalty : nil,
+            repetitionPenalty: chat.effectiveRepetitionPenalty != 1.0 ? chat.effectiveRepetitionPenalty : nil,
+            minP: chat.effectiveMinP != 0 ? chat.effectiveMinP : nil,
+            topA: chat.effectiveTopA != 0 ? chat.effectiveTopA : nil,
+            stream: chat.effectiveStream,
+            reasoningEnabled: chat.effectiveReasoningEnabled,
+            reasoningEffort: chat.effectiveReasoningEffort,
+            reasoningMaxTokens: chat.effectiveReasoningMaxTokens,
+            reasoningExclude: chat.effectiveReasoningExclude,
+            verbosity: chat.effectiveVerbosity
+        )
+
+        // Create new assistant message placeholder
+        let assistantMessage = Message(role: .assistant, content: "", modelID: modelID)
+        assistantMessage.chat = chat
+        chat.messages.append(assistantMessage)
+
+        let capturedModelID = modelID
+        streamingTask = Task {
+            do {
+                let stream = await service.streamMessage(
+                    messages: history,
+                    modelID: capturedModelID,
+                    parameters: params,
+                    apiKey: apiKey
+                )
+                for try await event in stream {
+                    switch event {
+                    case .delta(let text):
+                        streamingContent += text
+                        assistantMessage.content = streamingContent
+                    case .usage(let prompt, let completion):
+                        assistantMessage.promptTokens = prompt
+                        assistantMessage.completionTokens = completion
+                        let modelDescriptor = FetchDescriptor<CachedModel>(predicate: #Predicate { $0.id == capturedModelID })
+                        if let cachedModel = try? context.fetch(modelDescriptor).first {
+                            assistantMessage.cost = cachedModel.calculateCost(promptTokens: prompt, completionTokens: completion)
+                        }
+                        chat.totalPromptTokens += prompt
+                        chat.totalCompletionTokens += completion
+                        chat.totalCost += assistantMessage.cost
+                    case .modelID(let id):
+                        assistantMessage.modelID = id
+                    case .done:
+                        break
+                    case .error(let jchatError):
+                        throw jchatError
+                    }
+                }
+                try? context.save()
+            } catch {
+                let jchatError = (error as? JChatError) ?? .unknown(error)
+                errorMessage = jchatError.errorDescription
+                errorSuggestion = jchatError.recoverySuggestion
+                if assistantMessage.content.isEmpty {
+                    chat.messages.removeAll { $0.id == assistantMessage.id }
+                    context.delete(assistantMessage)
+                }
+                try? context.save()
+            }
+
+            isLoading = false
+            isStreaming = false
+            streamingContent = ""
+        }
     }
 
     func deleteMessage(_ message: Message, in context: ModelContext) {

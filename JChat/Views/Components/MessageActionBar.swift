@@ -7,8 +7,8 @@ import SwiftUI
 import SwiftData
 
 /// Horizontal action bar shown below message bubbles.
-/// For assistant messages (left-aligned): token count, cost, edit, copy, regenerate, delete.
-/// For user messages (right-aligned): edit, copy, delete.
+/// All messages show edit/copy/delete; assistant messages also show regenerate.
+/// Left-aligned for AI messages, right-aligned for user messages.
 struct MessageActionBar: View {
     let message: Message
     let isUser: Bool
@@ -18,27 +18,27 @@ struct MessageActionBar: View {
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             if isUser { Spacer() }
 
             // Token count (assistant only)
             if message.totalTokens > 0 {
                 Label("\(message.totalTokens) tokens", systemImage: "number")
-                    .font(.caption2)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
 
             // Cost (assistant only)
             if message.cost > 0 {
                 Text("$\(message.cost, format: .number.precision(.fractionLength(4)))")
-                    .font(.caption2)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
 
             // Edit button
             Button(action: onEdit) {
                 Image(systemName: "pencil")
-                    .font(.caption)
+                    .font(.system(size: 13))
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -47,7 +47,7 @@ struct MessageActionBar: View {
             // Copy button
             Button(action: onCopy) {
                 Image(systemName: "doc.on.doc")
-                    .font(.caption)
+                    .font(.system(size: 13))
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -57,7 +57,7 @@ struct MessageActionBar: View {
             if let onRegenerate {
                 Button(action: onRegenerate) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption)
+                        .font(.system(size: 13))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
@@ -67,7 +67,7 @@ struct MessageActionBar: View {
             // Delete button
             Button(action: onDelete) {
                 Image(systemName: "trash")
-                    .font(.caption)
+                    .font(.system(size: 13))
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -76,7 +76,7 @@ struct MessageActionBar: View {
             if !isUser { Spacer() }
         }
         .padding(.horizontal, 4)
-        .padding(.vertical, 2)
+        .padding(.vertical, 3)
     }
 }
 

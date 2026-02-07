@@ -191,7 +191,7 @@ struct AdvancedParameterPanel: View {
                         )
 
                         Text("For Anthropic models, Effort and Max Tokens are mutually exclusive.")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundStyle(.secondary)
 
                         ParameterToggleRow(
@@ -219,7 +219,7 @@ struct AdvancedParameterPanel: View {
                         )
 
                         Text("Default: nil (medium on OpenRouter)")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
 
@@ -292,20 +292,14 @@ private struct ParameterSliderRow: View {
     private var isEnabled: Bool { value != nil }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Toggle(isOn: Binding(
                     get: { isEnabled },
-                    set: { newValue in
-                        if newValue {
-                            value = defaultValue
-                        } else {
-                            value = nil
-                        }
-                    }
+                    set: { value = $0 ? defaultValue : nil }
                 )) {
                     Text(label)
-                        .font(.body.weight(.medium))
+                        .font(.system(size: 13, weight: .medium))
                 }
                 .toggleStyle(.switch)
                 .controlSize(.small)
@@ -314,11 +308,11 @@ private struct ParameterSliderRow: View {
 
                 if isEnabled, let val = value {
                     Text(String(format: "%.2f", val))
-                        .font(.caption.monospaced())
+                        .font(.system(size: 13).monospaced())
                         .foregroundStyle(.primary)
                 } else {
                     Text("Default: \(String(format: "%.2f", defaultValue))")
-                        .font(.caption.monospaced())
+                        .font(.system(size: 12).monospaced())
                         .foregroundStyle(.secondary)
                 }
             }
@@ -335,7 +329,7 @@ private struct ParameterSliderRow: View {
             }
 
             Text(description)
-                .font(.caption)
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
         }
     }
@@ -348,53 +342,80 @@ private struct ParameterIntRow: View {
     let defaultValue: Int?
     let range: ClosedRange<Int>
 
+    @State private var textValue: String = ""
     private var isEnabled: Bool { value != nil }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Toggle(isOn: Binding(
                     get: { isEnabled },
                     set: { newValue in
                         if newValue {
-                            value = defaultValue ?? range.lowerBound
+                            let def = defaultValue ?? range.lowerBound
+                            value = def
+                            textValue = "\(def)"
                         } else {
                             value = nil
+                            textValue = ""
                         }
                     }
                 )) {
                     Text(label)
-                        .font(.body.weight(.medium))
+                        .font(.system(size: 13, weight: .medium))
                 }
                 .toggleStyle(.switch)
                 .controlSize(.small)
 
                 Spacer()
 
-                if isEnabled, let val = value {
-                    TextField("", value: Binding(
-                        get: { val },
-                        set: { value = max(range.lowerBound, min(range.upperBound, $0)) }
-                    ), format: .number)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 80)
-                    .multilineTextAlignment(.trailing)
+                if isEnabled {
+                    TextField("", text: $textValue)
+                        .font(.system(size: 13).monospaced())
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 90)
+                        .multilineTextAlignment(.trailing)
+                        .onSubmit { commitTextValue() }
+                        .onChange(of: textValue) { _, newVal in
+                            if newVal.isEmpty { return }
+                            let filtered = newVal.filter { $0.isNumber }
+                            if filtered != newVal { textValue = filtered }
+                        }
                 } else {
                     if let def = defaultValue {
                         Text("Default: \(def)")
-                            .font(.caption.monospaced())
+                            .font(.system(size: 12).monospaced())
                             .foregroundStyle(.secondary)
                     } else {
                         Text("Off")
-                            .font(.caption.monospaced())
+                            .font(.system(size: 12).monospaced())
                             .foregroundStyle(.secondary)
                     }
                 }
             }
 
             Text(description)
-                .font(.caption)
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
+        }
+        .onAppear {
+            if let val = value { textValue = "\(val)" }
+        }
+        .onChange(of: value) { _, newVal in
+            if let newVal {
+                let str = "\(newVal)"
+                if textValue != str { textValue = str }
+            }
+        }
+    }
+
+    private func commitTextValue() {
+        if let parsed = Int(textValue) {
+            value = max(range.lowerBound, min(range.upperBound, parsed))
+        } else {
+            let fallback = value ?? defaultValue ?? range.lowerBound
+            value = fallback
+            textValue = "\(fallback)"
         }
     }
 }
@@ -405,46 +426,27 @@ private struct ParameterToggleRow: View {
     @Binding var value: Bool?
     let defaultValue: Bool
 
-    private var isEnabled: Bool { value != nil }
+    private var effectiveValue: Bool { value ?? defaultValue }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Toggle(isOn: Binding(
-                    get: { isEnabled },
-                    set: { newValue in
-                        if newValue {
-                            value = defaultValue
-                        } else {
-                            value = nil
-                        }
-                    }
-                )) {
-                    Text(label)
-                        .font(.body.weight(.medium))
-                }
-                .toggleStyle(.switch)
-                .controlSize(.small)
+                Text(label)
+                    .font(.system(size: 13, weight: .medium))
 
                 Spacer()
 
-                if isEnabled, let val = value {
-                    Toggle("", isOn: Binding(
-                        get: { val },
-                        set: { value = $0 }
-                    ))
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                    .labelsHidden()
-                } else {
-                    Text("Default: \(defaultValue ? "ON" : "OFF")")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                }
+                Toggle("", isOn: Binding(
+                    get: { effectiveValue },
+                    set: { value = $0 }
+                ))
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .labelsHidden()
             }
 
             Text(description)
-                .font(.caption)
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
         }
     }
@@ -460,20 +462,14 @@ private struct ParameterPickerRow: View {
     private var isEnabled: Bool { value != nil }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Toggle(isOn: Binding(
                     get: { isEnabled },
-                    set: { newValue in
-                        if newValue {
-                            value = defaultValue ?? options.first
-                        } else {
-                            value = nil
-                        }
-                    }
+                    set: { value = $0 ? (defaultValue ?? options.first) : nil }
                 )) {
                     Text(label)
-                        .font(.body.weight(.medium))
+                        .font(.system(size: 13, weight: .medium))
                 }
                 .toggleStyle(.switch)
                 .controlSize(.small)
@@ -490,16 +486,16 @@ private struct ParameterPickerRow: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .frame(width: 120)
+                    .frame(width: 130)
                 } else {
                     Text(defaultValue != nil ? "Default: \(defaultValue!)" : "Off")
-                        .font(.caption.monospaced())
+                        .font(.system(size: 12).monospaced())
                         .foregroundStyle(.secondary)
                 }
             }
 
             Text(description)
-                .font(.caption)
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
         }
     }

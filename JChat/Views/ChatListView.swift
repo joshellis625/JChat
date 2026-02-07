@@ -21,7 +21,11 @@ struct ChatListView: View {
                 .tag(chat)
                 .contextMenu {
                     Button("Delete", role: .destructive) {
-                        chatToDelete = chat
+                        if chat.messages.isEmpty {
+                            viewModel.deleteChat(chat, in: modelContext)
+                        } else {
+                            chatToDelete = chat
+                        }
                     }
                 }
             }
@@ -59,15 +63,15 @@ struct ChatListView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(chat.title)
                 .lineLimit(1)
-                .font(.body.weight(.medium))
+                .font(.system(size: 15, weight: .medium))
 
             // Model badge
             if let modelID = chat.selectedModelID {
-                HStack(spacing: 2) {
+                HStack(spacing: 3) {
                     Image(systemName: "cpu")
-                        .font(.caption2)
+                        .font(.system(size: 12))
                     Text(displayModelName(modelID))
-                        .font(.caption2)
+                        .font(.system(size: 12))
                 }
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -76,17 +80,17 @@ struct ChatListView: View {
             // Date + message count
             HStack(spacing: 6) {
                 Text(chat.createdAt, format: Date.FormatStyle(date: .abbreviated, time: .shortened))
-                    .font(.caption2)
+                    .font(.system(size: 12))
                     .foregroundStyle(.tertiary)
 
                 if chat.messages.count > 0 {
                     Text("· \(chat.messages.count) msg")
-                        .font(.caption2)
+                        .font(.system(size: 12))
                         .foregroundStyle(.tertiary)
                 }
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 3)
     }
 
     private func displayModelName(_ id: String) -> String {
