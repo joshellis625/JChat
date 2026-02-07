@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var modelManager = ModelManager()
     @State private var showingSettings = false
     @State private var showingModelManager = false
+    @State private var showingCharacters = false
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -18,9 +19,16 @@ struct ContentView: View {
             ChatListView(viewModel: viewModel)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250)
         } detail: {
-            ConversationView(viewModel: viewModel)
+            ConversationView(viewModel: viewModel, modelManager: modelManager)
         }
         .toolbar {
+            ToolbarItem {
+                Button {
+                    showingCharacters = true
+                } label: {
+                    Label("Characters", systemImage: "person.2")
+                }
+            }
             ToolbarItem {
                 Button {
                     showingModelManager = true
@@ -42,6 +50,9 @@ struct ContentView: View {
         .sheet(isPresented: $showingModelManager) {
             ModelManagerView(modelManager: modelManager)
         }
+        .sheet(isPresented: $showingCharacters) {
+            CharacterListView(modelManager: modelManager)
+        }
         .task {
             await modelManager.refreshIfStale(context: modelContext)
         }
@@ -50,5 +61,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Assistant.self, CachedModel.self], inMemory: true)
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }

@@ -20,22 +20,33 @@ class ChatViewModel {
 
     func createNewChat(in context: ModelContext) -> Chat {
         let chat = Chat()
-        // Assign default assistant if available
+
+        // Inherit parameters from the most recent chat (so settings carry forward)
+        let chatDescriptor = FetchDescriptor<Chat>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+        if let mostRecent = try? context.fetch(chatDescriptor).first {
+            chat.inheritParameters(from: mostRecent)
+        }
+
+        // Assign default character if available
         let settingsDescriptor = FetchDescriptor<AppSettings>()
         if let settings = try? context.fetch(settingsDescriptor).first,
-           let defaultAssistantID = settings.defaultAssistantID {
-            let assistantDescriptor = FetchDescriptor<Assistant>(predicate: #Predicate { $0.id == defaultAssistantID })
-            chat.assistant = try? context.fetch(assistantDescriptor).first
+           let defaultCharacterID = settings.defaultCharacterID {
+            let characterDescriptor = FetchDescriptor<Character>(predicate: #Predicate { $0.id == defaultCharacterID })
+            chat.character = try? context.fetch(characterDescriptor).first
         }
-        // Fall back to any default assistant
-        if chat.assistant == nil {
-            let defaultDescriptor = FetchDescriptor<Assistant>(predicate: #Predicate { $0.isDefault == true })
-            chat.assistant = try? context.fetch(defaultDescriptor).first
+        // Fall back to any default character
+        if chat.character == nil {
+            let defaultDescriptor = FetchDescriptor<Character>(predicate: #Predicate { $0.isDefault == true })
+            chat.character = try? context.fetch(defaultDescriptor).first
         }
-        // Set default model
-        if let settings = try? context.fetch(settingsDescriptor).first {
+
+        // Set default model (from character's preferred model, or from settings)
+        if let preferredModel = chat.character?.preferredModelID {
+            chat.selectedModelID = preferredModel
+        } else if let settings = try? context.fetch(settingsDescriptor).first {
             chat.selectedModelID = settings.defaultModelID
         }
+
         context.insert(chat)
         try? context.save()
         selectedChat = chat
@@ -90,7 +101,7 @@ class ChatViewModel {
 
         // Build message history
         var history: [(role: String, content: String)] = []
-        if let systemPrompt = chat.assistant?.systemPrompt, !systemPrompt.isEmpty {
+        if let systemPrompt = chat.character?.systemPrompt, !systemPrompt.isEmpty {
             history.append((role: "system", content: systemPrompt))
         }
         for msg in chat.sortedMessages {
@@ -107,7 +118,13 @@ class ChatViewModel {
             presencePenalty: chat.effectivePresencePenalty != 0 ? chat.effectivePresencePenalty : nil,
             repetitionPenalty: chat.effectiveRepetitionPenalty != 1.0 ? chat.effectiveRepetitionPenalty : nil,
             minP: chat.effectiveMinP != 0 ? chat.effectiveMinP : nil,
-            topA: chat.effectiveTopA != 0 ? chat.effectiveTopA : nil
+            topA: chat.effectiveTopA != 0 ? chat.effectiveTopA : nil,
+            stream: chat.effectiveStream,
+            reasoningEnabled: chat.effectiveReasoningEnabled,
+            reasoningEffort: chat.effectiveReasoningEffort,
+            reasoningMaxTokens: chat.effectiveReasoningMaxTokens,
+            reasoningExclude: chat.effectiveReasoningExclude,
+            verbosity: chat.effectiveVerbosity
         )
 
         // Create placeholder assistant message for streaming

@@ -19,10 +19,10 @@ final class Chat {
     // Model selection for this chat
     var selectedModelID: String?
 
-    // Assistant relationship (model-independent roles/system prompts)
-    @Relationship(inverse: \Assistant.chats) var assistant: Assistant?
+    // Character relationship (identity: name, system prompt, preferred model)
+    @Relationship(inverse: \Character.chats) var character: Character?
 
-    // Per-chat parameter overrides (nil = use assistant's default)
+    // Per-chat parameter overrides (nil = use global default)
     var temperatureOverride: Double?
     var topPOverride: Double?
     var topKOverride: Int?
@@ -32,6 +32,14 @@ final class Chat {
     var repetitionPenaltyOverride: Double?
     var minPOverride: Double?
     var topAOverride: Double?
+
+    // Stream + Reasoning + Verbosity overrides
+    var streamOverride: Bool?
+    var reasoningEnabledOverride: Bool?
+    var reasoningEffortOverride: String?
+    var reasoningMaxTokensOverride: Int?
+    var reasoningExcludeOverride: Bool?
+    var verbosityOverride: String?
 
     init(title: String = "New Chat") {
         self.id = UUID()
@@ -50,16 +58,65 @@ final class Chat {
         messages.sorted { $0.timestamp < $1.timestamp }
     }
 
-    // Effective parameter resolution: chat override → assistant default → fallback
-    var effectiveTemperature: Double { temperatureOverride ?? assistant?.temperature ?? 0.7 }
-    var effectiveTopP: Double { topPOverride ?? assistant?.topP ?? 1.0 }
-    var effectiveTopK: Int { topKOverride ?? assistant?.topK ?? 0 }
-    var effectiveMaxTokens: Int { maxTokensOverride ?? assistant?.maxTokens ?? 4096 }
-    var effectiveFrequencyPenalty: Double { frequencyPenaltyOverride ?? assistant?.frequencyPenalty ?? 0.0 }
-    var effectivePresencePenalty: Double { presencePenaltyOverride ?? assistant?.presencePenalty ?? 0.0 }
-    var effectiveRepetitionPenalty: Double { repetitionPenaltyOverride ?? assistant?.repetitionPenalty ?? 1.0 }
-    var effectiveMinP: Double { minPOverride ?? assistant?.minP ?? 0.0 }
-    var effectiveTopA: Double { topAOverride ?? assistant?.topA ?? 0.0 }
+    // MARK: - Effective Parameter Resolution (chat override → global default)
+
+    var effectiveTemperature: Double { temperatureOverride ?? 1.0 }
+    var effectiveTopP: Double { topPOverride ?? 1.0 }
+    var effectiveTopK: Int { topKOverride ?? 0 }
+    var effectiveMaxTokens: Int { maxTokensOverride ?? 4096 }
+    var effectiveFrequencyPenalty: Double { frequencyPenaltyOverride ?? 0.0 }
+    var effectivePresencePenalty: Double { presencePenaltyOverride ?? 0.0 }
+    var effectiveRepetitionPenalty: Double { repetitionPenaltyOverride ?? 1.0 }
+    var effectiveMinP: Double { minPOverride ?? 0.0 }
+    var effectiveTopA: Double { topAOverride ?? 0.0 }
+
+    // Stream + Reasoning + Verbosity
+    var effectiveStream: Bool { streamOverride ?? true }
+    var effectiveReasoningEnabled: Bool { reasoningEnabledOverride ?? true }
+    var effectiveReasoningEffort: String { reasoningEffortOverride ?? "medium" }
+    var effectiveReasoningMaxTokens: Int? { reasoningMaxTokensOverride }
+    var effectiveReasoningExclude: Bool? { reasoningExcludeOverride }
+    var effectiveVerbosity: String? { verbosityOverride }
+
+    // MARK: - Parameter Inheritance
+
+    /// Copy all parameter overrides from another chat (for new chat inheritance)
+    func inheritParameters(from source: Chat) {
+        temperatureOverride = source.temperatureOverride
+        topPOverride = source.topPOverride
+        topKOverride = source.topKOverride
+        maxTokensOverride = source.maxTokensOverride
+        frequencyPenaltyOverride = source.frequencyPenaltyOverride
+        presencePenaltyOverride = source.presencePenaltyOverride
+        repetitionPenaltyOverride = source.repetitionPenaltyOverride
+        minPOverride = source.minPOverride
+        topAOverride = source.topAOverride
+        streamOverride = source.streamOverride
+        reasoningEnabledOverride = source.reasoningEnabledOverride
+        reasoningEffortOverride = source.reasoningEffortOverride
+        reasoningMaxTokensOverride = source.reasoningMaxTokensOverride
+        reasoningExcludeOverride = source.reasoningExcludeOverride
+        verbosityOverride = source.verbosityOverride
+    }
+
+    /// Reset all parameter overrides to nil (use global defaults)
+    func resetAllOverrides() {
+        temperatureOverride = nil
+        topPOverride = nil
+        topKOverride = nil
+        maxTokensOverride = nil
+        frequencyPenaltyOverride = nil
+        presencePenaltyOverride = nil
+        repetitionPenaltyOverride = nil
+        minPOverride = nil
+        topAOverride = nil
+        streamOverride = nil
+        reasoningEnabledOverride = nil
+        reasoningEffortOverride = nil
+        reasoningMaxTokensOverride = nil
+        reasoningExcludeOverride = nil
+        verbosityOverride = nil
+    }
 }
 
 @Model

@@ -9,7 +9,7 @@ import SwiftData
 @Model
 final class AppSettings {
     @Attribute(.unique) var id: UUID
-    var defaultAssistantID: UUID?
+    var defaultCharacterID: UUID?
     var defaultModelID: String?
     var modelCacheMaxAge: TimeInterval
     var lastModelFetchDate: Date?

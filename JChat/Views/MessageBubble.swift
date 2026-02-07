@@ -30,5 +30,5 @@ struct MessageBubble: View {
 
 #Preview {
     MessageBubble(message: Message(role: .user, content: "Test message"))
-        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Assistant.self, CachedModel.self], inMemory: true)
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }

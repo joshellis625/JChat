@@ -6,7 +6,7 @@
 import Foundation
 
 struct ChatParameters: Sendable {
-    var temperature: Double = 0.7
+    var temperature: Double = 1.0
     var maxTokens: Int = 4096
     var topP: Double = 1.0
     var topK: Int? = nil
@@ -15,6 +15,14 @@ struct ChatParameters: Sendable {
     var repetitionPenalty: Double? = nil
     var minP: Double? = nil
     var topA: Double? = nil
+
+    // Stream + Reasoning + Verbosity
+    var stream: Bool = true
+    var reasoningEnabled: Bool = true
+    var reasoningEffort: String = "medium"
+    var reasoningMaxTokens: Int? = nil
+    var reasoningExclude: Bool? = nil
+    var verbosity: String? = nil
 }
 
 struct ChatCompletionResult: Sendable {
@@ -57,6 +65,20 @@ actor OpenRouterService {
         var repetition_penalty: Double?
         var min_p: Double?
         var top_a: Double?
+        var stream_options: StreamOptions?
+        var reasoning: ReasoningPayload?
+        var verbosity: String?
+    }
+
+    private struct StreamOptions: Encodable {
+        var include_usage: Bool = true
+    }
+
+    private struct ReasoningPayload: Encodable {
+        var enabled: Bool?
+        var effort: String?
+        var max_tokens: Int?
+        var exclude: Bool?
     }
 
     struct ChatResponse: Codable, Sendable {
@@ -268,7 +290,7 @@ actor OpenRouterService {
                 modelID: modelID,
                 parameters: parameters,
                 apiKey: apiKey,
-                stream: true
+                stream: parameters.stream
             )
         } catch {
             return AsyncThrowingStream { continuation in
@@ -382,12 +404,43 @@ actor OpenRouterService {
             top_p: parameters.topP
         )
 
+        // Optional sampling parameters
         if let topK = parameters.topK, topK > 0 { requestBody.top_k = topK }
         if let fp = parameters.frequencyPenalty, fp != 0 { requestBody.frequency_penalty = fp }
         if let pp = parameters.presencePenalty, pp != 0 { requestBody.presence_penalty = pp }
         if let rp = parameters.repetitionPenalty, rp != 1.0 { requestBody.repetition_penalty = rp }
         if let mp = parameters.minP, mp != 0 { requestBody.min_p = mp }
         if let ta = parameters.topA, ta != 0 { requestBody.top_a = ta }
+
+        // Stream options — include_usage for token counting in streaming responses
+        if stream {
+            requestBody.stream_options = StreamOptions(include_usage: true)
+        }
+
+        // Reasoning payload
+        var reasoning = ReasoningPayload()
+        reasoning.enabled = parameters.reasoningEnabled
+
+        // max_tokens and effort are mutually exclusive for Anthropic models
+        // If max_tokens is set, omit effort; otherwise use effort
+        if let maxTokens = parameters.reasoningMaxTokens {
+            reasoning.max_tokens = maxTokens
+            // Don't set effort — mutually exclusive for Anthropic
+        } else {
+            reasoning.effort = parameters.reasoningEffort
+        }
+
+        // Exclude reasoning tokens from output (nil/false = include, true = exclude)
+        if let exclude = parameters.reasoningExclude, exclude {
+            reasoning.exclude = true
+        }
+
+        requestBody.reasoning = reasoning
+
+        // Verbosity (nil = OpenRouter default which is medium)
+        if let verbosity = parameters.verbosity {
+            requestBody.verbosity = verbosity
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

@@ -13,7 +13,7 @@ struct JChatApp: App {
             Chat.self,
             Message.self,
             AppSettings.self,
-            Assistant.self,
+            Character.self,
             CachedModel.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

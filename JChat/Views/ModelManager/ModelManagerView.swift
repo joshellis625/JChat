@@ -199,5 +199,5 @@ struct FilterPill: View {
 
 #Preview {
     ModelManagerView(modelManager: ModelManager())
-        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Assistant.self, CachedModel.self], inMemory: true)
+        .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }

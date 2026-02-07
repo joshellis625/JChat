@@ -217,5 +217,5 @@ struct InlineModelPicker: View {
         selectedModelID: .constant("anthropic/claude-sonnet-4"),
         modelManager: ModelManager()
     )
-    .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Assistant.self, CachedModel.self], inMemory: true)
+    .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }
