@@ -117,6 +117,28 @@ final class Chat {
         reasoningExcludeOverride = nil
         verbosityOverride = nil
     }
+
+    // MARK: - Overrides Summary
+
+    var overrideCount: Int {
+        var count = 0
+        if temperatureOverride != nil { count += 1 }
+        if topPOverride != nil { count += 1 }
+        if topKOverride != nil { count += 1 }
+        if maxTokensOverride != nil { count += 1 }
+        if frequencyPenaltyOverride != nil { count += 1 }
+        if presencePenaltyOverride != nil { count += 1 }
+        if repetitionPenaltyOverride != nil { count += 1 }
+        if minPOverride != nil { count += 1 }
+        if topAOverride != nil { count += 1 }
+        if streamOverride != nil { count += 1 }
+        if reasoningEnabledOverride != nil { count += 1 }
+        if reasoningEffortOverride != nil { count += 1 }
+        if reasoningMaxTokensOverride != nil { count += 1 }
+        if reasoningExcludeOverride != nil { count += 1 }
+        if verbosityOverride != nil { count += 1 }
+        return count
+    }
 }
 
 @Model

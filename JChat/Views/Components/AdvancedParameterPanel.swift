@@ -31,6 +31,34 @@ struct AdvancedParameterPanel: View {
             // Scrollable content
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    HStack {
+                        HStack(spacing: 6) {
+                            Text("Overrides")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text("\(chat.overrideCount)")
+                                .font(.system(size: 12, weight: .semibold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.accentColor.opacity(0.2))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
+
+                        Spacer()
+
+                        Button(role: .destructive) {
+                            chat.resetAllOverrides()
+                            try? modelContext.save()
+                        } label: {
+                            Text("Reset All")
+                        }
+                        .controlSize(.small)
+                    }
+
+                    Text("Overrides apply to this chat only and fall back to global defaults when disabled.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+
                     // MARK: - Sampling
                     ParamSection("Sampling") {
                         ParameterSliderRow(
@@ -222,20 +250,6 @@ struct AdvancedParameterPanel: View {
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
-
-                    // MARK: - Reset
-                    HStack {
-                        Spacer()
-                        Button(role: .destructive) {
-                            chat.resetAllOverrides()
-                            try? modelContext.save()
-                        } label: {
-                            Text("Reset All Overrides")
-                        }
-                        Spacer()
-                    }
-                    .padding(.top, 8)
-                    .padding(.bottom, 20)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
@@ -427,6 +441,7 @@ private struct ParameterToggleRow: View {
     let defaultValue: Bool
 
     private var effectiveValue: Bool { value ?? defaultValue }
+    private var isOverridden: Bool { value != nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -435,6 +450,15 @@ private struct ParameterToggleRow: View {
                     .font(.system(size: 13, weight: .medium))
 
                 Spacer()
+
+                if isOverridden {
+                    Button("Default") {
+                        value = nil
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+                }
 
                 Toggle("", isOn: Binding(
                     get: { effectiveValue },

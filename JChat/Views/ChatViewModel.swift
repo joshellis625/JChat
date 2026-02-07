@@ -40,19 +40,18 @@ class ChatViewModel {
             chat.character = try? context.fetch(defaultDescriptor).first
         }
 
-        // Set default model: character preferred → settings default → inherit from most recent chat
-        if let preferredModel = chat.character?.preferredModelID {
-            chat.selectedModelID = preferredModel
-        } else {
+        // Set default model: character preferred → settings default
+        if let preferredModel = chat.character?.preferredModelID, !preferredModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let modelDescriptor = FetchDescriptor<CachedModel>(predicate: #Predicate { $0.id == preferredModel })
+            if let _ = try? context.fetch(modelDescriptor).first {
+                chat.selectedModelID = preferredModel
+            }
+        }
+
+        if chat.selectedModelID == nil {
             let settings = try? context.fetch(settingsDescriptor).first
             if let defaultModel = settings?.defaultModelID {
                 chat.selectedModelID = defaultModel
-            } else {
-                // Inherit model from the most recent chat as final fallback
-                let recentChats = try? context.fetch(chatDescriptor)
-                if let mostRecentModel = recentChats?.first?.selectedModelID {
-                    chat.selectedModelID = mostRecentModel
-                }
             }
         }
 

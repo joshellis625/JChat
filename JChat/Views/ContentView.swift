@@ -27,13 +27,32 @@ struct ContentView: View {
     @State private var showingCharacters = false
     @State private var textSizeMultiplier: Double = 1.0
     @Environment(\.modelContext) private var modelContext
+    @Query private var appSettings: [AppSettings]
 
     var body: some View {
         NavigationSplitView {
             ChatListView(viewModel: viewModel)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250)
         } detail: {
-            ConversationView(viewModel: viewModel, modelManager: modelManager)
+            if needsDefaultModel {
+                ContentUnavailableView {
+                    Label("Set a Global Default Model", systemImage: "gearshape")
+                } description: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Open Settings and choose a Default Model to start chatting.")
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                            Text("A Global Default Model is required to use the app.")
+                        }
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.red)
+                    }
+                } actions: {
+                    Button("Open Settings") { showingSettings = true }
+                }
+            } else {
+                ConversationView(viewModel: viewModel, modelManager: modelManager)
+            }
         }
         .environment(\.textSizeMultiplier, textSizeMultiplier)
         .toolbar {
@@ -67,6 +86,11 @@ struct ContentView: View {
                 loadTextSize()
             }
         }
+        .onChange(of: needsDefaultModel) { _, needsDefault in
+            if needsDefault {
+                showingSettings = true
+            }
+        }
         .sheet(isPresented: $showingModelManager) {
             ModelManagerView(modelManager: modelManager)
         }
@@ -75,6 +99,9 @@ struct ContentView: View {
         }
         .task {
             loadTextSize()
+            if needsDefaultModel {
+                showingSettings = true
+            }
             await modelManager.refreshIfStale(context: modelContext)
         }
     }
@@ -83,9 +110,15 @@ struct ContentView: View {
         let settings = AppSettings.fetchOrCreate(in: modelContext)
         textSizeMultiplier = settings.textSizeMultiplier
     }
+
+    private var needsDefaultModel: Bool {
+        guard let defaultModelID = appSettings.first?.defaultModelID else { return true }
+        return defaultModelID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 }
 
 #Preview {
     ContentView()
+        .frame(minWidth: 900, minHeight: 700)
         .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }

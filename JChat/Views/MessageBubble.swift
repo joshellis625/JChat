@@ -24,7 +24,7 @@ struct MessageBubble: View {
         HStack(alignment: .top) {
             if isUser { Spacer(minLength: 60) }
 
-            VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
+            VStack(alignment: isUser ? .trailing : .leading, spacing: 6) {
                 // Model badge for assistant messages
                 if !isUser, let modelID = message.modelID {
                     Text(displayModelName(modelID))
@@ -87,10 +87,24 @@ struct MessageBubble: View {
                             MarkdownTextView(content: message.content)
                         }
                     }
-                    .padding(12)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
                     .background(bubbleBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .frame(maxWidth: 520, alignment: isUser ? .trailing : .leading)
                 }
+
+                HStack(spacing: 6) {
+                    if message.isEdited {
+                        Text("Edited")
+                            .font(.system(size: 11 * multiplier, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(formattedTimestamp(message.timestamp))
+                        .font(.system(size: 11 * multiplier))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: 520, alignment: isUser ? .trailing : .leading)
 
                 // Action bar — always visible, hidden during editing
                 if !isEditing {
@@ -138,6 +152,27 @@ struct MessageBubble: View {
         }
         return id
     }
+
+    private func formattedTimestamp(_ date: Date) -> String {
+        if Calendar.current.isDateInToday(date) {
+            return MessageBubble.timeFormatter.string(from: date)
+        }
+        return MessageBubble.dateTimeFormatter.string(from: date)
+    }
+
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter
+    }()
+
+    private static let dateTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .short
+        return formatter
+    }()
 }
 
 #Preview {

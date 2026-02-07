@@ -60,6 +60,7 @@ struct ConversationView: View {
                                         },
                                         onSaveEdit: { newContent in
                                             message.content = newContent
+                                            message.isEdited = true
                                             try? modelContext.save()
                                         },
                                         onDelete: {

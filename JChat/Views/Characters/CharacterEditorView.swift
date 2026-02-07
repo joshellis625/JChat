@@ -11,6 +11,7 @@ struct CharacterEditorView: View {
     @Environment(\.dismiss) private var dismiss
 
     @Bindable var modelManager: ModelManager
+    @Query private var appSettings: [AppSettings]
 
     let character: Character?
 
@@ -18,6 +19,7 @@ struct CharacterEditorView: View {
     @State private var systemPrompt: String = ""
     @State private var preferredModelID: String? = nil
     @State private var isDefault: Bool = false
+    @State private var showingSettings = false
 
     private var isEditing: Bool { character != nil }
 
@@ -51,9 +53,19 @@ struct CharacterEditorView: View {
                     HStack {
                         InlineModelPicker(selectedModelID: $preferredModelID, modelManager: modelManager)
                         Spacer()
-                        if preferredModelID != nil {
-                            Button("Clear") { preferredModelID = nil }
-                                .foregroundStyle(.red)
+                        Button("Clear") { preferredModelID = nil }
+                            .foregroundStyle(preferredModelID == nil ? Color.secondary : Color.red)
+                            .disabled(preferredModelID == nil)
+                    }
+
+                    if preferredModelID == nil {
+                        Text(globalDefaultDescription)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+
+                        if !isGlobalDefaultSet {
+                            Button("Open Settings") { showingSettings = true }
+                                .font(.system(size: 12, weight: .medium))
                         }
                     }
                 }
@@ -90,6 +102,9 @@ struct CharacterEditorView: View {
             }
         }
         .frame(minWidth: 450, minHeight: 380)
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
     }
 
     // MARK: - Save
@@ -108,18 +123,35 @@ struct CharacterEditorView: View {
             }
         }
 
+        let cleanedPreferredModelID: String?
+        if let preferredModelID {
+            let trimmed = preferredModelID.trimmingCharacters(in: .whitespacesAndNewlines)
+            cleanedPreferredModelID = trimmed.isEmpty ? nil : trimmed
+        } else {
+            cleanedPreferredModelID = nil
+        }
+
+        var finalPreferredModelID = cleanedPreferredModelID
+        if let cleanedPreferredModelID {
+            let descriptor = FetchDescriptor<CachedModel>(predicate: #Predicate { $0.id == cleanedPreferredModelID })
+            let cachedCount = (try? modelContext.fetchCount(FetchDescriptor<CachedModel>())) ?? 0
+            if cachedCount > 0, (try? modelContext.fetch(descriptor).first) == nil {
+                finalPreferredModelID = nil
+            }
+        }
+
         if let character {
             // Update existing
             character.name = trimmedName
             character.systemPrompt = systemPrompt
-            character.preferredModelID = preferredModelID
+            character.preferredModelID = finalPreferredModelID
             character.isDefault = isDefault
         } else {
             // Create new
             let newCharacter = Character(
                 name: trimmedName,
                 systemPrompt: systemPrompt,
-                preferredModelID: preferredModelID,
+                preferredModelID: finalPreferredModelID,
                 isDefault: isDefault
             )
             modelContext.insert(newCharacter)
@@ -127,6 +159,33 @@ struct CharacterEditorView: View {
 
         try? modelContext.save()
         dismiss()
+    }
+
+    // MARK: - Helpers
+
+    private var globalDefaultDescription: String {
+        guard let defaultModelID = appSettings.first?.defaultModelID,
+              !defaultModelID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return "Using Global Default Model (not set)"
+        }
+        let displayName = modelDisplayName(for: defaultModelID)
+        return "Using Global Default Model: \(displayName)"
+    }
+
+    private var isGlobalDefaultSet: Bool {
+        guard let defaultModelID = appSettings.first?.defaultModelID else { return false }
+        return !defaultModelID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func modelDisplayName(for id: String) -> String {
+        if let model = modelManager.filteredModels.first(where: { $0.id == id }) ??
+            modelManager.favoriteModels.first(where: { $0.id == id }) {
+            return model.displayName
+        }
+        if let slashIndex = id.lastIndex(of: "/") {
+            return String(id[id.index(after: slashIndex)...])
+        }
+        return id
     }
 
 }

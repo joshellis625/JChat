@@ -54,9 +54,18 @@ struct ChatToolbarView: View {
 
                 // Parameters button
                 Button(action: onShowParameters) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 6) {
                         Image(systemName: "slider.horizontal.3")
                         Text("Parameters")
+                        if chat.overrideCount > 0 {
+                            Text("\(chat.overrideCount)")
+                                .font(.system(size: 11, weight: .semibold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.accentColor.opacity(0.2))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
                     }
                     .font(.system(size: 13))
                     .padding(.horizontal, 12)
