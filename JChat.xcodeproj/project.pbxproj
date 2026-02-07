@@ -28,6 +28,10 @@
 		03A0F7802F37409300FEC0AF /* Assistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Assistant.swift */; };
 		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
 		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
+		03A0F7852F37409300FEC0AF /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7842F37409300FEC0AF /* ModelManager.swift */; };
+		03A0F7872F37409300FEC0AF /* ModelManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7862F37409300FEC0AF /* ModelManagerView.swift */; };
+		03A0F7892F37409300FEC0AF /* ModelRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7882F37409300FEC0AF /* ModelRowView.swift */; };
+		03A0F78B2F37409300FEC0AF /* InlineModelPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +77,10 @@
 		03D0F75E2F37409300FEC0AF /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		03D0F7602F37409300FEC0AF /* JChat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JChat.entitlements; sourceTree = "<group>"; };
 		03D0F7612F37409300FEC0AF /* JChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatApp.swift; sourceTree = "<group>"; };
+		03A0F7842F37409300FEC0AF /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
+		03A0F7862F37409300FEC0AF /* ModelManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagerView.swift; sourceTree = "<group>"; };
+		03A0F7882F37409300FEC0AF /* ModelRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelRowView.swift; sourceTree = "<group>"; };
+		03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineModelPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -158,6 +166,7 @@
 			children = (
 				03A0F77D2F37409300FEC0AF /* JChatError.swift */,
 				03D0F7502F37409300FEC0AF /* KeychainManager.swift */,
+				03A0F7842F37409300FEC0AF /* ModelManager.swift */,
 				03D0F7512F37409300FEC0AF /* OpenRouterService.swift */,
 			);
 			path = Services;
@@ -166,6 +175,8 @@
 		03D0F75B2F37409300FEC0AF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				03A0F78D2F37409300FEC0AF /* Components */,
+				03A0F78C2F37409300FEC0AF /* ModelManager */,
 				03D0F7532F37409300FEC0AF /* ChatListView.swift */,
 				03D0F7542F37409300FEC0AF /* ChatViewModel.swift */,
 				03D0F7552F37409300FEC0AF /* ContentView.swift */,
@@ -176,6 +187,23 @@
 				03D0F75A2F37409300FEC0AF /* SettingsView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		03A0F78C2F37409300FEC0AF /* ModelManager */ = {
+			isa = PBXGroup;
+			children = (
+				03A0F7862F37409300FEC0AF /* ModelManagerView.swift */,
+				03A0F7882F37409300FEC0AF /* ModelRowView.swift */,
+			);
+			path = ModelManager;
+			sourceTree = "<group>";
+		};
+		03A0F78D2F37409300FEC0AF /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		03D0F7622F37409300FEC0AF /* JChat */ = {
@@ -356,6 +384,10 @@
 				03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */,
 				03D0F7742F37409300FEC0AF /* Chat.swift in Sources */,
 				03D0F7752F37409300FEC0AF /* JChatApp.swift in Sources */,
+				03A0F7852F37409300FEC0AF /* ModelManager.swift in Sources */,
+				03A0F7872F37409300FEC0AF /* ModelManagerView.swift in Sources */,
+				03A0F7892F37409300FEC0AF /* ModelRowView.swift in Sources */,
+				03A0F78B2F37409300FEC0AF /* InlineModelPicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

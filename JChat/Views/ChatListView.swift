@@ -33,7 +33,7 @@ struct ChatListView: View {
         }
         .listStyle(.sidebar)
         .toolbar {
-            ToolbarItem {
+            ToolbarItem(placement: .navigation) {
                 Button(action: {
                     let _ = viewModel.createNewChat(in: modelContext)
                 }) {

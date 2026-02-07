@@ -90,12 +90,28 @@ actor OpenRouterService {
         let description: String?
         let context_length: Int?
         let pricing: OpenRouterPricing?
+        let top_provider: TopProvider?
+        let architecture: Architecture?
 
         struct OpenRouterPricing: Codable, Sendable {
             let prompt: String?
             let completion: String?
             let image: String?
             let request: String?
+        }
+
+        struct TopProvider: Codable, Sendable {
+            let context_length: Int?
+            let max_completion_tokens: Int?
+            let is_moderated: Bool?
+        }
+
+        struct Architecture: Codable, Sendable {
+            let tokenizer: String?
+            let instruct_type: String?
+            let modality: String?
+            let input_modalities: [String]?
+            let output_modalities: [String]?
         }
     }
 

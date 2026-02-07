@@ -8,7 +8,10 @@ import SwiftData
 
 struct ContentView: View {
     @State private var viewModel = ChatViewModel()
+    @State private var modelManager = ModelManager()
     @State private var showingSettings = false
+    @State private var showingModelManager = false
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationSplitView {
@@ -20,6 +23,13 @@ struct ContentView: View {
         .toolbar {
             ToolbarItem {
                 Button {
+                    showingModelManager = true
+                } label: {
+                    Label("Model Manager", systemImage: "server.rack")
+                }
+            }
+            ToolbarItem {
+                Button {
                     showingSettings = true
                 } label: {
                     Label("Settings", systemImage: "gear")
@@ -28,6 +38,12 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .sheet(isPresented: $showingModelManager) {
+            ModelManagerView(modelManager: modelManager)
+        }
+        .task {
+            await modelManager.refreshIfStale(context: modelContext)
         }
     }
 }

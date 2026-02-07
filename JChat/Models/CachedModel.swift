@@ -5,6 +5,33 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
+
+// MARK: - Model Variant
+
+enum ModelVariant: String, CaseIterable, Sendable {
+    case free = ":free"
+    case extended = ":extended"
+    case exacto = ":exacto"
+
+    var displayLabel: String {
+        switch self {
+        case .free: return "Free"
+        case .extended: return "Extended"
+        case .exacto: return "Exacto"
+        }
+    }
+
+    var badgeColor: Color {
+        switch self {
+        case .free: return .green
+        case .extended: return .blue
+        case .exacto: return .red
+        }
+    }
+}
+
+// MARK: - CachedModel
 
 @Model
 final class CachedModel {
@@ -18,6 +45,8 @@ final class CachedModel {
     var imagePricing: String?
     var requestPricing: String?
     var providerName: String
+    var isModerated: Bool
+    var modality: String
     var isFavorite: Bool
     var sortOrder: Int
     var lastFetchedAt: Date
@@ -33,6 +62,8 @@ final class CachedModel {
         imagePricing: String? = nil,
         requestPricing: String? = nil,
         providerName: String = "",
+        isModerated: Bool = false,
+        modality: String = "text→text",
         isFavorite: Bool = false,
         sortOrder: Int = 0
     ) {
@@ -46,9 +77,35 @@ final class CachedModel {
         self.imagePricing = imagePricing
         self.requestPricing = requestPricing
         self.providerName = providerName
+        self.isModerated = isModerated
+        self.modality = modality
         self.isFavorite = isFavorite
         self.sortOrder = sortOrder
         self.lastFetchedAt = Date()
+    }
+
+    // MARK: - Variant Detection
+
+    var variants: [ModelVariant] {
+        ModelVariant.allCases.filter { id.hasSuffix($0.rawValue) }
+    }
+
+    var displayName: String {
+        var result = name
+        for variant in ModelVariant.allCases {
+            if result.lowercased().hasSuffix(" (\(variant.displayLabel.lowercased()))") {
+                result = String(result.dropLast(variant.displayLabel.count + 3))
+            }
+        }
+        return result
+    }
+
+    // MARK: - Pricing
+
+    var isFree: Bool {
+        let prompt = Double(promptPricing) ?? 0.0
+        let completion = Double(completionPricing) ?? 0.0
+        return prompt == 0 && completion == 0
     }
 
     var promptPricePerMillion: Double {
@@ -60,21 +117,19 @@ final class CachedModel {
     }
 
     var displayPrice: String {
-        let prompt = promptPricePerMillion
-        let completion = completionPricePerMillion
-        if prompt == 0 && completion == 0 {
+        if isFree {
             return "Free"
         }
-        return "$\(formatPrice(prompt)) / $\(formatPrice(completion)) per 1M tokens"
+        return "$\(formatPrice(promptPricePerMillion)) / $\(formatPrice(completionPricePerMillion)) per 1M tokens"
     }
 
     var contextLengthFormatted: String {
         if contextLength >= 1_000_000 {
-            return "\(contextLength / 1_000_000)M context"
+            return "\(contextLength / 1_000_000)M"
         } else if contextLength >= 1_000 {
-            return "\(contextLength / 1_000)K context"
+            return "\(contextLength / 1_000)K"
         }
-        return "\(contextLength) context"
+        return "\(contextLength)"
     }
 
     func calculateCost(promptTokens: Int, completionTokens: Int) -> Double {
