@@ -10,6 +10,7 @@ import SwiftUI
 /// with a distinct monospaced background.
 struct MarkdownTextView: View {
     let content: String
+    @Environment(\.textSizeMultiplier) private var multiplier
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -17,6 +18,7 @@ struct MarkdownTextView: View {
                 switch block {
                 case .text(let text):
                     Text(attributedString(from: text))
+                        .font(.system(size: 13 * multiplier))
                         .textSelection(.enabled)
 
                 case .codeBlock(let language, let code):
@@ -128,7 +130,7 @@ struct MarkdownTextView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 Text(code)
-                    .font(.system(.callout, design: .monospaced))
+                    .font(.system(size: 12 * multiplier, design: .monospaced))
                     .textSelection(.enabled)
                     .padding(.horizontal, 10)
                     .padding(.vertical, language != nil ? 6 : 10)

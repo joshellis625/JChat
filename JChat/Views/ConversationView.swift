@@ -11,6 +11,7 @@ struct ConversationView: View {
     var modelManager: ModelManager
     @Environment(\.modelContext) private var modelContext
 
+    @Environment(\.textSizeMultiplier) private var multiplier
     @State private var inputText = ""
     @State private var showAdvancedParams = false
 
@@ -32,10 +33,10 @@ struct ConversationView: View {
                             .font(.system(size: 40))
                             .foregroundStyle(.tertiary)
                         Text("Start a conversation")
-                            .font(.title3)
+                            .font(.system(size: 15 * multiplier))
                             .foregroundStyle(.secondary)
                         Text("Type a message below to begin.")
-                            .font(.callout)
+                            .font(.system(size: 12 * multiplier))
                             .foregroundStyle(.tertiary)
                     }
                     Spacer()
@@ -85,11 +86,11 @@ struct ConversationView: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(error)
-                                .font(.callout)
+                                .font(.system(size: 12 * multiplier))
                                 .foregroundStyle(.primary)
                             if let suggestion = viewModel.errorSuggestion {
                                 Text(suggestion)
-                                    .font(.caption)
+                                    .font(.system(size: 11 * multiplier))
                                     .foregroundStyle(.secondary)
                             }
                         }

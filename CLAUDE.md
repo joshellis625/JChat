@@ -18,7 +18,7 @@ Bundle ID: `joshellis625.JChat` | Team: `B26L4UNFCX` | macOS only (for now)
 - **Parameter cascade**: chat override → global fallback (2-level, no character layer)
 - **Characters are identity-only**: name, systemPrompt, preferredModelID, isDefault — NO parameter storage
 - **API calls**: raw URLRequest + JSONEncoder to `/v1/chat/completions` — no SDK
-- **Text size**: `AppSettings.textSizeMultiplier` (Double, default 1.0) → `TextSizeMultiplierKey` env key in ContentView → `.font(.system(size: 13 * multiplier))`
+- **Text size**: `AppSettings.textSizeMultiplier` (Double, default 1.0) → `TextSizeMultiplierKey` env key in ContentView → child views read `@Environment(\.textSizeMultiplier)` and apply `.font(.system(size: 13 * multiplier))`. Do NOT use `.font(.body)` etc. in views that should scale — those override the parent and ignore the multiplier.
 
 ## Xcode Project File (pbxproj) — CRITICAL
 

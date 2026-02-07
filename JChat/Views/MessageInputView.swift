@@ -12,6 +12,7 @@ struct MessageInputView: View {
     let onSend: () -> Void
     let onStop: () -> Void
 
+    @Environment(\.textSizeMultiplier) private var multiplier
     @FocusState private var isFocused: Bool
 
     var body: some View {
@@ -24,14 +25,14 @@ struct MessageInputView: View {
                     if text.isEmpty {
                         Text("Message...")
                             .foregroundStyle(.tertiary)
-                            .font(.body)
+                            .font(.system(size: 13 * multiplier))
                             .padding(.horizontal, 5)
                             .padding(.vertical, 8)
                             .allowsHitTesting(false)
                     }
 
                     TextEditor(text: $text)
-                        .font(.body)
+                        .font(.system(size: 13 * multiplier))
                         .scrollContentBackground(.hidden)
                         .background(.clear)
                         .frame(minHeight: 20, maxHeight: 150)

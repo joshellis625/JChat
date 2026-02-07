@@ -36,7 +36,6 @@ struct ContentView: View {
             ConversationView(viewModel: viewModel, modelManager: modelManager)
         }
         .environment(\.textSizeMultiplier, textSizeMultiplier)
-        .font(.system(size: 13 * textSizeMultiplier))
         .toolbar {
             ToolbarItem {
                 Button {

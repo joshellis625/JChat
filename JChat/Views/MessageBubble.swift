@@ -12,6 +12,7 @@ struct MessageBubble: View {
     var onRegenerate: (() -> Void)?
     var onDelete: (() -> Void)?
 
+    @Environment(\.textSizeMultiplier) private var multiplier
     @State private var isHovered = false
 
     private var isUser: Bool { message.role == .user }
@@ -36,6 +37,7 @@ struct MessageBubble: View {
                 Group {
                     if isUser {
                         Text(message.content)
+                            .font(.system(size: 13 * multiplier))
                             .textSelection(.enabled)
                     } else {
                         MarkdownTextView(content: message.content)
