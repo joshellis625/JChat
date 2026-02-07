@@ -142,7 +142,7 @@ struct MessageBubble: View {
         if isUser {
             return AnyShapeStyle(Color.accentColor.opacity(0.85))
         } else {
-            return AnyShapeStyle(Color(.windowBackgroundColor).opacity(0.8))
+            return AnyShapeStyle(Color(.controlBackgroundColor).opacity(0.95))
         }
     }
 
