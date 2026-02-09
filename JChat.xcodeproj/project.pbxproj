@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0345FC6F2F39CC770048F0F0 /* MEMORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC6E2F39CC770048F0F0 /* MEMORY.md */; };
 		03A0F7802F37409300FEC0AF /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Character.swift */; };
 		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
 		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
@@ -58,6 +59,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0345FC6E2F39CC770048F0F0 /* MEMORY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MEMORY.md; sourceTree = "<group>"; };
 		03A0F77D2F37409300FEC0AF /* JChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatError.swift; sourceTree = "<group>"; };
 		03A0F77E2F37409300FEC0AF /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
 		03A0F77F2F37409300FEC0AF /* CachedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModel.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 			children = (
 				03D0F74A2F37409300FEC0AF /* AGENTS.md */,
 				03D0F74B2F37409300FEC0AF /* COMPLETED.md */,
+				0345FC6E2F39CC770048F0F0 /* MEMORY.md */,
 				03D0F74C2F37409300FEC0AF /* TODO.md */,
 			);
 			path = Documentation;
@@ -370,6 +373,7 @@
 				03D0F7652F37409300FEC0AF /* TODO.md in Resources */,
 				03D0F7662F37409300FEC0AF /* .gitignore in Resources */,
 				03D0F7672F37409300FEC0AF /* Assets.xcassets in Resources */,
+				0345FC6F2F39CC770048F0F0 /* MEMORY.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
