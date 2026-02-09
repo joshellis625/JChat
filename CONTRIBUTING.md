@@ -39,4 +39,5 @@ Before merging:
 ## CI/CD Scope for Now
 - CI is required.
 - We currently run minimal safety checks (build + `JChatTests` on GitHub Actions).
+- CI cancels stale in-progress runs on the same branch when newer commits are pushed.
 - Full CD/release automation is intentionally deferred.
