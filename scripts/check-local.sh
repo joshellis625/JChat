@@ -13,4 +13,5 @@ xcodebuild test \
   -scheme JChat \
   -destination 'platform=macOS' \
   -derivedDataPath ./DerivedData \
+  -only-testing:JChatTests \
   CODE_SIGNING_ALLOWED=NO

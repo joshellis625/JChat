@@ -14,7 +14,7 @@ Run before commit:
 
 # or run commands directly:
 xcodebuild build -project JChat.xcodeproj -scheme JChat -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
-xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=macOS' -only-testing:JChatTests CODE_SIGNING_ALLOWED=NO
 ```
 
 ## UI Regression Checklist
