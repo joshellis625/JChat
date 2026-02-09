@@ -52,6 +52,7 @@ struct ChatListView: View {
                 }) {
                     Label("New Chat", systemImage: "plus")
                 }
+                .keyboardShortcut("n", modifiers: [.command])
             }
         }
         .navigationTitle("Chats")

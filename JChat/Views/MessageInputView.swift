@@ -40,8 +40,7 @@ struct MessageInputView: View {
                         .font(.system(size: 14 * multiplier))
                         .scrollContentBackground(.hidden)
                         .background(.clear)
-                        .frame(minHeight: 20, maxHeight: 120)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(minHeight: 24, maxHeight: 160)
                         .focused($isFocused)
                         .onKeyPress(.return, phases: .down) { keyPress in
                             if keyPress.modifiers.contains(.shift) {
@@ -55,13 +54,13 @@ struct MessageInputView: View {
                         }
                 }
                 .padding(.horizontal, 6)
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 14)
                         .fill(Color(.textBackgroundColor))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 14)
                         .stroke(isFocused ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.2), lineWidth: 1)
                 )
 
@@ -92,7 +91,17 @@ struct MessageInputView: View {
                 }
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+
+            HStack {
+                Text("Return sends • Shift+Return adds a newline")
+                    .font(.system(size: 11 * multiplier))
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.bottom, 8)
         }
         .onAppear {
             isFocused = true
