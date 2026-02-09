@@ -12,3 +12,4 @@
 - Replaced abrupt setup blocking with a first-run readiness checklist for API key and default model in `ContentView`.
 - Added a canonical manual regression checklist for chat, setup guardrails, markdown, and settings persistence flows.
 - Hardened chat usage accounting by clamping token/cost totals at zero during delete/regenerate paths.
+- Optimized CI with workflow concurrency to auto-cancel stale in-progress runs per branch.
