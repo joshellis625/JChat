@@ -26,6 +26,7 @@ struct ContentView: View {
     @State private var showingModelManager = false
     @State private var showingCharacters = false
     @State private var textSizeMultiplier: Double = 1.0
+    @State private var hasAPIKey = false
     @Environment(\.modelContext) private var modelContext
     @Query private var appSettings: [AppSettings]
 
@@ -34,22 +35,8 @@ struct ContentView: View {
             ChatListView(viewModel: viewModel)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250)
         } detail: {
-            if needsDefaultModel {
-                ContentUnavailableView {
-                    Label("Set a Global Default Model", systemImage: "gearshape")
-                } description: {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Open Settings and choose a Default Model to start chatting.")
-                        HStack(spacing: 6) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("A Global Default Model is required to use the app.")
-                        }
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.red)
-                    }
-                } actions: {
-                    Button("Open Settings") { showingSettings = true }
-                }
+            if needsSetup {
+                setupRequiredView
             } else {
                 ConversationView(viewModel: viewModel, modelManager: modelManager)
             }
@@ -84,11 +71,7 @@ struct ContentView: View {
         .onChange(of: showingSettings) { _, isShowing in
             if !isShowing {
                 loadTextSize()
-            }
-        }
-        .onChange(of: needsDefaultModel) { _, needsDefault in
-            if needsDefault {
-                showingSettings = true
+                loadAPIKeyStatus()
             }
         }
         .sheet(isPresented: $showingModelManager) {
@@ -99,9 +82,7 @@ struct ContentView: View {
         }
         .task {
             loadTextSize()
-            if needsDefaultModel {
-                showingSettings = true
-            }
+            loadAPIKeyStatus()
             await modelManager.refreshIfStale(context: modelContext)
         }
     }
@@ -111,9 +92,64 @@ struct ContentView: View {
         textSizeMultiplier = settings.textSizeMultiplier
     }
 
+    private func loadAPIKeyStatus() {
+        do {
+            let key = try KeychainManager.shared.loadAPIKey().trimmingCharacters(in: .whitespacesAndNewlines)
+            hasAPIKey = !key.isEmpty
+        } catch {
+            hasAPIKey = false
+        }
+    }
+
+    private var needsSetup: Bool {
+        !hasAPIKey || needsDefaultModel
+    }
+
     private var needsDefaultModel: Bool {
         guard let defaultModelID = appSettings.first?.defaultModelID else { return true }
         return defaultModelID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var setupRequiredView: some View {
+        ContentUnavailableView {
+            Label("Complete Setup to Start Chatting", systemImage: "checklist")
+        } description: {
+            VStack(alignment: .leading, spacing: 10) {
+                setupItemRow(
+                    title: "OpenRouter API Key",
+                    isComplete: hasAPIKey,
+                    detail: "Add your API key in Settings."
+                )
+                setupItemRow(
+                    title: "Global Default Model",
+                    isComplete: !needsDefaultModel,
+                    detail: "Choose a default model in Settings."
+                )
+            }
+        } actions: {
+            HStack(spacing: 10) {
+                Button("Open Settings") {
+                    showingSettings = true
+                }
+                Button("Open Model Manager") {
+                    showingModelManager = true
+                }
+            }
+        }
+    }
+
+    private func setupItemRow(title: String, isComplete: Bool, detail: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: isComplete ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                .foregroundStyle(isComplete ? Color.green : Color.red)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                Text(detail)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 }
 
