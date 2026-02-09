@@ -23,7 +23,7 @@ Use clear conventional commit prefixes:
 ## Definition of Done
 Before merging:
 1. Build and tests pass locally.
-2. CI checks pass (currently build-focused due GitHub runner OS limits).
+2. CI checks pass (build + unit tests on `macos-26` GitHub runner).
 3. UI changes include a manual UX check.
 4. Any changed behavior is documented.
 5. Risks and follow-up work are recorded in the PR.
@@ -38,5 +38,5 @@ Before merging:
 
 ## CI/CD Scope for Now
 - CI is required.
-- We currently run minimal safety checks (build in GitHub Actions; tests run locally in Xcode on macOS 26).
+- We currently run minimal safety checks (build + `JChatTests` on GitHub Actions).
 - Full CD/release automation is intentionally deferred.

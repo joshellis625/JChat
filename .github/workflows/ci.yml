@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-test:
     name: Build and Test (macOS)
-    runs-on: macos-latest
+    runs-on: macos-26
 
     steps:
       - name: Checkout
@@ -26,8 +26,12 @@ jobs:
             -derivedDataPath ./DerivedData \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Test (Skipped on GitHub Hosted Runners)
+      - name: Test
         run: |
-          echo "Skipping xcodebuild test in CI."
-          echo "Reason: current GitHub hosted macOS runner version is below the project's macOS 26 deployment target."
-          echo "Run tests locally in Xcode on macOS 26."
+          xcodebuild test \
+            -project JChat.xcodeproj \
+            -scheme JChat \
+            -destination 'platform=macOS' \
+            -derivedDataPath ./DerivedData \
+            -only-testing:JChatTests \
+            CODE_SIGNING_ALLOWED=NO
