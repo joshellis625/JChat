@@ -161,9 +161,7 @@ class ChatViewModel {
                         if let cachedModel = try? context.fetch(modelDescriptor).first {
                             assistantMessage.cost = cachedModel.calculateCost(promptTokens: prompt, completionTokens: completion)
                         }
-                        chat.totalPromptTokens += prompt
-                        chat.totalCompletionTokens += completion
-                        chat.totalCost += assistantMessage.cost
+                        chat.addUsage(promptTokens: prompt, completionTokens: completion, cost: assistantMessage.cost)
                     case .modelID(let id):
                         assistantMessage.modelID = id
                     case .done:
@@ -214,9 +212,7 @@ class ChatViewModel {
               sorted[index - 1].role == .user else { return }
 
         // Subtract old assistant message stats
-        chat.totalPromptTokens -= message.promptTokens
-        chat.totalCompletionTokens -= message.completionTokens
-        chat.totalCost -= message.cost
+        chat.removeUsage(promptTokens: message.promptTokens, completionTokens: message.completionTokens, cost: message.cost)
 
         // Delete old assistant message
         chat.messages.removeAll { $0.id == message.id }
@@ -304,9 +300,7 @@ class ChatViewModel {
                         if let cachedModel = try? context.fetch(modelDescriptor).first {
                             assistantMessage.cost = cachedModel.calculateCost(promptTokens: prompt, completionTokens: completion)
                         }
-                        chat.totalPromptTokens += prompt
-                        chat.totalCompletionTokens += completion
-                        chat.totalCost += assistantMessage.cost
+                        chat.addUsage(promptTokens: prompt, completionTokens: completion, cost: assistantMessage.cost)
                     case .modelID(let id):
                         assistantMessage.modelID = id
                     case .done:
@@ -335,9 +329,7 @@ class ChatViewModel {
 
     func deleteMessage(_ message: Message, in context: ModelContext) {
         guard let chat = selectedChat else { return }
-        chat.totalPromptTokens -= message.promptTokens
-        chat.totalCompletionTokens -= message.completionTokens
-        chat.totalCost -= message.cost
+        chat.removeUsage(promptTokens: message.promptTokens, completionTokens: message.completionTokens, cost: message.cost)
         chat.messages.removeAll { $0.id == message.id }
         context.delete(message)
         try? context.save()
