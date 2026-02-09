@@ -31,6 +31,22 @@ Example:
 - Documentation consolidation
 - Workflow and automation setup
 
+## Xcode MCP Workflow (Preferred for UI Work)
+When Xcode MCP is available, ask Codex to:
+1. Build in Xcode MCP.
+2. Run tests in Xcode MCP.
+3. Render specific `#Preview` entries and return snapshot paths.
+4. Iterate on UI with screenshot-backed feedback.
+
+Prompt example:
+"Use Xcode MCP to render preview snapshots for `/Users/josh/Projects/JChat/JChat/Views/ConversationView.swift` and `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`, then improve spacing/contrast and re-render."
+
+Quick MCP sanity checks:
+```bash
+codex mcp list
+codex mcp get xcode
+```
+
 ## Guardrails
 - Do not skip branch + PR flow
 - Do not merge with failing CI unless emergency
