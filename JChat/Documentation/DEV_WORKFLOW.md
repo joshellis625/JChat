@@ -18,14 +18,8 @@ xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=ma
 ```
 
 ## UI Regression Checklist
-For chat flows, validate:
-- Send message
-- Stream response
-- Stop stream
-- Edit message
-- Delete message
-- Regenerate assistant message
-- Default model guardrail when unset
+Use the canonical checklist:
+- `/Users/josh/Projects/JChat/JChat/Documentation/REGRESSION_CHECKLIST.md`
 
 ## PR Quality Checklist
 - Scope is focused

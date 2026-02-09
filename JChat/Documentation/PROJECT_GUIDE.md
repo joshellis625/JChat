@@ -45,6 +45,7 @@ xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=ma
 
 ## Related Docs
 - Workflow: `/Users/josh/Projects/JChat/JChat/Documentation/DEV_WORKFLOW.md`
+- Regression QA: `/Users/josh/Projects/JChat/JChat/Documentation/REGRESSION_CHECKLIST.md`
 - Codex usage: `/Users/josh/Projects/JChat/JChat/Documentation/CODEX_PLAYBOOK.md`
 - Roadmap: `/Users/josh/Projects/JChat/JChat/Documentation/ROADMAP.md`
 - Internal change log: `/Users/josh/Projects/JChat/JChat/Documentation/CHANGELOG_INTERNAL.md`
