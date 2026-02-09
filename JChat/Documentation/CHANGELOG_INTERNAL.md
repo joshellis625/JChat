@@ -9,3 +9,4 @@
 - Started UI/UX Pass A for message composer, message bubbles, and toolbar clarity.
 - Added targeted unit tests for core chat model behavior.
 - Improved Markdown code block readability with stronger contrast, consistent header labels, and always-visible copy action.
+- Replaced abrupt setup blocking with a first-run readiness checklist for API key and default model in `ContentView`.
