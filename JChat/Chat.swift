@@ -139,6 +139,20 @@ final class Chat {
         if verbosityOverride != nil { count += 1 }
         return count
     }
+
+    // MARK: - Usage Totals
+
+    func addUsage(promptTokens: Int, completionTokens: Int, cost: Double) {
+        totalPromptTokens += promptTokens
+        totalCompletionTokens += completionTokens
+        totalCost += cost
+    }
+
+    func removeUsage(promptTokens: Int, completionTokens: Int, cost: Double) {
+        totalPromptTokens = max(0, totalPromptTokens - promptTokens)
+        totalCompletionTokens = max(0, totalCompletionTokens - completionTokens)
+        totalCost = max(0, totalCost - cost)
+    }
 }
 
 @Model

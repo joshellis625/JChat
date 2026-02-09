@@ -11,3 +11,4 @@
 - Improved Markdown code block readability with stronger contrast, consistent header labels, and always-visible copy action.
 - Replaced abrupt setup blocking with a first-run readiness checklist for API key and default model in `ContentView`.
 - Added a canonical manual regression checklist for chat, setup guardrails, markdown, and settings persistence flows.
+- Hardened chat usage accounting by clamping token/cost totals at zero during delete/regenerate paths.
