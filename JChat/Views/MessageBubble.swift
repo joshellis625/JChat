@@ -24,7 +24,7 @@ struct MessageBubble: View {
         HStack(alignment: .top) {
             if isUser { Spacer(minLength: 60) }
 
-            VStack(alignment: isUser ? .trailing : .leading, spacing: 6) {
+            VStack(alignment: isUser ? .trailing : .leading, spacing: 8) {
                 // Model badge for assistant messages
                 if !isUser, let modelID = message.modelID {
                     Text(displayModelName(modelID))
@@ -87,18 +87,26 @@ struct MessageBubble: View {
                             MarkdownTextView(content: message.content)
                         }
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
                     .background(bubbleBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: Color.black.opacity(0.04), radius: 1, x: 0, y: 1)
                     .frame(maxWidth: 520, alignment: isUser ? .trailing : .leading)
                 }
 
                 HStack(spacing: 6) {
                     if message.isEdited {
                         Text("Edited")
-                            .font(.system(size: 11 * multiplier, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 10 * multiplier, weight: .semibold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.secondary.opacity(0.12))
+                            .clipShape(Capsule())
                     }
                     Text(formattedTimestamp(message.timestamp))
                         .font(.system(size: 11 * multiplier))
@@ -140,9 +148,9 @@ struct MessageBubble: View {
 
     private var bubbleBackground: some ShapeStyle {
         if isUser {
-            return AnyShapeStyle(Color.accentColor.opacity(0.85))
+            return AnyShapeStyle(Color.accentColor.opacity(0.9))
         } else {
-            return AnyShapeStyle(Color(.controlBackgroundColor).opacity(0.95))
+            return AnyShapeStyle(Color(.controlBackgroundColor).opacity(0.9))
         }
     }
 

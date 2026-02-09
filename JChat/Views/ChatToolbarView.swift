@@ -13,10 +13,11 @@ struct ChatToolbarView: View {
     let chat: Chat
     var modelManager: ModelManager
     let onShowParameters: () -> Void
+    @Environment(\.textSizeMultiplier) private var multiplier
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 // Character picker
                 CharacterPicker(
                     selectedCharacter: Binding(
@@ -35,20 +36,20 @@ struct ChatToolbarView: View {
                     modelManager: modelManager
                 )
 
+                Divider()
+                    .frame(height: 20)
+
                 Spacer()
 
-                // Token count + cost (compact)
+                // Token count + cost
                 if chat.totalTokens > 0 {
-                    HStack(spacing: 6) {
-                        Text("\(chat.totalTokens) tok")
-                            .font(.system(size: 12).monospacedDigit())
-                            .foregroundStyle(.secondary)
+                    metricPill(label: "TOK", value: "\(chat.totalTokens)")
 
-                        if chat.totalCost > 0 {
-                            Text("$\(chat.totalCost, format: .number.precision(.fractionLength(4)))")
-                                .font(.system(size: 12).monospacedDigit())
-                                .foregroundStyle(.secondary)
-                        }
+                    if chat.totalCost > 0 {
+                        metricPill(
+                            label: "COST",
+                            value: "$\(chat.totalCost, format: .number.precision(.fractionLength(4)))"
+                        )
                     }
                 }
 
@@ -67,10 +68,14 @@ struct ChatToolbarView: View {
                                 .clipShape(Capsule())
                         }
                     }
-                    .font(.system(size: 13))
+                    .font(.system(size: 13 * multiplier))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(.secondary.opacity(0.12))
+                    .background(Color(.controlBackgroundColor))
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                    )
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -82,6 +87,26 @@ struct ChatToolbarView: View {
 
             Divider()
         }
+    }
+
+    @ViewBuilder
+    private func metricPill(label: String, value: String) -> some View {
+        HStack(spacing: 5) {
+            Text(label)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.system(size: 12 * multiplier).monospacedDigit())
+                .foregroundStyle(.primary)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color(.controlBackgroundColor))
+        .overlay(
+            Capsule()
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+        )
+        .clipShape(Capsule())
     }
 }
 

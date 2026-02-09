@@ -8,6 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		0345FC6F2F39CC770048F0F0 /* MEMORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC6E2F39CC770048F0F0 /* MEMORY.md */; };
+		0345FC7B2F3A021A0048F0F0 /* PROJECT_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */; };
+		0345FC7C2F3A021A0048F0F0 /* DEV_WORKFLOW.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */; };
+		0345FC7D2F3A021A0048F0F0 /* TODO.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC742F3A021A0048F0F0 /* TODO.2026-02-09.md */; };
+		0345FC7E2F3A021A0048F0F0 /* COMPLETED.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC722F3A021A0048F0F0 /* COMPLETED.2026-02-09.md */; };
+		0345FC7F2F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC762F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md */; };
+		0345FC802F3A021A0048F0F0 /* CODEX_PLAYBOOK.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC772F3A021A0048F0F0 /* CODEX_PLAYBOOK.md */; };
+		0345FC812F3A021A0048F0F0 /* ROADMAP.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */; };
+		0345FC822F3A021A0048F0F0 /* CLAUDE.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */; };
+		0345FC832F3A021A0048F0F0 /* MEMORY.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC732F3A021A0048F0F0 /* MEMORY.2026-02-09.md */; };
+		0345FC842F3A021A0048F0F0 /* AGENTS.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */; };
 		03A0F7802F37409300FEC0AF /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Character.swift */; };
 		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
 		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
@@ -60,6 +70,16 @@
 
 /* Begin PBXFileReference section */
 		0345FC6E2F39CC770048F0F0 /* MEMORY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MEMORY.md; sourceTree = "<group>"; };
+		0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "AGENTS.2026-02-09.md"; sourceTree = "<group>"; };
+		0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "CLAUDE.2026-02-09.md"; sourceTree = "<group>"; };
+		0345FC722F3A021A0048F0F0 /* COMPLETED.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "COMPLETED.2026-02-09.md"; sourceTree = "<group>"; };
+		0345FC732F3A021A0048F0F0 /* MEMORY.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "MEMORY.2026-02-09.md"; sourceTree = "<group>"; };
+		0345FC742F3A021A0048F0F0 /* TODO.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "TODO.2026-02-09.md"; sourceTree = "<group>"; };
+		0345FC762F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG_INTERNAL.md; sourceTree = "<group>"; };
+		0345FC772F3A021A0048F0F0 /* CODEX_PLAYBOOK.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODEX_PLAYBOOK.md; sourceTree = "<group>"; };
+		0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DEV_WORKFLOW.md; sourceTree = "<group>"; };
+		0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_GUIDE.md; sourceTree = "<group>"; };
+		0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ROADMAP.md; sourceTree = "<group>"; };
 		03A0F77D2F37409300FEC0AF /* JChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatError.swift; sourceTree = "<group>"; };
 		03A0F77E2F37409300FEC0AF /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
 		03A0F77F2F37409300FEC0AF /* CachedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModel.swift; sourceTree = "<group>"; };
@@ -135,6 +155,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0345FC752F3A021A0048F0F0 /* archive */ = {
+			isa = PBXGroup;
+			children = (
+				0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */,
+				0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */,
+				0345FC722F3A021A0048F0F0 /* COMPLETED.2026-02-09.md */,
+				0345FC732F3A021A0048F0F0 /* MEMORY.2026-02-09.md */,
+				0345FC742F3A021A0048F0F0 /* TODO.2026-02-09.md */,
+			);
+			path = archive;
+			sourceTree = "<group>";
+		};
 		03A0F78C2F37409300FEC0AF /* ModelManager */ = {
 			isa = PBXGroup;
 			children = (
@@ -188,6 +220,12 @@
 		03D0F74D2F37409300FEC0AF /* Documentation */ = {
 			isa = PBXGroup;
 			children = (
+				0345FC752F3A021A0048F0F0 /* archive */,
+				0345FC762F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md */,
+				0345FC772F3A021A0048F0F0 /* CODEX_PLAYBOOK.md */,
+				0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */,
+				0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */,
+				0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */,
 				03D0F74A2F37409300FEC0AF /* AGENTS.md */,
 				03D0F74B2F37409300FEC0AF /* COMPLETED.md */,
 				0345FC6E2F39CC770048F0F0 /* MEMORY.md */,
@@ -370,6 +408,16 @@
 			files = (
 				03D0F7632F37409300FEC0AF /* AGENTS.md in Resources */,
 				03D0F7642F37409300FEC0AF /* COMPLETED.md in Resources */,
+				0345FC7B2F3A021A0048F0F0 /* PROJECT_GUIDE.md in Resources */,
+				0345FC7C2F3A021A0048F0F0 /* DEV_WORKFLOW.md in Resources */,
+				0345FC7D2F3A021A0048F0F0 /* TODO.2026-02-09.md in Resources */,
+				0345FC7E2F3A021A0048F0F0 /* COMPLETED.2026-02-09.md in Resources */,
+				0345FC7F2F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md in Resources */,
+				0345FC802F3A021A0048F0F0 /* CODEX_PLAYBOOK.md in Resources */,
+				0345FC812F3A021A0048F0F0 /* ROADMAP.md in Resources */,
+				0345FC822F3A021A0048F0F0 /* CLAUDE.2026-02-09.md in Resources */,
+				0345FC832F3A021A0048F0F0 /* MEMORY.2026-02-09.md in Resources */,
+				0345FC842F3A021A0048F0F0 /* AGENTS.2026-02-09.md in Resources */,
 				03D0F7652F37409300FEC0AF /* TODO.md in Resources */,
 				03D0F7662F37409300FEC0AF /* .gitignore in Resources */,
 				03D0F7672F37409300FEC0AF /* Assets.xcassets in Resources */,
