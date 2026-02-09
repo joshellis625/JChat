@@ -43,6 +43,35 @@ xcodebuild build -project JChat.xcodeproj -scheme JChat -destination 'platform=m
 xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 ```
 
+## Xcode MCP Integration
+JChat uses Xcode's MCP bridge so Codex can interact with your live Xcode session for build/test/preview workflows.
+
+### Setup
+```bash
+codex mcp add xcode -- xcrun mcpbridge
+codex mcp list
+```
+
+Expected entry:
+- Name: `xcode`
+- Command: `xcrun`
+- Args: `mcpbridge`
+- Status: `enabled`
+
+If the server is added but not visible in a current chat session, restart the Codex app/session.
+
+### Verified MCP Capabilities for This Project
+- Detect active workspace/window (`XcodeListWindows`)
+- Build via Xcode (`BuildProject`)
+- Run tests from active test plan (`RunAllTests` / `RunSomeTests`)
+- Render SwiftUI previews and capture snapshot image paths (`RenderPreview`)
+- Read/grep/update files through Xcode project paths (`XcodeRead`, `XcodeGrep`, `XcodeUpdate`, etc.)
+
+### Recommended Usage
+- Prefer MCP build/test/preview checks for UI work and Xcode-specific validation.
+- Keep GitHub Actions CI as the cross-machine safety net.
+- Use MCP preview snapshots when iterating on SwiftUI layout or visual regressions.
+
 ## Related Docs
 - Workflow: `/Users/josh/Projects/JChat/JChat/Documentation/DEV_WORKFLOW.md`
 - Regression QA: `/Users/josh/Projects/JChat/JChat/Documentation/REGRESSION_CHECKLIST.md`

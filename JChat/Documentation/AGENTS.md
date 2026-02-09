@@ -8,6 +8,7 @@ Read `/Users/josh/Projects/JChat/JChat/Documentation/PROJECT_GUIDE.md` first.
 - Parameter precedence is chat override -> global fallback.
 - Character stores identity/system prompt, not per-parameter overrides.
 - Avoid purple in UI due to accessibility constraints.
+- Prefer Xcode MCP workflows (build/test/preview render) when available; setup and details are documented in `/Users/josh/Projects/JChat/JChat/Documentation/PROJECT_GUIDE.md`.
 
 ## Workflow Contract
 - Branch from `main` using `codex/<topic>`.

@@ -40,7 +40,7 @@ struct MessageInputView: View {
                         .font(.system(size: 14 * multiplier))
                         .scrollContentBackground(.hidden)
                         .background(.clear)
-                        .frame(minHeight: 24, maxHeight: 160)
+                        .frame(minHeight: 24, maxHeight: 35)
                         .focused($isFocused)
                         .onKeyPress(.return, phases: .down) { keyPress in
                             if keyPress.modifiers.contains(.shift) {
@@ -92,10 +92,10 @@ struct MessageInputView: View {
             }
             .padding(.horizontal, 14)
             .padding(.top, 8)
-            .padding(.bottom, 4)
+            .padding(.bottom, 8)
 
             HStack {
-                Text("Return sends • Shift+Return adds a newline")
+                Text("Return sends • Shift + Return adds a newline")
                     .font(.system(size: 11 * multiplier))
                     .foregroundStyle(.secondary)
                 Spacer()
