@@ -30,7 +30,7 @@ JChat is a native macOS SwiftUI chat app that uses the OpenRouter API to chat wi
 - Feature branches only: `codex/<topic>`
 - PR required for every change
 - Small PRs with testing evidence
-- CI must pass before merge
+- CI must pass before merge (currently build-focused on GitHub hosted runners)
 
 ## Accessibility Constraints
 - Avoid purple

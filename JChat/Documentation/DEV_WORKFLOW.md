@@ -36,3 +36,4 @@ For chat flows, validate:
 ## CI Philosophy
 CI is a safety net and a learning loop, not overhead.
 Start minimal. Expand only when needed.
+Current GitHub hosted runners cannot execute this project's macOS 26 test targets, so CI is build-only for now and tests are validated locally in Xcode.
