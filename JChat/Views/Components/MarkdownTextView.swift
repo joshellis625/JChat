@@ -104,44 +104,50 @@ struct MarkdownTextView: View {
 
     private func codeBlockView(language: String?, code: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Optional language label + copy button
-            if let lang = language, !lang.isEmpty {
-                HStack {
-                    Text(lang)
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Button {
-                        #if canImport(AppKit)
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(code, forType: .string)
-                        #endif
-                    } label: {
-                        Image(systemName: "doc.on.doc")
-                            .font(.caption2)
-                    }
-                    .buttonStyle(.plain)
+            HStack {
+                Text(languageLabel(from: language))
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
+                Spacer()
+                Button {
+                    #if canImport(AppKit)
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(code, forType: .string)
+                    #endif
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .font(.caption2)
                 }
-                .padding(.horizontal, 10)
-                .padding(.top, 6)
-                .padding(.bottom, 2)
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("Copy code")
             }
+            .padding(.horizontal, 10)
+            .padding(.top, 6)
+            .padding(.bottom, 2)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 Text(code)
                     .font(.system(size: 12 * multiplier, design: .monospaced))
+                    .foregroundStyle(.primary)
                     .textSelection(.enabled)
                     .padding(.horizontal, 10)
-                    .padding(.vertical, language != nil ? 6 : 10)
+                    .padding(.vertical, 8)
             }
         }
-        .background(Color(.controlBackgroundColor).opacity(0.6))
+        .background(Color(.textBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+                .strokeBorder(Color.secondary.opacity(0.3), lineWidth: 1)
         )
+    }
+
+    private func languageLabel(from language: String?) -> String {
+        guard let lang = language?.trimmingCharacters(in: .whitespacesAndNewlines), !lang.isEmpty else {
+            return "text"
+        }
+        return lang
     }
 }
 
