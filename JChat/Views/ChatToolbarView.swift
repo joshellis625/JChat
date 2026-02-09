@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import Foundation
 
 struct ChatToolbarView: View {
     let chat: Chat
@@ -48,7 +49,7 @@ struct ChatToolbarView: View {
                     if chat.totalCost > 0 {
                         metricPill(
                             label: "COST",
-                            value: "$\(chat.totalCost, format: .number.precision(.fractionLength(4)))"
+                            value: String(format: "$%.4f", chat.totalCost)
                         )
                     }
                 }
