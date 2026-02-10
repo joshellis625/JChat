@@ -21,8 +21,10 @@ final class KeychainManager: @unchecked Sendable {
     
     // Use kSecAttrSynchronizable to enable iCloud Keychain syncing
     // Set to false for local-only, true for iCloud-synced
+    // TODO - I want EVERYTHING to be synced via the user's iCloud Keychain and Storage if possible without having a paid Developer Account for CloudKit.
     private let synchronizable = false
     
+    // TODO - ENSURE ROBUST ENCRYPTION OF API KEY. DO NOT LEAK THIS KEY UNDER ANY CIRCUMSTANCES. LEAKING THIS KEY OR USING WEAK ENCRYPTION/NO ENCRYPTION IS A BLATANT SECURITY VIOLATION AND NOT ACCEPTABLE.
     func saveAPIKey(_ key: String) throws {
         guard let data = key.data(using: .utf8) else {
             throw KeychainError.conversionError

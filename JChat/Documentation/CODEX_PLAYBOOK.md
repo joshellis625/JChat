@@ -11,18 +11,18 @@ Use this structure:
 5. Output format expected
 
 Example:
-"Improve message input ergonomics in `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`. Keep visual style consistent. Ensure Return sends and Shift+Return new line still works. Provide diff summary + testing checklist."
+"Improve message input ergonomics in `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`. Keep visual style consistent. Ensure Return sends and Shift + Return new line still works. Provide diff summary + testing checklist."
 
 ## During Coding: Ask For
 - Small scoped changes
-- Explicit file references
+- Explicit file references (might be less necessary with Xcode MCP server)
 - Why the change is safe
 - Risks and follow-up ideas
 
 ## After Coding: Always Ask
 - "What could break?"
 - "What tests should I add next?"
-- "What should be split into a separate PR?"
+- "What should be split into a separate branch?"
 
 ## Best Task Types for Codex
 - UI refinements
@@ -30,6 +30,7 @@ Example:
 - Bug triage and root cause analysis
 - Documentation consolidation
 - Workflow and automation setup
+- Creating new Codex skills.
 
 ## Xcode MCP Workflow (Preferred for UI Work)
 When Xcode MCP is available, ask Codex to:
@@ -48,6 +49,7 @@ codex mcp get xcode
 ```
 
 ## Guardrails
-- Do not skip branch + PR flow
-- Do not merge with failing CI unless emergency
-- Do not batch unrelated changes in one PR
+- Do not skip branch flow.
+- Do not merge without local build/test passing.
+- Do not batch unrelated changes in one branch.
+- No PRs and no CI for this project.

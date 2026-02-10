@@ -35,6 +35,7 @@ struct SettingsView: View {
                         .textFieldStyle(.roundedBorder)
 
                     HStack {
+                        // TODO - Can we change this to the iCloud Keychain? Or does that require paid Apple Dev status?
                         Text("Stored securely in your local keychain.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -51,6 +52,7 @@ struct SettingsView: View {
                         }
                     }
 
+                    // TODO - Make keyValidationMessage and creditsBalance look prettier and have a cleaner presentation, be creative.
                     if let message = keyValidationMessage {
                         Text(message)
                             .font(.caption)
@@ -90,6 +92,7 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
 
+                    // TODO - REMOVE ANY APP GATING TIED TO A DEFAULT MODEL SELECTION. A default model for new chats can be implemented in future onboarding wizard.
                     if selectedModelID == nil {
                         HStack(spacing: 6) {
                             Image(systemName: "exclamationmark.triangle.fill")

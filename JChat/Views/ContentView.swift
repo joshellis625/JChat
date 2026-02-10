@@ -120,6 +120,7 @@ struct ContentView: View {
                     isComplete: hasAPIKey,
                     detail: "Add your API key in Settings."
                 )
+                // TODO - Place this step AFTER prompting for model selections in Model Manager.
                 setupItemRow(
                     title: "Global Default Model",
                     isComplete: !needsDefaultModel,

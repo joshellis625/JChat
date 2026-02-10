@@ -42,7 +42,7 @@ struct ModelManagerView: View {
     }
 
     // MARK: - Provider Filter Bar
-
+    // TODO - This selection should only be for search assistance and for reducing the number of listed models. Once the Model Manager is closed, these filters should be removed and they should NEVER effect the Inline Model Picker (See related TODO in InlineModelPicker.swift)
     private var providerFilterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {

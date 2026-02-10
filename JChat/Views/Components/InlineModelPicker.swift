@@ -57,7 +57,8 @@ struct InlineModelPicker: View {
     }
 
     // MARK: - Popover Content
-
+    // TODO - Find a better UI element with less rounded corners and one that fits all text without chopping it off. Also, the current view is just ugly to me.
+    // TODO - Inline Model selector erroneously maintains provider filter in main model manager. That should happen and in model manager should only be a temporary search aid, not a saved parameter.
     private var pickerPopover: some View {
         VStack(spacing: 0) {
             // Search

@@ -6,6 +6,7 @@
 import SwiftUI
 import SwiftData
 
+// TODO - Find a better UI element with less rounded corners and one that fits all text without chopping it off. Also, the current view is just ugly to me. Same issue with InlineModelPicker.swift
 struct CharacterPicker: View {
     @Binding var selectedCharacter: Character?
     @Bindable var modelManager: ModelManager

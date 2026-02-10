@@ -4,8 +4,8 @@
 1. Pick one scoped improvement.
 2. Create branch: `codex/<topic>`.
 3. Implement and test locally.
-4. Open PR with problem/approach/testing/rollback.
-5. Merge after CI passes.
+4. Merge to main (no PR).
+5. If it breaks, revert the merge commit or reset to last good tag.
 
 ## Local Validation
 Run before commit:
@@ -21,13 +21,5 @@ xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=ma
 Use the canonical checklist:
 - `/Users/josh/Projects/JChat/JChat/Documentation/REGRESSION_CHECKLIST.md`
 
-## PR Quality Checklist
-- Scope is focused
-- Behavior change is documented
-- Risk is described
-- Follow-up items listed
-
 ## CI Philosophy
-CI is a safety net and a learning loop, not overhead.
-Start minimal. Expand only when needed.
-CI is configured to run build + unit tests (`JChatTests`) on GitHub-hosted `macos-26` runners.
+CI is currently **disabled by choice** for this solo project.

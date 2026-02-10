@@ -44,7 +44,7 @@ struct ChatToolbarView: View {
 
                 // Token count + cost
                 if chat.totalTokens > 0 {
-                    metricPill(label: "TOK", value: "\(chat.totalTokens)")
+                    metricPill(label: "TOKENS", value: "\(chat.totalTokens)")
 
                     if chat.totalCost > 0 {
                         metricPill(

@@ -28,7 +28,7 @@ struct MessageInputView: View {
                 ZStack(alignment: .topLeading) {
                     // Placeholder
                     if text.isEmpty {
-                        Text("Message...")
+                        Text("Ask anything...")
                             .foregroundStyle(.tertiary)
                             .font(.system(size: 14 * multiplier))
                             .padding(.leading, 5)
@@ -95,7 +95,7 @@ struct MessageInputView: View {
             .padding(.bottom, 8)
 
             HStack {
-                Text("Return sends • Shift + Return adds a newline")
+                Text("Return sends • Shift + Return for newline")
                     .font(.system(size: 11 * multiplier))
                     .foregroundStyle(.secondary)
                 Spacer()

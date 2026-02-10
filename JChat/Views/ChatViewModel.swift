@@ -212,6 +212,8 @@ class ChatViewModel {
               sorted[index - 1].role == .user else { return }
 
         // Subtract old assistant message stats
+        // TODO - DO NOT SUBTRACT TOTAL TOKEN COUNT OR TOTAL CONVERSATION COST FOR A DELETED OR REGENERATED MESSAGE. THESE ARE NON-REFUNDABLE CHAT COMPLETIONS.
+        // TODO - KEEP PREVIOUS GENERATION AND SWAP MESSAGE TO DISPLAY NEW GENERATION LIKE NORMAL BUT PROVIDE A SMALL ELEMENT IN THE ACTION BAR LIKE "<2/2>" OR SIMILAR AND ALLOW THE USER TO CYCLE BETWEEN THEIR PREFERRED GENERATION. WHICHEVER GENERATION IS SELECTED IS WHAT GETS SENT AS CONTEXT. DO NOT REMOVE USAGE OR COST FROM THE TOTALS!
         chat.removeUsage(promptTokens: message.promptTokens, completionTokens: message.completionTokens, cost: message.cost)
 
         // Delete old assistant message
@@ -248,6 +250,7 @@ class ChatViewModel {
         errorSuggestion = nil
 
         // Build message history from existing messages (user msg is already there)
+        // TODO - MAKE SURE DELETED MESSAGES ARE NOT ERRONEOUSLY KEPT AND RESENT.
         var history: [(role: String, content: String)] = []
         if let systemPrompt = chat.character?.systemPrompt, !systemPrompt.isEmpty {
             history.append((role: "system", content: systemPrompt))
@@ -327,6 +330,7 @@ class ChatViewModel {
         }
     }
 
+    //TODO - Ensure that deleting a message does not subtract from the total token count or the total conversation cost as the inferencing is non-reversible. Ensure that deleted messages are removed from the conversation context and not submitted to the API. That ruins the LLM context and costs money.
     func deleteMessage(_ message: Message, in context: ModelContext) {
         guard let chat = selectedChat else { return }
         chat.removeUsage(promptTokens: message.promptTokens, completionTokens: message.completionTokens, cost: message.cost)

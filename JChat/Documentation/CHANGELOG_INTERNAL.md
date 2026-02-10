@@ -14,3 +14,4 @@
 - Hardened chat usage accounting by clamping token/cost totals at zero during delete/regenerate paths.
 - Optimized CI with workflow concurrency to auto-cancel stale in-progress runs per branch.
 - Documented Xcode MCP setup and capabilities for build/test/preview screenshot workflows.
+- Removed all PR andn CI related instructions and removed use of CI completely by choice. This project is pivoting to a no-PR, no-CI, branch based development for solo dev hobby-level simplicity.

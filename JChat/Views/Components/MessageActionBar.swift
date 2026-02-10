@@ -22,6 +22,7 @@ struct MessageActionBar: View {
             if isUser { Spacer() }
 
             // Token count (assistant only)
+            // TODO - Display token count for assistant and user messages. Ensure this number can support at least 3 digits if needed.
             if message.totalTokens > 0 {
                 Label("\(message.totalTokens) tokens", systemImage: "number")
                     .font(.system(size: 11))
@@ -29,6 +30,7 @@ struct MessageActionBar: View {
             }
 
             // Cost (assistant only)
+            // TODO - Remove cost per message inline and focus on total conversation tokens and cost in MessageActionBar.swift for accuracy using OpenRouter API endpoint model pricing. Increase numbers shown after the decimal point until at least one significant figure is shown, ideally two unless it get's ridiculously long.
             if message.cost > 0 {
                 Text("$\(message.cost, format: .number.precision(.fractionLength(4)))")
                     .font(.system(size: 11))
@@ -45,6 +47,7 @@ struct MessageActionBar: View {
             .help("Edit message")
 
             // Copy button
+            // TODO - Add a transient and clean text alert indicating that the message copy was successful, e.g. "Message copied!"
             Button(action: onCopy) {
                 Image(systemName: "doc.on.doc")
                     .font(.system(size: 13))
@@ -65,6 +68,8 @@ struct MessageActionBar: View {
             }
 
             // Delete button
+            // TODO - ADD SIMPLE CONFIRMATION BEFORE DELETING
+            // TODO - Clean animation upon deletion and gap in messages smoothly animated back together to close gap.
             Button(action: onDelete) {
                 Image(systemName: "trash")
                     .font(.system(size: 13))
@@ -73,6 +78,7 @@ struct MessageActionBar: View {
             .foregroundStyle(.secondary)
             .help("Delete message")
 
+            // TODO - Does the following if{} do anything? If not, remove it
             if !isUser { Spacer() }
         }
         .padding(.horizontal, 4)

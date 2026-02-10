@@ -17,6 +17,7 @@ struct CharacterListView: View {
     @State private var editingCharacter: Character?
 
     var body: some View {
+        // TODO - Make these context options into clean, good looking UI buttons instead of mysteriously being hidden in the right-click context menu.
         NavigationStack {
             List {
                 ForEach(characters) { character in

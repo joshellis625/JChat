@@ -28,14 +28,15 @@ JChat is a native macOS SwiftUI chat app that uses the OpenRouter API to chat wi
 
 ## Engineering Standards
 - Feature branches only: `codex/<topic>`
-- PR required for every change
-- Small PRs with testing evidence
-- CI must pass before merge (build + unit tests in GitHub Actions)
+- **No PRs**. Merge locally when done.
+- **No CI required**. Local build/run is the gate.
+- Keep changes reasonably scoped per branch (feature/bugfix/doc pass).
 
-## Accessibility Constraints
-- Avoid purple
-- Use strong contrast for status signals
-- Prefer emphasis through hierarchy/weight, not opacity dimming
+## Accessibility Guidelines
+- Lead dev is red-green color-deficient. Use of colors is encouraged but avoid problematic combinations and consider the visual context. Prefer primary colors but creativity is encouraged.
+- If color alone might be an issue, use text labels to supplement.
+- Use strong contrast for important visual elements.
+- Prefer emphasis through hierarchy/weight/color/contrast, not opacity dimming.
 
 ## Build and Test
 ```bash

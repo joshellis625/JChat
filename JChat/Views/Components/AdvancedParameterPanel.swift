@@ -6,6 +6,7 @@
 import SwiftUI
 import SwiftData
 
+//TODO - This entire window/panel and design needs to be dramatically overhauled and improved. It's very ugly and confusing.
 struct AdvancedParameterPanel: View {
     @Bindable var chat: Chat
     @Environment(\.dismiss) private var dismiss

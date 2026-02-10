@@ -7,13 +7,14 @@ Read `/Users/josh/Projects/JChat/JChat/Documentation/PROJECT_GUIDE.md` first.
 - API key is stored in Keychain only (`com.josh.jchat` / `openrouter-api-key`).
 - Parameter precedence is chat override -> global fallback.
 - Character stores identity/system prompt, not per-parameter overrides.
-- Avoid purple in UI due to accessibility constraints.
+- Follow accessibility guidelines in `/Users/josh/Projects/JChat/JChat/Documentation/PROJECT_GUIDE.md`.
 - Prefer Xcode MCP workflows (build/test/preview render) when available; setup and details are documented in `/Users/josh/Projects/JChat/JChat/Documentation/PROJECT_GUIDE.md`.
 
 ## Workflow Contract
 - Branch from `main` using `codex/<topic>`.
-- Open a PR for every change.
-- Ensure CI passes before merge.
+- Commit freely on the branch.
+- Run local validation before merging to main.
+- No PRs, no CI.
 
 ## Legacy Context
 Historical snapshots are in `/Users/josh/Projects/JChat/JChat/Documentation/archive/`.
