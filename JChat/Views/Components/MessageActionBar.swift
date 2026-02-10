@@ -22,7 +22,7 @@ struct MessageActionBar: View {
             if isUser { Spacer() }
 
             // Token count (assistant only)
-            // TODO - Display token count for assistant and user messages. Ensure this number can support at least 3 digits if needed.
+            // TODO - Display token count for assistant AND user messages. Ensure this number can support at least 3 digits if needed. Remove the '#' number symbol/image in from of the token count.
             if message.totalTokens > 0 {
                 Label("\(message.totalTokens) tokens", systemImage: "number")
                     .font(.system(size: 11))
