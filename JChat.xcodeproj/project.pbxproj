@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		033251B42F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md in Resources */ = {isa = PBXBuildFile; fileRef = 033251B32F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md */; };
 		0345FC6F2F39CC770048F0F0 /* MEMORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC6E2F39CC770048F0F0 /* MEMORY.md */; };
 		0345FC7B2F3A021A0048F0F0 /* PROJECT_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */; };
 		0345FC7C2F3A021A0048F0F0 /* DEV_WORKFLOW.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */; };
@@ -69,6 +70,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		033251B32F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = REGRESSION_CHECKLIST.md; sourceTree = "<group>"; };
 		0345FC6E2F39CC770048F0F0 /* MEMORY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MEMORY.md; sourceTree = "<group>"; };
 		0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "AGENTS.2026-02-09.md"; sourceTree = "<group>"; };
 		0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "CLAUDE.2026-02-09.md"; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 				0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */,
 				0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */,
 				03D0F74A2F37409300FEC0AF /* AGENTS.md */,
+				033251B32F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md */,
 				03D0F74B2F37409300FEC0AF /* COMPLETED.md */,
 				0345FC6E2F39CC770048F0F0 /* MEMORY.md */,
 				03D0F74C2F37409300FEC0AF /* TODO.md */,
@@ -407,6 +410,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				03D0F7632F37409300FEC0AF /* AGENTS.md in Resources */,
+				033251B42F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md in Resources */,
 				03D0F7642F37409300FEC0AF /* COMPLETED.md in Resources */,
 				0345FC7B2F3A021A0048F0F0 /* PROJECT_GUIDE.md in Resources */,
 				0345FC7C2F3A021A0048F0F0 /* DEV_WORKFLOW.md in Resources */,

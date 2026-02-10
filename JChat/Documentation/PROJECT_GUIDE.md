@@ -3,7 +3,7 @@
 This is the single source of truth for project architecture, constraints, and development standards.
 
 ## Product Overview
-JChat is a native macOS SwiftUI chat app that uses the OpenRouter API to chat with multiple models, manage conversation history, tune model parameters, track usage/costs, and use reusable "Characters" (persona presets).
+JChat is a native macOS (future iOS) SwiftUI chat app that uses the OpenRouter API to chat with multiple models, manage conversation history, tune model parameters, track usage/costs, and use reusable "Characters" (persona presets).
 
 ## Architecture
 - UI: SwiftUI
@@ -16,7 +16,7 @@ JChat is a native macOS SwiftUI chat app that uses the OpenRouter API to chat wi
 - Parameter precedence: chat override -> global settings fallback
 - Character model is identity-only (name/prompt/preferred model), no parameter storage
 - New chat inherits parameter overrides from most recent chat
-- App requires global default model before chatting
+- App DOES NOT requires global default model before chatting
 
 ## Key Files
 - `/Users/josh/Projects/JChat/JChat/Views/ChatViewModel.swift`

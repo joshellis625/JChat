@@ -1,7 +1,7 @@
 # JChat Development Workflow
 
 ## Daily Loop
-1. Pick one scoped improvement.
+1. Pick one scoped improvement or group of related improvements. Scan all files for "TODO" comments.
 2. Create branch: `codex/<topic>`.
 3. Implement and test locally.
 4. Merge to main (no PR).
