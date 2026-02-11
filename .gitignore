@@ -65,3 +65,4 @@ Secrets.swift
 .gemini/
 .codex/
 openspec/
+Docs/openapi.json
