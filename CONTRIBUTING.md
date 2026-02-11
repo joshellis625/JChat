@@ -38,6 +38,43 @@ git branch -d codex/<topic>
 git push origin --delete codex/<topic>
 ```
 
+## Codex + OpenSpec Usage
+This app is a hobby project, so speed matters. Use this simple rule:
+
+- `Direct Codex` (just ask "do that thing"): default for small, low-risk tweaks.
+- `Codex Plan mode`: use when you need options/tradeoffs before coding.
+- `OpenSpec`: use when behavior, cost/accounting, state flow, or user-facing UX logic is changing.
+
+Quick decision guide:
+1. Tiny tweak (about 5-10 minutes, low risk): use `Direct Codex`.
+2. Unclear approach or multiple good options: use `Codex Plan mode` first, then execute.
+3. Anything you might need to explain/reverse later: use `OpenSpec`.
+4. If uncertain, start direct; upgrade to Plan mode or OpenSpec only if scope grows.
+
+Keep OpenSpec lightweight when used:
+- Prefer `/opsx:ff <name>` for fast artifact setup.
+- Keep proposal/design/tasks short and practical.
+- Batch a few related small tweaks into one change to reduce overhead.
+
+Source-of-truth boundary:
+- `Docs/`: product/user documentation.
+- `openspec/`: planning artifacts and decision history.
+
+## Multi-Agent File Hygiene
+You may use multiple AI tools (Codex, Claude Code, etc.). Keep a clean boundary:
+
+- `.codex/`: Codex-specific config, prompts, and skills.
+- `.claude/`: Claude-specific config/prompts.
+- `.gemini/` (or others): tool-specific config only.
+- `Docs/`: shared human-readable project docs.
+- `openspec/`: shared change artifacts and decision history.
+
+Rules to prevent mess:
+1. Do not duplicate full policy text across tool folders.
+2. Keep one canonical policy in `CONTRIBUTING.md`, and reference it from tool-specific files.
+3. If two docs conflict, update canonical first, then update references.
+4. Prefer small links and short summaries over copy-paste blocks.
+
 ## CI/CD Scope for Now
 - CI is disabled by choice for this solo workflow.
 - Local validation is the quality gate.

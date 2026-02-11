@@ -9,6 +9,28 @@
 6. If it breaks, revert the merge commit or reset to last good tag.
 7. After merge, delete merged feature branches locally and on origin.
 
+## AI Mode Selection
+Choose the lightest mode that fits the task:
+
+1. `Direct Codex`:
+For quick, low-risk changes where you already know what you want.
+
+2. `Codex Plan mode`:
+For design choices, tradeoff decisions, or when requirements are fuzzy.
+Use this before implementation to avoid rework.
+
+3. `OpenSpec`:
+For behavior/state/cost logic or changes you may need to explain, validate, or reverse later.
+Use `/opsx:ff` when you want fast artifacts with minimal overhead.
+
+If unsure, start with `Direct Codex` and only escalate when complexity appears.
+
+## Multi-Agent Organization
+If using multiple AI tools:
+- Keep shared project truth in `CONTRIBUTING.md` and `Docs/`.
+- Keep tool-specific instructions in that tool's folder (`.codex/`, `.claude/`, etc.).
+- Avoid duplicate policy docs; use links back to canonical docs.
+
 ## Branch Cleanup
 After a branch is merged and validated:
 ```bash

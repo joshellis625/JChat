@@ -7,5 +7,8 @@ Workflow standards moved to:
 - `/Users/josh/Projects/JChat/CONTRIBUTING.md`
 - `/Users/josh/Projects/JChat/Docs/DEV_WORKFLOW.md`
 
+Multi-agent usage policy (Codex vs Plan mode vs OpenSpec) is defined in:
+- `/Users/josh/Projects/JChat/CONTRIBUTING.md`
+
 Historical copy of the previous CLAUDE notes:
 - `/Users/josh/Projects/JChat/Docs/archive/CLAUDE.2026-02-09.md`
