@@ -6,52 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		033251B42F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md in Resources */ = {isa = PBXBuildFile; fileRef = 033251B32F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md */; };
-		0345FC6F2F39CC770048F0F0 /* MEMORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC6E2F39CC770048F0F0 /* MEMORY.md */; };
-		0345FC7B2F3A021A0048F0F0 /* PROJECT_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */; };
-		0345FC7C2F3A021A0048F0F0 /* DEV_WORKFLOW.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */; };
-		0345FC7D2F3A021A0048F0F0 /* TODO.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC742F3A021A0048F0F0 /* TODO.2026-02-09.md */; };
-		0345FC7E2F3A021A0048F0F0 /* COMPLETED.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC722F3A021A0048F0F0 /* COMPLETED.2026-02-09.md */; };
-		0345FC7F2F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC762F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md */; };
-		0345FC802F3A021A0048F0F0 /* CODEX_PLAYBOOK.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC772F3A021A0048F0F0 /* CODEX_PLAYBOOK.md */; };
-		0345FC812F3A021A0048F0F0 /* ROADMAP.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */; };
-		0345FC822F3A021A0048F0F0 /* CLAUDE.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */; };
-		0345FC832F3A021A0048F0F0 /* MEMORY.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC732F3A021A0048F0F0 /* MEMORY.2026-02-09.md */; };
-		0345FC842F3A021A0048F0F0 /* AGENTS.2026-02-09.md in Resources */ = {isa = PBXBuildFile; fileRef = 0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */; };
-		03A0F7802F37409300FEC0AF /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77E2F37409300FEC0AF /* Character.swift */; };
-		03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77D2F37409300FEC0AF /* JChatError.swift */; };
-		03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F77F2F37409300FEC0AF /* CachedModel.swift */; };
-		03A0F7852F37409300FEC0AF /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7842F37409300FEC0AF /* ModelManager.swift */; };
-		03A0F7872F37409300FEC0AF /* ModelManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7862F37409300FEC0AF /* ModelManagerView.swift */; };
-		03A0F7892F37409300FEC0AF /* ModelRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7882F37409300FEC0AF /* ModelRowView.swift */; };
-		03A0F78B2F37409300FEC0AF /* InlineModelPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */; };
-		03A0F78F2F37409300FEC0AF /* CharacterEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */; };
-		03A0F7912F37409300FEC0AF /* CharacterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7902F37409300FEC0AF /* CharacterListView.swift */; };
-		03A0F7932F37409300FEC0AF /* CharacterPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7922F37409300FEC0AF /* CharacterPicker.swift */; };
-		03A0F7952F37409300FEC0AF /* AdvancedParameterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */; };
-		03A0F7982F37409300FEC0AF /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */; };
-		03A0F79A2F37409300FEC0AF /* MessageActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0F7992F37409300FEC0AF /* MessageActionBar.swift */; };
-		03D0F7632F37409300FEC0AF /* AGENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74A2F37409300FEC0AF /* AGENTS.md */; };
-		03D0F7642F37409300FEC0AF /* COMPLETED.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74B2F37409300FEC0AF /* COMPLETED.md */; };
-		03D0F7652F37409300FEC0AF /* TODO.md in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F74C2F37409300FEC0AF /* TODO.md */; };
-		03D0F7662F37409300FEC0AF /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F75C2F37409300FEC0AF /* .gitignore */; };
-		03D0F7672F37409300FEC0AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03D0F75D2F37409300FEC0AF /* Assets.xcassets */; };
-		03D0F7692F37409300FEC0AF /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F74E2F37409300FEC0AF /* AppSettings.swift */; };
-		03D0F76A2F37409300FEC0AF /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7502F37409300FEC0AF /* KeychainManager.swift */; };
-		03D0F76B2F37409300FEC0AF /* OpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7512F37409300FEC0AF /* OpenRouterService.swift */; };
-		03D0F76C2F37409300FEC0AF /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7532F37409300FEC0AF /* ChatListView.swift */; };
-		03D0F76D2F37409300FEC0AF /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7542F37409300FEC0AF /* ChatViewModel.swift */; };
-		03D0F76E2F37409300FEC0AF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7552F37409300FEC0AF /* ContentView.swift */; };
-		03D0F76F2F37409300FEC0AF /* ConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7562F37409300FEC0AF /* ConversationView.swift */; };
-		03D0F7702F37409300FEC0AF /* ChatToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7572F37409300FEC0AF /* ChatToolbarView.swift */; };
-		03D0F7712F37409300FEC0AF /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7582F37409300FEC0AF /* MessageBubble.swift */; };
-		03D0F7722F37409300FEC0AF /* MessageInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7592F37409300FEC0AF /* MessageInputView.swift */; };
-		03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75A2F37409300FEC0AF /* SettingsView.swift */; };
-		03D0F7742F37409300FEC0AF /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F75E2F37409300FEC0AF /* Chat.swift */; };
-		03D0F7752F37409300FEC0AF /* JChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0F7612F37409300FEC0AF /* JChatApp.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		03D0F6FC2F37402A00FEC0AF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -70,53 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		033251B32F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = REGRESSION_CHECKLIST.md; sourceTree = "<group>"; };
-		0345FC6E2F39CC770048F0F0 /* MEMORY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MEMORY.md; sourceTree = "<group>"; };
-		0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "AGENTS.2026-02-09.md"; sourceTree = "<group>"; };
-		0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "CLAUDE.2026-02-09.md"; sourceTree = "<group>"; };
-		0345FC722F3A021A0048F0F0 /* COMPLETED.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "COMPLETED.2026-02-09.md"; sourceTree = "<group>"; };
-		0345FC732F3A021A0048F0F0 /* MEMORY.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "MEMORY.2026-02-09.md"; sourceTree = "<group>"; };
-		0345FC742F3A021A0048F0F0 /* TODO.2026-02-09.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "TODO.2026-02-09.md"; sourceTree = "<group>"; };
-		0345FC762F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG_INTERNAL.md; sourceTree = "<group>"; };
-		0345FC772F3A021A0048F0F0 /* CODEX_PLAYBOOK.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODEX_PLAYBOOK.md; sourceTree = "<group>"; };
-		0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DEV_WORKFLOW.md; sourceTree = "<group>"; };
-		0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_GUIDE.md; sourceTree = "<group>"; };
-		0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ROADMAP.md; sourceTree = "<group>"; };
-		03A0F77D2F37409300FEC0AF /* JChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatError.swift; sourceTree = "<group>"; };
-		03A0F77E2F37409300FEC0AF /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
-		03A0F77F2F37409300FEC0AF /* CachedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModel.swift; sourceTree = "<group>"; };
-		03A0F7842F37409300FEC0AF /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
-		03A0F7862F37409300FEC0AF /* ModelManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagerView.swift; sourceTree = "<group>"; };
-		03A0F7882F37409300FEC0AF /* ModelRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelRowView.swift; sourceTree = "<group>"; };
-		03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineModelPicker.swift; sourceTree = "<group>"; };
-		03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterEditorView.swift; sourceTree = "<group>"; };
-		03A0F7902F37409300FEC0AF /* CharacterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterListView.swift; sourceTree = "<group>"; };
-		03A0F7922F37409300FEC0AF /* CharacterPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterPicker.swift; sourceTree = "<group>"; };
-		03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedParameterPanel.swift; sourceTree = "<group>"; };
-		03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextView.swift; sourceTree = "<group>"; };
-		03A0F7992F37409300FEC0AF /* MessageActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActionBar.swift; sourceTree = "<group>"; };
 		03D0F6EA2F37402A00FEC0AF /* JChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		03D0F6FB2F37402A00FEC0AF /* JChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		03D0F7052F37402A00FEC0AF /* JChatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JChatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		03D0F74A2F37409300FEC0AF /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
-		03D0F74B2F37409300FEC0AF /* COMPLETED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPLETED.md; sourceTree = "<group>"; };
-		03D0F74C2F37409300FEC0AF /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
-		03D0F74E2F37409300FEC0AF /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
-		03D0F7502F37409300FEC0AF /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
-		03D0F7512F37409300FEC0AF /* OpenRouterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRouterService.swift; sourceTree = "<group>"; };
-		03D0F7532F37409300FEC0AF /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
-		03D0F7542F37409300FEC0AF /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
-		03D0F7552F37409300FEC0AF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		03D0F7562F37409300FEC0AF /* ConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationView.swift; sourceTree = "<group>"; };
-		03D0F7572F37409300FEC0AF /* ChatToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatToolbarView.swift; sourceTree = "<group>"; };
-		03D0F7582F37409300FEC0AF /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
-		03D0F7592F37409300FEC0AF /* MessageInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageInputView.swift; sourceTree = "<group>"; };
-		03D0F75A2F37409300FEC0AF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		03D0F75C2F37409300FEC0AF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		03D0F75D2F37409300FEC0AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		03D0F75E2F37409300FEC0AF /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
-		03D0F7602F37409300FEC0AF /* JChat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JChat.entitlements; sourceTree = "<group>"; };
-		03D0F7612F37409300FEC0AF /* JChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JChatApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -128,6 +38,11 @@
 		03D0F7082F37402A00FEC0AF /* JChatUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = JChatUITests;
+			sourceTree = "<group>";
+		};
+		03D0F7622F37409300FEC0AF /* JChat */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = JChat;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -157,48 +72,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0345FC752F3A021A0048F0F0 /* archive */ = {
-			isa = PBXGroup;
-			children = (
-				0345FC702F3A021A0048F0F0 /* AGENTS.2026-02-09.md */,
-				0345FC712F3A021A0048F0F0 /* CLAUDE.2026-02-09.md */,
-				0345FC722F3A021A0048F0F0 /* COMPLETED.2026-02-09.md */,
-				0345FC732F3A021A0048F0F0 /* MEMORY.2026-02-09.md */,
-				0345FC742F3A021A0048F0F0 /* TODO.2026-02-09.md */,
-			);
-			path = archive;
-			sourceTree = "<group>";
-		};
-		03A0F78C2F37409300FEC0AF /* ModelManager */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F7862F37409300FEC0AF /* ModelManagerView.swift */,
-				03A0F7882F37409300FEC0AF /* ModelRowView.swift */,
-			);
-			path = ModelManager;
-			sourceTree = "<group>";
-		};
-		03A0F78D2F37409300FEC0AF /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F7942F37409300FEC0AF /* AdvancedParameterPanel.swift */,
-				03A0F7922F37409300FEC0AF /* CharacterPicker.swift */,
-				03A0F78A2F37409300FEC0AF /* InlineModelPicker.swift */,
-				03A0F7972F37409300FEC0AF /* MarkdownTextView.swift */,
-				03A0F7992F37409300FEC0AF /* MessageActionBar.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		03A0F7962F37409300FEC0AF /* Characters */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F78E2F37409300FEC0AF /* CharacterEditorView.swift */,
-				03A0F7902F37409300FEC0AF /* CharacterListView.swift */,
-			);
-			path = Characters;
-			sourceTree = "<group>";
-		};
 		03D0F6E12F37402A00FEC0AF = {
 			isa = PBXGroup;
 			children = (
@@ -219,79 +92,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		03D0F74D2F37409300FEC0AF /* Documentation */ = {
-			isa = PBXGroup;
-			children = (
-				0345FC752F3A021A0048F0F0 /* archive */,
-				0345FC762F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md */,
-				0345FC772F3A021A0048F0F0 /* CODEX_PLAYBOOK.md */,
-				0345FC782F3A021A0048F0F0 /* DEV_WORKFLOW.md */,
-				0345FC792F3A021A0048F0F0 /* PROJECT_GUIDE.md */,
-				0345FC7A2F3A021A0048F0F0 /* ROADMAP.md */,
-				03D0F74A2F37409300FEC0AF /* AGENTS.md */,
-				033251B32F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md */,
-				03D0F74B2F37409300FEC0AF /* COMPLETED.md */,
-				0345FC6E2F39CC770048F0F0 /* MEMORY.md */,
-				03D0F74C2F37409300FEC0AF /* TODO.md */,
-			);
-			path = Documentation;
-			sourceTree = "<group>";
-		};
-		03D0F74F2F37409300FEC0AF /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				03D0F74E2F37409300FEC0AF /* AppSettings.swift */,
-				03A0F77E2F37409300FEC0AF /* Character.swift */,
-				03A0F77F2F37409300FEC0AF /* CachedModel.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		03D0F7522F37409300FEC0AF /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F77D2F37409300FEC0AF /* JChatError.swift */,
-				03D0F7502F37409300FEC0AF /* KeychainManager.swift */,
-				03A0F7842F37409300FEC0AF /* ModelManager.swift */,
-				03D0F7512F37409300FEC0AF /* OpenRouterService.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		03D0F75B2F37409300FEC0AF /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				03A0F7962F37409300FEC0AF /* Characters */,
-				03A0F78D2F37409300FEC0AF /* Components */,
-				03A0F78C2F37409300FEC0AF /* ModelManager */,
-				03D0F7532F37409300FEC0AF /* ChatListView.swift */,
-				03D0F7542F37409300FEC0AF /* ChatViewModel.swift */,
-				03D0F7552F37409300FEC0AF /* ContentView.swift */,
-				03D0F7562F37409300FEC0AF /* ConversationView.swift */,
-				03D0F7572F37409300FEC0AF /* ChatToolbarView.swift */,
-				03D0F7582F37409300FEC0AF /* MessageBubble.swift */,
-				03D0F7592F37409300FEC0AF /* MessageInputView.swift */,
-				03D0F75A2F37409300FEC0AF /* SettingsView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		03D0F7622F37409300FEC0AF /* JChat */ = {
-			isa = PBXGroup;
-			children = (
-				03D0F75C2F37409300FEC0AF /* .gitignore */,
-				03D0F7602F37409300FEC0AF /* JChat.entitlements */,
-				03D0F75E2F37409300FEC0AF /* Chat.swift */,
-				03D0F7612F37409300FEC0AF /* JChatApp.swift */,
-				03D0F75D2F37409300FEC0AF /* Assets.xcassets */,
-				03D0F74D2F37409300FEC0AF /* Documentation */,
-				03D0F74F2F37409300FEC0AF /* Models */,
-				03D0F7522F37409300FEC0AF /* Services */,
-				03D0F75B2F37409300FEC0AF /* Views */,
-			);
-			path = JChat;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -306,6 +106,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				03D0F7622F37409300FEC0AF /* JChat */,
 			);
 			name = JChat;
 			packageProductDependencies = (
@@ -409,23 +212,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03D0F7632F37409300FEC0AF /* AGENTS.md in Resources */,
-				033251B42F3B4D4A006553C0 /* REGRESSION_CHECKLIST.md in Resources */,
-				03D0F7642F37409300FEC0AF /* COMPLETED.md in Resources */,
-				0345FC7B2F3A021A0048F0F0 /* PROJECT_GUIDE.md in Resources */,
-				0345FC7C2F3A021A0048F0F0 /* DEV_WORKFLOW.md in Resources */,
-				0345FC7D2F3A021A0048F0F0 /* TODO.2026-02-09.md in Resources */,
-				0345FC7E2F3A021A0048F0F0 /* COMPLETED.2026-02-09.md in Resources */,
-				0345FC7F2F3A021A0048F0F0 /* CHANGELOG_INTERNAL.md in Resources */,
-				0345FC802F3A021A0048F0F0 /* CODEX_PLAYBOOK.md in Resources */,
-				0345FC812F3A021A0048F0F0 /* ROADMAP.md in Resources */,
-				0345FC822F3A021A0048F0F0 /* CLAUDE.2026-02-09.md in Resources */,
-				0345FC832F3A021A0048F0F0 /* MEMORY.2026-02-09.md in Resources */,
-				0345FC842F3A021A0048F0F0 /* AGENTS.2026-02-09.md in Resources */,
-				03D0F7652F37409300FEC0AF /* TODO.md in Resources */,
-				03D0F7662F37409300FEC0AF /* .gitignore in Resources */,
-				03D0F7672F37409300FEC0AF /* Assets.xcassets in Resources */,
-				0345FC6F2F39CC770048F0F0 /* MEMORY.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,32 +236,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03D0F7692F37409300FEC0AF /* AppSettings.swift in Sources */,
-				03A0F7802F37409300FEC0AF /* Character.swift in Sources */,
-				03A0F7832F37409300FEC0AF /* CachedModel.swift in Sources */,
-				03A0F7822F37409300FEC0AF /* JChatError.swift in Sources */,
-				03D0F76A2F37409300FEC0AF /* KeychainManager.swift in Sources */,
-				03D0F76B2F37409300FEC0AF /* OpenRouterService.swift in Sources */,
-				03D0F76C2F37409300FEC0AF /* ChatListView.swift in Sources */,
-				03D0F76D2F37409300FEC0AF /* ChatViewModel.swift in Sources */,
-				03D0F76E2F37409300FEC0AF /* ContentView.swift in Sources */,
-				03D0F76F2F37409300FEC0AF /* ConversationView.swift in Sources */,
-				03D0F7702F37409300FEC0AF /* ChatToolbarView.swift in Sources */,
-				03D0F7712F37409300FEC0AF /* MessageBubble.swift in Sources */,
-				03D0F7722F37409300FEC0AF /* MessageInputView.swift in Sources */,
-				03D0F7732F37409300FEC0AF /* SettingsView.swift in Sources */,
-				03D0F7742F37409300FEC0AF /* Chat.swift in Sources */,
-				03D0F7752F37409300FEC0AF /* JChatApp.swift in Sources */,
-				03A0F7852F37409300FEC0AF /* ModelManager.swift in Sources */,
-				03A0F7872F37409300FEC0AF /* ModelManagerView.swift in Sources */,
-				03A0F7892F37409300FEC0AF /* ModelRowView.swift in Sources */,
-				03A0F78B2F37409300FEC0AF /* InlineModelPicker.swift in Sources */,
-				03A0F78F2F37409300FEC0AF /* CharacterEditorView.swift in Sources */,
-				03A0F7912F37409300FEC0AF /* CharacterListView.swift in Sources */,
-				03A0F7932F37409300FEC0AF /* CharacterPicker.swift in Sources */,
-				03A0F7952F37409300FEC0AF /* AdvancedParameterPanel.swift in Sources */,
-				03A0F7982F37409300FEC0AF /* MarkdownTextView.swift in Sources */,
-				03A0F79A2F37409300FEC0AF /* MessageActionBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
