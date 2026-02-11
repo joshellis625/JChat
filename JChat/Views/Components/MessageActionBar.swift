@@ -16,6 +16,8 @@ struct MessageActionBar: View {
     var onRegenerate: (() -> Void)?
     let onEdit: () -> Void
     let onDelete: () -> Void
+    @State private var showingCopySuccess = false
+    @State private var copyResetTask: Task<Void, Never>?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -46,15 +48,16 @@ struct MessageActionBar: View {
             .foregroundStyle(.secondary)
             .help("Edit message")
 
-            // Copy button
-            // TODO - Add a transient and clean text alert indicating that the message copy was successful, e.g. "Message copied!"
-            Button(action: onCopy) {
-                Image(systemName: "doc.on.doc")
-                    .font(.system(size: 13))
+            // Copy button with transient success icon swap.
+            Button(action: handleCopyTap) {
+                Image(systemName: showingCopySuccess ? "checkmark" : "doc.on.doc")
+                    .font(.system(size: 13, weight: showingCopySuccess ? .semibold : .regular))
+                    .frame(width: 14, height: 14)
+                    .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
-            .help("Copy message")
+            .help(showingCopySuccess ? "Copied" : "Copy message")
 
             // Regenerate button (assistant messages only)
             if let onRegenerate {
@@ -83,6 +86,30 @@ struct MessageActionBar: View {
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 3)
+        .animation(.easeInOut(duration: 0.18), value: showingCopySuccess)
+        .onDisappear {
+            copyResetTask?.cancel()
+        }
+    }
+
+    private func handleCopyTap() {
+        onCopy()
+
+        copyResetTask?.cancel()
+
+        withAnimation(.easeInOut(duration: 0.12)) {
+            showingCopySuccess = true
+        }
+
+        copyResetTask = Task {
+            try? await Task.sleep(nanoseconds: 1_100_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    showingCopySuccess = false
+                }
+            }
+        }
     }
 }
 
