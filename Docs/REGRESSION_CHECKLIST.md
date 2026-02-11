@@ -1,6 +1,6 @@
 # JChat Regression Checklist
 
-Use this checklist before merging any branch that changes chat behavior, model settings, or message rendering.
+Use this checklist before merging or pushing any branch that changes chat behavior, model settings, or message rendering.
 
 ## Setup
 - [ ] Build app succeeds.
@@ -30,7 +30,7 @@ Use this checklist before merging any branch that changes chat behavior, model s
 - [ ] Token/cost pills render without layout overlap and totals are not altered from message deletions.
 
 ## Setup Guardrails
-- [ ] No API key shows setup checklist (Not implemented yet).
+- [ ] No API key shows setup checklist.
 - [ ] With API key configured, conversation view is shown.
 
 ## Markdown Rendering
@@ -38,7 +38,7 @@ Use this checklist before merging any branch that changes chat behavior, model s
 - [ ] Fenced code block displays with readable contrast.
 - [ ] Code block copy action works.
 - [ ] Missing language fence shows `text` label.
-- [ ] Proper response streaming remains intact and 
+- [ ] Proper response streaming remains intact and does not break markdown rendering.
 
 ## Settings + Persistence
 - [ ] Save settings and reopen app.

@@ -32,20 +32,21 @@ Example:
 - Workflow and automation setup
 - Creating new Codex skills.
 
-## Xcode MCP Workflow (Preferred for UI Work)
-When Xcode MCP is available, ask Codex to:
-1. Build in Xcode MCP.
-2. Run tests in Xcode MCP.
+## XcodeBuildMCP Workflow (Preferred for UI Work)
+When `XcodeBuildMCP` is available, ask Codex to:
+1. Build via `XcodeBuildMCP`.
+2. Run tests via `XcodeBuildMCP`.
 3. Render specific `#Preview` entries and return snapshot paths.
 4. Iterate on UI with screenshot-backed feedback.
 
 Prompt example:
-"Use Xcode MCP to render preview snapshots for `/Users/josh/Projects/JChat/JChat/Views/ConversationView.swift` and `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`, then improve spacing/contrast and re-render."
+"Use `XcodeBuildMCP` to render preview snapshots for `/Users/josh/Projects/JChat/JChat/Views/ConversationView.swift` and `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`, then improve spacing/contrast and re-render."
 
 Quick MCP sanity checks:
 ```bash
-codex mcp list
-codex mcp get xcode
+xcodebuildmcp --help
+xcodebuildmcp tools
+xcodebuildmcp doctor
 ```
 
 ## Guardrails
@@ -53,3 +54,5 @@ codex mcp get xcode
 - Do not merge without local build/test passing.
 - Do not batch unrelated changes in one branch.
 - No PRs and no CI for this project.
+- Request explicit approval before any push.
+- Documentation-only updates are made directly on `main`.

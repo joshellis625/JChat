@@ -1,6 +1,6 @@
 # Project Memory (Current)
 
-Use `/Users/josh/Projects/JChat/JChat/Documentation/PROJECT_GUIDE.md` as the canonical source.
+Use `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md` as the canonical source.
 
 This file remains as a lightweight memory index:
 - Architecture and operating rules: `PROJECT_GUIDE.md`
@@ -10,4 +10,4 @@ This file remains as a lightweight memory index:
 - Internal progress record: `CHANGELOG_INTERNAL.md`
 
 Historical detailed memory snapshot:
-- `/Users/josh/Projects/JChat/JChat/Documentation/archive/MEMORY.2026-02-09.md`
+- `/Users/josh/Projects/JChat/Docs/archive/MEMORY.2026-02-09.md`
