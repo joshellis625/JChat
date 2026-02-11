@@ -17,6 +17,7 @@ Read `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md` first.
 - Run local validation before merging to main.
 - No PRs, no CI.
 - Push only with explicit approval.
+- After merge, delete merged feature branches locally and on origin.
 
 ## Legacy Context
 Historical snapshots are in `/Users/josh/Projects/JChat/Docs/archive/`.

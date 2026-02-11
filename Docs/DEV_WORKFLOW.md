@@ -7,6 +7,14 @@
 4. Request explicit approval before any push.
 5. Push only after approval, then merge to `main` locally (no PR).
 6. If it breaks, revert the merge commit or reset to last good tag.
+7. After merge, delete merged feature branches locally and on origin.
+
+## Branch Cleanup
+After a branch is merged and validated:
+```bash
+git branch -d codex/<topic>
+git push origin --delete codex/<topic>
+```
 
 ## Local Validation
 Run before commit:

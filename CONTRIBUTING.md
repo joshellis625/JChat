@@ -30,6 +30,13 @@ Before pushing:
 4. Commit freely with clear messages.
 5. Request explicit approval before any push.
 6. Push only after approval, then merge locally when ready.
+7. After merge, delete the merged feature branch locally and on origin.
+
+Branch cleanup commands:
+```bash
+git branch -d codex/<topic>
+git push origin --delete codex/<topic>
+```
 
 ## CI/CD Scope for Now
 - CI is disabled by choice for this solo workflow.
