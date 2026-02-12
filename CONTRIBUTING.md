@@ -23,6 +23,12 @@ Before pushing:
 3. Any changed behavior is documented.
 4. Risks and follow-up work are recorded in notes/changelog.
 
+## V2 Stability Gate
+When changes touch transcript rendering, streaming, or input behavior:
+1. Validate long-chat scrolling (including while typing).
+2. Validate streaming auto-scroll and stop/regenerate flows.
+3. Use `/Users/josh/Projects/JChat/Docs/REGRESSION_CHECKLIST.md` before push.
+
 ## Recommended Solo Workflow
 1. For code changes, create branch: `git checkout -b codex/<topic>`. For docs-only changes, work on `main`.
 2. Implement one scoped change or small related group of changes.

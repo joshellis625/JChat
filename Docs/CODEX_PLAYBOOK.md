@@ -1,48 +1,40 @@
 # JChat Codex Playbook
 
-Use this guide to collaborate with Codex like a professional dev partner.
+Use this to work with Codex efficiently on the current V2 rebuild.
 
-## Before Coding: Prompt Pattern
-Use this structure:
+## Prompt Pattern (Best Results)
+Include:
 1. Goal
 2. Constraints
 3. Files likely involved
 4. Acceptance criteria
-5. Output format expected
+5. Expected output format
 
 Example:
-"Improve message input ergonomics in `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`. Keep visual style consistent. Ensure Return sends and Shift + Return new line still works. Provide diff summary + testing checklist."
+"Fix long-chat scroll freezes in `/Users/josh/Projects/JChat/JChat/V2/UI/V2ShellViews.swift` and `/Users/josh/Projects/JChat/JChat/Core/Conversation/ConversationStore.swift`. Keep V2 visual style and preserve streaming UX. Provide exact files changed and test command used."
 
-## During Coding: Ask For
-- Small scoped changes
-- Explicit file references (might be less necessary with Xcode MCP server)
-- Why the change is safe
-- Risks and follow-up ideas
-
-## After Coding: Always Ask
-- "What could break?"
-- "What tests should I add next?"
-- "What should be split into a separate branch?"
-
-## Best Task Types for Codex
-- UI refinements
+## High-Value Task Types
+- Freeze/performance triage
+- Streaming reliability improvements
+- V2 UI simplification/polish
 - Refactors with behavior parity
-- Bug triage and root cause analysis
-- Documentation consolidation
-- Workflow and automation setup
-- Creating new Codex skills.
+- Documentation sync
 
-## XcodeBuildMCP Workflow (Preferred for UI Work)
-When `XcodeBuildMCP` is available, ask Codex to:
-1. Build via `XcodeBuildMCP`.
-2. Run tests via `XcodeBuildMCP`.
-3. Render specific `#Preview` entries and return snapshot paths.
-4. Iterate on UI with screenshot-backed feedback.
+## After Any Change, Ask
+- "What could still break?"
+- "What tests should be added next?"
+- "What should be a separate branch next time?"
+
+## XcodeBuildMCP Workflow (Preferred)
+When available, ask Codex to:
+1. Build/test with `XcodeBuildMCP` (or fallback shell if scheme destination requires it).
+2. Run focused UI checks for V2 views.
+3. Iterate with screenshot-backed feedback.
 
 Prompt example:
-"Use `XcodeBuildMCP` to render preview snapshots for `/Users/josh/Projects/JChat/JChat/Views/ConversationView.swift` and `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`, then improve spacing/contrast and re-render."
+"Use `XcodeBuildMCP` to validate `/Users/josh/Projects/JChat/JChat/V2/UI/V2ShellViews.swift`, then reduce layout nesting and verify no long-chat freeze regressions."
 
-Quick MCP sanity checks:
+Quick sanity commands:
 ```bash
 xcodebuildmcp --help
 xcodebuildmcp tools
@@ -50,9 +42,8 @@ xcodebuildmcp doctor
 ```
 
 ## Guardrails
-- Do not skip branch flow.
-- Do not merge without local build/test passing.
-- Do not batch unrelated changes in one branch.
-- No PRs and no CI for this project.
-- Request explicit approval before any push.
-- Documentation-only updates are made directly on `main`.
+- Don’t batch unrelated work in one branch.
+- Don’t skip local build/test before claiming done.
+- Don’t reintroduce heavy UI layering while stability issues are active.
+- No PR/CI flow for this project.
+- Push only with explicit approval.

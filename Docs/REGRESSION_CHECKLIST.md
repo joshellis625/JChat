@@ -1,53 +1,58 @@
-# JChat Regression Checklist
+# JChat Regression Checklist (V2)
 
-Use this checklist before merging or pushing any branch that changes chat behavior, model settings, or message rendering.
+Run this before shipping any change that touches chat behavior, streaming, layout, or persistence.
 
-## Setup
-- [ ] Build app succeeds.
-- [ ] Unit tests (`JChatTests`) pass.
-- [ ] App launches with existing data store.
+## Build + Launch
+- [ ] Build succeeds.
+- [ ] Tests pass.
+- [ ] App launches with existing local data.
 
-## Core Chat Flow
+## Core V2 Chat Flow
 - [ ] Create new chat.
 - [ ] Send user message.
 - [ ] Assistant starts streaming response.
 - [ ] Stop streaming mid-response.
 - [ ] Send another message after stopping.
+- [ ] Regenerate an assistant response.
 
-## Message Operations
-- [ ] Edit a user message and save.
-- [ ] Edit an assistant message and save.
-- [ ] Cancel message edit without saving.
-- [ ] Copy message content.
-- [ ] Regenerate assistant response.
-- [ ] Delete a message and confirm totals remain the same. Messages are non-refundable generations from the API.
+## Long-Chat Stability
+- [ ] Open a long conversation and scroll continuously.
+- [ ] Type in composer while scrolling long transcript.
+- [ ] No beachball/freeze occurs during typing + scroll.
+- [ ] Streaming response stays visible and follows to bottom.
+- [ ] Opening a chat lands at the bottom of transcript.
 
-## Toolbar + Parameters
-- [ ] Character picker works.
-- [ ] Model picker works and is refreshed and updates CachedModel from API upon opening.
-- [ ] Parameters panel opens/closes cleanly.
-- [ ] Override count updates when overrides are changed/reset.
-- [ ] Token/cost pills render without layout overlap and totals are not altered from message deletions.
+## Message Rendering + Alignment
+- [ ] User messages are right aligned.
+- [ ] Assistant messages are left aligned.
+- [ ] Message timestamps render correctly.
+- [ ] Assistant per-message token label is not chat-total token count.
+- [ ] No obvious clipping/overlap in long messages.
+
+## Conversation List (Sidebar)
+- [ ] Selecting chats is immediate.
+- [ ] Selected row contrast is clear.
+- [ ] Timestamp is static text (not continuously counting).
+- [ ] Preview text remains single-line and stable.
+
+## Usage Accounting
+- [ ] Chat total tokens/cost update on new assistant usage events.
+- [ ] Deleting messages does not refund totals.
+- [ ] Regenerating does not refund prior usage totals.
 
 ## Setup Guardrails
-- [ ] No API key shows setup checklist.
-- [ ] With API key configured, conversation view is shown.
+- [ ] Missing API key shows setup UI.
+- [ ] Configured API key + model allows normal chat usage.
 
-## Markdown Rendering
-- [ ] Inline markdown (bold/italic/code/links) displays correctly.
-- [ ] Fenced code block displays with readable contrast.
-- [ ] Code block copy action works.
-- [ ] Missing language fence shows `text` label.
-- [ ] Proper response streaming remains intact and does not break markdown rendering.
+## Rendering Mode
+- [ ] Plain text rendering works for assistant output.
+- [ ] No markdown parser regressions impact streaming (markdown currently disabled by design).
 
-## Settings + Persistence
-- [ ] Save settings and reopen app.
-- [ ] Text size multiplier persists.
-- [ ] Default model persists.
-- [ ] API key remains available via Keychain.
-- [ ] All existing chat conversations remain as they were.
+## Persistence
+- [ ] Reopen app and confirm chats persist.
+- [ ] Reopen app and confirm settings persist.
+- [ ] API key remains accessible from Keychain.
 
 ## Sign-Off
-- [ ] Any new behavior is documented in `CHANGELOG_INTERNAL.md`.
-- [ ] No reversals without explicit user authorization.
-- [ ] Any reversals include risks and rollback note.
+- [ ] Update `/Users/josh/Projects/JChat/Docs/CHANGELOG_INTERNAL.md` for behavior changes.
+- [ ] Document any known risk or deferred follow-up.

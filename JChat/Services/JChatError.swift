@@ -76,13 +76,17 @@ enum JChatError: LocalizedError {
     }
 
     static func from(statusCode: Int, body: String) -> JChatError {
+        from(statusCode: statusCode, body: body, retryAfter: nil)
+    }
+
+    static func from(statusCode: Int, body: String, retryAfter: TimeInterval?) -> JChatError {
         switch statusCode {
         case 401:
             return .apiKeyInvalid
         case 402:
             return .insufficientCredits
         case 429:
-            return .rateLimited(retryAfter: nil)
+            return .rateLimited(retryAfter: retryAfter)
         case 503:
             return .modelNotAvailable(body)
         default:

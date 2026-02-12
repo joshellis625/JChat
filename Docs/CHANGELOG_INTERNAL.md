@@ -1,5 +1,13 @@
 # Internal Changelog
 
+## 2026-02-11
+- Made V2 conversation shell the documented primary app surface.
+- Updated canonical docs to reflect current `ConversationStore` + V2 architecture.
+- Documented OpenRouter pipeline refactor status (`ModelCallRequest`, retry policy, hardened SSE parsing).
+- Added explicit V2 stability guidance for long-chat behavior and streaming updates.
+- Updated regression checklist for freeze-focused QA (typing + scrolling + streaming).
+- Added archive clarity guidance so historical docs are not mistaken for current behavior.
+
 ## 2026-02-10
 - Standardized docs on a no-PR, no-CI solo workflow.
 - Added explicit push-approval gate to workflow guidance.

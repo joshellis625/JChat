@@ -91,16 +91,6 @@ struct SettingsView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
-
-                    // TODO - REMOVE ANY APP GATING TIED TO A DEFAULT MODEL SELECTION. A default model for new chats can be implemented in future onboarding wizard.
-                    if selectedModelID == nil {
-                        HStack(spacing: 6) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("A Global Default Model is required to use the app.")
-                        }
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(Color.red)
-                    }
                 } header: {
                     Text("Defaults")
                 } footer: {

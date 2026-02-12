@@ -1,24 +1,34 @@
-# JChat Roadmap
+# JChat Roadmap (V2)
 
-## Active Priorities
-1. UI/UX bugfixes, refinement, improvement, Apple HIG, Liquid Glass, animations, UI/UX creativity and high quality visual elements free of bugs and easily fixable bugs.
-2. Confirm whether OpenRouter backend implementation remains the ideal and most effective foundation, or if other methods should be considered.
-3. Documentation cohesion and reduced duplication of overlapping documentation/.md files.
-4. Reliability guardrails via targeted tests
-5. Honing in on the perfect effective solo-dev workflow/playbook.
+## Current Priority Order
+1. Freeze prevention and transcript stability in long chats.
+2. V2 UI polish toward a clean ChatGPT-style experience.
+3. Reliability and consistency of OpenRouter streaming behavior.
+4. Documentation consistency and low-friction solo workflow.
+5. Controlled feature re-expansion only after stability is locked.
+
+## Active Workstream: V2 Stabilization
+- Keep V2 shell as default and continue reducing unnecessary UI layers.
+- Maintain stable typing/scrolling under long transcripts.
+- Keep streaming smooth and visible with reliable bottom-follow behavior.
+- Ensure per-message metadata (tokens/cost/time) is accurate and clear.
 
 ## Near-Term Backlog
-- Improved message composer features
-- Ensure robust data storage
-- Export chat conversations to full raw OpenRouter JSON
-- Export chat conversations to Markdown format
-- Better code-block contrast in chat interface markdown rendering
+- Improve conversation list density and readability.
+- Add a simple optional “show older messages” affordance when stability truncation is active.
+- Add additional tests around `ConversationStore` streaming and cancellation edge cases.
+- Add targeted UI tests for long-chat scroll + send/regenerate sequences.
+- Keep visual system neutral/system-native (material first, no cartoon gradients).
+
+## Feature Return Queue (After Stability)
+- Export conversation to raw OpenRouter JSON.
+- Optional markdown rendering mode (feature-flagged).
+- Improved keyboard shortcut set for power use.
+- First-launch onboarding flow.
 
 ## Future Exploration
-- iOS + macOS Universal Support
-- First-launch onboarding
-- Keyboard Shortcuts
-- Memory feature across chats
-- Tool/function calling controls
-- SillyTavern character import
-- Provider routing controls
+- iOS runtime polish and feature parity.
+- Cross-device sync approach for chats/settings.
+- Tool/function calling controls.
+- Memory features across chats.
+- Provider routing controls.

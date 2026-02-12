@@ -9,7 +9,7 @@ import SwiftData
 struct InlineModelPicker: View {
     @Binding var selectedModelID: String?
     @Bindable var modelManager: ModelManager
-    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
 
     @State private var showingPopover = false
     @State private var showingFullManager = false
@@ -46,7 +46,7 @@ struct InlineModelPicker: View {
 
     private var selectedModelName: String {
         guard let id = selectedModelID else { return "Select Model" }
-        if let model = modelManager.filteredModels.first(where: { $0.id == id }) ?? modelManager.favoriteModels.first(where: { $0.id == id }) {
+        if let model = cachedModels.first(where: { $0.id == id }) {
             return model.displayName
         }
         // Fallback: show the ID in a readable form
@@ -58,7 +58,6 @@ struct InlineModelPicker: View {
 
     // MARK: - Popover Content
     // TODO - Find a better UI element with less rounded corners and one that fits all text without chopping it off. Also, the current view is just ugly to me.
-    // TODO - Inline Model selector erroneously maintains provider filter in main model manager. That should happen and in model manager should only be a temporary search aid, not a saved parameter.
     private var pickerPopover: some View {
         VStack(spacing: 0) {
             // Search
@@ -137,7 +136,7 @@ struct InlineModelPicker: View {
     // MARK: - Filtered Lists
 
     private var filteredFavorites: [CachedModel] {
-        let favorites = modelManager.favoriteModels
+        let favorites = sortModels(cachedModels.filter { $0.isFavorite })
         if pickerSearchText.isEmpty { return favorites }
         let query = pickerSearchText.lowercased()
         return favorites.filter {
@@ -148,13 +147,26 @@ struct InlineModelPicker: View {
     }
 
     private var filteredAllModels: [CachedModel] {
-        let all = modelManager.filteredModels
+        let all = sortModels(cachedModels)
         if pickerSearchText.isEmpty { return Array(all.prefix(50)) } // Limit for performance
         let query = pickerSearchText.lowercased()
         return all.filter {
             $0.name.lowercased().contains(query) ||
             $0.id.lowercased().contains(query) ||
             $0.providerName.lowercased().contains(query)
+        }
+    }
+
+    private func sortModels(_ models: [CachedModel]) -> [CachedModel] {
+        switch modelManager.sortOrder {
+        case .name:
+            return models.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .priceAsc:
+            return models.sorted { ($0.promptPricePerMillion + $0.completionPricePerMillion) < ($1.promptPricePerMillion + $1.completionPricePerMillion) }
+        case .priceDesc:
+            return models.sorted { ($0.promptPricePerMillion + $0.completionPricePerMillion) > ($1.promptPricePerMillion + $1.completionPricePerMillion) }
+        case .contextLength:
+            return models.sorted { $0.contextLength > $1.contextLength }
         }
     }
 
