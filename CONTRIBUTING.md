@@ -24,11 +24,15 @@ Before pushing:
 4. Any changed behavior is documented.
 5. Risks and follow-up work are recorded in notes/changelog.
 
+## UI Design Standards
+- Source of truth: [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui) and current Apple HIG direction.
+- Prefer native SwiftUI components, Liquid Glass/material surfaces, and SF Symbols.
+
 ## V2 Stability Gate
 When changes touch transcript rendering, streaming, or input behavior:
 1. Validate long-chat scrolling (including while typing).
 2. Validate streaming auto-scroll and stop/regenerate flows.
-3. Use `/Users/josh/Projects/JChat/Docs/REGRESSION_CHECKLIST.md` before push.
+3. Use the consolidated regression checklist in `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md` before push.
 
 ## Recommended Solo Workflow
 1. For code changes, create branch: `git checkout -b codex/<topic>`. For docs-only changes, work on `main`.
@@ -88,23 +92,12 @@ Rules to prevent mess:
 - No PR flow is used.
 
 ## Preferred Validation Commands (macOS / XcodeBuildMCP)
-Fast default:
-```bash
-xcodebuildmcp macos build --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
-```
-
-Launch/stop sanity check:
-```bash
-xcodebuildmcp macos build-and-run --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
-xcodebuildmcp macos stop --app-name JChat --output text
-```
-
-Full suite:
-```bash
-xcodebuildmcp macos test --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
-```
+Canonical commands and defaults:
+- `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md`
 
 Policy notes:
 - Prefer macOS XcodeBuildMCP workflows in this repo.
+- Use `xcodebuildmcp` for all Xcode tasks in this repo; do not use raw `xcodebuild`.
 - Avoid simulator-target validation in the default iteration loop.
 - If a client does not expose wrapper tools, run `xcodebuildmcp ...` directly in terminal.
+- Do not keep re-setting project/scheme defaults on every new thread once they are configured.

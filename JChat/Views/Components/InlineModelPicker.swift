@@ -6,6 +6,9 @@
 import SwiftUI
 import SwiftData
 import Foundation
+#if os(macOS)
+import AppKit
+#endif
 
 struct InlineModelPicker: View {
     @Binding var selectedModelID: String?
@@ -20,30 +23,25 @@ struct InlineModelPicker: View {
         Button {
             showingPopover = true
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: 7) {
                 Image(systemName: "cpu")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Model")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary)
-                    Text(selectedModelName)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 8)
+                Text(selectedModelName)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .minimumScaleFactor(0.85)
+                    .allowsTightening(true)
 
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 9)
             .padding(.vertical, 7)
-            .frame(minWidth: 230, alignment: .leading)
+            .frame(width: preferredInlineWidth, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 11, style: .continuous)
                     .fill(.thinMaterial)
@@ -64,14 +62,26 @@ struct InlineModelPicker: View {
 
     private var selectedModelName: String {
         guard let id = selectedModelID else { return "Select Model" }
-        if let model = cachedModels.first(where: { $0.id == id }) {
-            return model.displayName
-        }
-        // Fallback: show the ID in a readable form
-        if let slashIndex = id.lastIndex(of: "/") {
-            return String(id[id.index(after: slashIndex)...])
-        }
-        return id
+        return ModelNaming.displayName(forModelID: id, namesByID: modelNamesByID)
+    }
+
+    private var preferredInlineWidth: CGFloat {
+        let estimated = measuredSelectedModelNameWidth + 52
+        return max(estimated, 120)
+    }
+
+    private var measuredSelectedModelNameWidth: CGFloat {
+        #if os(macOS)
+        let font = NSFont.systemFont(ofSize: 15, weight: .semibold)
+        let width = (selectedModelName as NSString).size(withAttributes: [.font: font]).width
+        return ceil(width)
+        #else
+        return CGFloat(selectedModelName.count) * 8.5
+        #endif
+    }
+
+    private var modelNamesByID: [String: String] {
+        ModelNaming.namesByID(from: cachedModels)
     }
 
     private var pickerPopover: some View {
@@ -231,7 +241,7 @@ struct InlineModelPicker: View {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(alignment: .center, spacing: 6) {
-                        Text(model.displayName)
+                        Text(model.uiDisplayName)
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .lineLimit(1)
 
@@ -241,7 +251,7 @@ struct InlineModelPicker: View {
                     }
 
                     HStack(spacing: 6) {
-                        Text(model.providerName)
+                        Text(model.modelSlug)
                             .font(.system(size: 11, weight: .medium, design: .rounded))
                             .foregroundStyle(.secondary)
                         Text("•")

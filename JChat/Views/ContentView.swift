@@ -12,19 +12,11 @@ private enum TextSizeConfig {
     static let minimum: CGFloat = 10
     static let maximum: CGFloat = 20
     static let step: CGFloat = 1
-    static let startupDefaultSize: CGFloat = 15
-    static let resetSize: CGFloat = 14
-    static let previousDefaultSize: Double = 14
-}
-
-private enum TextSizeNotification {
-    static let increase = Notification.Name("JChatTextSizeIncrease")
-    static let decrease = Notification.Name("JChatTextSizeDecrease")
-    static let reset = Notification.Name("JChatTextSizeReset")
+    static let defaultSize: CGFloat = 15
 }
 
 private struct TextBaseSizeKey: EnvironmentKey {
-    static let defaultValue: CGFloat = TextSizeConfig.startupDefaultSize
+    static let defaultValue: CGFloat = TextSizeConfig.defaultSize
 }
 
 extension EnvironmentValues {
@@ -39,7 +31,7 @@ struct ContentView: View {
     @State private var modelManager = ModelManager()
     @State private var showingSettings = false
     @State private var showingModelManager = false
-    @State private var textBaseSize: CGFloat = TextSizeConfig.startupDefaultSize
+    @State private var textBaseSize: CGFloat = TextSizeConfig.defaultSize
     @State private var hasAPIKey = false
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
@@ -71,7 +63,9 @@ struct ContentView: View {
                 } label: {
                     Label("New Chat", systemImage: "plus")
                 }
-                .keyboardShortcut("n", modifiers: [.command])
+            }
+            ToolbarItem {
+                textSizeControl
             }
             ToolbarItem {
                 Button {
@@ -104,6 +98,7 @@ struct ContentView: View {
             loadTextSize()
             loadAPIKeyStatus()
             await modelManager.refreshIfStale(context: modelContext)
+            await conversationStore.generatePendingAutoTitles(in: modelContext)
             if conversationStore.selectedChat == nil {
                 conversationStore.selectedChat = chats.first
             }
@@ -113,26 +108,25 @@ struct ContentView: View {
                 conversationStore.selectedChat = chats.first
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: TextSizeNotification.increase)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.textSizeIncrease)) { _ in
             adjustTextSize(by: TextSizeConfig.step)
         }
-        .onReceive(NotificationCenter.default.publisher(for: TextSizeNotification.decrease)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.textSizeDecrease)) { _ in
             adjustTextSize(by: -TextSizeConfig.step)
         }
-        .onReceive(NotificationCenter.default.publisher(for: TextSizeNotification.reset)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.textSizeReset)) { _ in
             resetTextSize()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.openSettings)) { _ in
+            showingSettings = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.newChat)) { _ in
+            conversationStore.createNewChat(in: modelContext)
         }
     }
 
     private func loadTextSize() {
         let settings = AppSettings.fetchOrCreate(in: modelContext)
-        if !settings.didApplyTextSizeDefaultMigration {
-            if settings.textPointSize == TextSizeConfig.previousDefaultSize {
-                settings.textPointSize = Double(TextSizeConfig.startupDefaultSize)
-            }
-            settings.didApplyTextSizeDefaultMigration = true
-            try? modelContext.save()
-        }
         textBaseSize = clampedTextSize(settings.textPointSize)
     }
 
@@ -144,8 +138,8 @@ struct ContentView: View {
     }
 
     private func resetTextSize() {
-        guard textBaseSize != TextSizeConfig.resetSize else { return }
-        textBaseSize = TextSizeConfig.resetSize
+        guard textBaseSize != TextSizeConfig.defaultSize else { return }
+        textBaseSize = TextSizeConfig.defaultSize
         saveTextSize()
     }
 
@@ -157,6 +151,37 @@ struct ContentView: View {
 
     private func clampedTextSize(_ value: Double) -> CGFloat {
         CGFloat(min(max(value, Double(TextSizeConfig.minimum)), Double(TextSizeConfig.maximum)))
+    }
+
+    private var canDecreaseTextSize: Bool {
+        textBaseSize > TextSizeConfig.minimum
+    }
+
+    private var canIncreaseTextSize: Bool {
+        textBaseSize < TextSizeConfig.maximum
+    }
+
+    private var textSizeControl: some View {
+        ControlGroup {
+            Button {
+                adjustTextSize(by: -TextSizeConfig.step)
+            } label: {
+                Label("Decrease Text Size", systemImage: "textformat.size.smaller")
+            }
+            .labelStyle(.iconOnly)
+            .help("Zoom Out")
+            .disabled(!canDecreaseTextSize)
+
+            Button {
+                adjustTextSize(by: TextSizeConfig.step)
+            } label: {
+                Label("Increase Text Size", systemImage: "textformat.size.larger")
+            }
+            .labelStyle(.iconOnly)
+            .help("Zoom In")
+            .disabled(!canIncreaseTextSize)
+        }
+        .controlSize(.regular)
     }
 
     private func loadAPIKeyStatus() {

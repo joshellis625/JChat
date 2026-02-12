@@ -14,6 +14,7 @@ final class AppSettings {
     var modelCacheMaxAge: TimeInterval
     var lastModelFetchDate: Date?
     var textPointSize: Double = 15.0
+    // Retained for schema stability after the one-time migration experiment.
     var didApplyTextSizeDefaultMigration: Bool = false
 
     init() {

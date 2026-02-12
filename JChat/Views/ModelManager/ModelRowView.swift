@@ -24,7 +24,7 @@ struct ModelRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 // Top row: name + badges
                 HStack(spacing: 6) {
-                    Text(model.displayName)
+                    Text(model.uiDisplayName)
                         .font(.body.weight(.semibold))
                         .lineLimit(1)
 
@@ -39,9 +39,9 @@ struct ModelRowView: View {
                     }
                 }
 
-                // Bottom row: provider + moderation
+                // Bottom row: slug + moderation
                 HStack(spacing: 8) {
-                    Text(model.providerName)
+                    Text(model.modelSlug)
                         .font(.caption)
                         .foregroundStyle(.secondary)
 

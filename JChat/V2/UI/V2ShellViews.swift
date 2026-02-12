@@ -6,7 +6,7 @@
 import SwiftUI
 import SwiftData
 
-private let v2DefaultTextBaseSize: CGFloat = 14
+private let v2DefaultTextBaseSize: CGFloat = 15
 
 private func v2TextSize(_ original: CGFloat, baseSize: CGFloat) -> CGFloat {
     original + (baseSize - v2DefaultTextBaseSize)
@@ -14,6 +14,7 @@ private func v2TextSize(_ original: CGFloat, baseSize: CGFloat) -> CGFloat {
 
 struct V2SidebarView: View {
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
+    @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
     @Bindable var store: ConversationStore
     @Environment(\.modelContext) private var modelContext
     @State private var chatToDelete: Chat?
@@ -36,21 +37,37 @@ struct V2SidebarView: View {
             .padding(.top, 4)
             .padding(.horizontal, 4)
 
-            List {
-                ForEach(chats) { chat in
-                    Button {
-                        store.selectedChat = chat
-                    } label: {
-                        V2SidebarRow(chat: chat, isSelected: store.selectedChat?.id == chat.id)
-                    }
-                    .buttonStyle(.plain)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .contextMenu {
-                        Button("Delete", role: .destructive) {
-                            chatToDelete = chat
+            ScrollViewReader { proxy in
+                List {
+                    ForEach(chats) { chat in
+                        V2SidebarRow(
+                            chat: chat,
+                            isSelected: store.selectedChat?.id == chat.id,
+                            isGeneratingTitle: store.isGeneratingTitle(for: chat.id),
+                            didFailGeneratingTitle: store.didFailGeneratingTitle(for: chat.id),
+                            selectedModelName: chat.selectedModelID.map {
+                                ModelNaming.displayName(forModelID: $0, namesByID: modelNamesByID)
+                            }
+                        )
+                        .id(chat.id)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            store.selectedChat = chat
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .contextMenu {
+                            Button("Delete", role: .destructive) {
+                                chatToDelete = chat
+                            }
                         }
                     }
+                }
+                .onChange(of: store.selectedChat?.id) { _, _ in
+                    scrollToSelectedChat(using: proxy)
+                }
+                .onAppear {
+                    scrollToSelectedChat(using: proxy)
                 }
             }
             .listStyle(.plain)
@@ -84,19 +101,49 @@ struct V2SidebarView: View {
                 store.selectedChat = chats.first
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.deleteSelectedChat)) { _ in
+            guard chatToDelete == nil else { return }
+            chatToDelete = store.selectedChat
+        }
+    }
+
+    private var modelNamesByID: [String: String] {
+        ModelNaming.namesByID(from: cachedModels)
+    }
+
+    private func scrollToSelectedChat(using proxy: ScrollViewProxy) {
+        guard let selectedID = store.selectedChat?.id else { return }
+        DispatchQueue.main.async {
+            proxy.scrollTo(selectedID, anchor: .top)
+        }
     }
 }
 
 private struct V2SidebarRow: View {
     let chat: Chat
     let isSelected: Bool
+    let isGeneratingTitle: Bool
+    let didFailGeneratingTitle: Bool
+    let selectedModelName: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(chat.title)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
+            if isGeneratingTitle {
+                AutoTitleLoadingTitleView(fontSize: 15, width: 170)
+            } else {
+                HStack(spacing: 6) {
+                    Text(displayTitle)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    if didFailGeneratingTitle && chat.title == "New Chat" {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.orange)
+                    }
+                }
+            }
 
             Text(previewText)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
@@ -104,8 +151,8 @@ private struct V2SidebarRow: View {
                 .lineLimit(1)
 
             HStack(spacing: 8) {
-                if let model = chat.selectedModelID {
-                    Text(displayModelName(model))
+                if let selectedModelName {
+                    Text(selectedModelName)
                         .lineLimit(1)
                 } else {
                     Text("No model")
@@ -119,13 +166,13 @@ private struct V2SidebarRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 82, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 13, style: .continuous)
                 .fill(isSelected ? Color.primary.opacity(0.12) : Color.clear)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 13, style: .continuous)
                 .stroke(isSelected ? Color.primary.opacity(0.18) : Color.clear, lineWidth: 1)
         )
     }
@@ -139,11 +186,9 @@ private struct V2SidebarRow: View {
         return "New conversation"
     }
 
-    private func displayModelName(_ id: String) -> String {
-        if let slashIndex = id.lastIndex(of: "/") {
-            return String(id[id.index(after: slashIndex)...])
-        }
-        return id
+    private var displayTitle: String {
+        let trimmed = chat.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "New Chat" : trimmed
     }
 
     private var chatTimestampText: String {
@@ -169,6 +214,7 @@ struct V2ConversationPane: View {
     let chat: Chat
 
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
     @Environment(\.textBaseSize) private var textBaseSize
     @State private var rows: [MessageRowViewData] = []
     @State private var totalMessageCount = 0
@@ -320,10 +366,22 @@ struct V2ConversationPane: View {
     private var headerCard: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(chat.title)
-                    .font(.system(size: v2TextSize(17, baseSize: textBaseSize), weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+                if store.isGeneratingTitle(for: chat.id) {
+                    AutoTitleLoadingTitleView(fontSize: v2TextSize(17, baseSize: textBaseSize), width: 220)
+                } else {
+                    HStack(spacing: 8) {
+                        Text(displayTitle)
+                            .font(.system(size: v2TextSize(17, baseSize: textBaseSize), weight: .semibold, design: .rounded))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+
+                        if store.didFailGeneratingTitle(for: chat.id) && chat.title == "New Chat" {
+                            Text("Title generation failed")
+                                .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                }
 
                 Text("\(chat.totalTokens) tokens • \(chat.totalCost, format: .currency(code: "USD"))")
                     .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
@@ -342,6 +400,7 @@ struct V2ConversationPane: View {
                 ),
                 modelManager: modelManager
             )
+            .layoutPriority(2)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
@@ -353,6 +412,11 @@ struct V2ConversationPane: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(V2Palette.panelBorder, lineWidth: 1)
         )
+    }
+
+    private var displayTitle: String {
+        let trimmed = chat.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "New Chat" : trimmed
     }
 
     private func scrollToBottom(proxy: ScrollViewProxy, animated: Bool) {
@@ -407,8 +471,37 @@ struct V2ConversationPane: View {
         V2MessageRow(
             row: row,
             displayedContent: liveStreamingContent ?? row.content,
-            isLiveStreaming: liveAssistantID == row.id
+            isLiveStreaming: liveAssistantID == row.id,
+            resolvedModelName: row.modelID.map { ModelNaming.displayName(forModelID: $0, namesByID: modelNamesByID) }
         )
+    }
+
+    private var modelNamesByID: [String: String] {
+        ModelNaming.namesByID(from: cachedModels)
+    }
+}
+
+private struct AutoTitleLoadingTitleView: View {
+    let fontSize: CGFloat
+    let width: CGFloat
+    @State private var pulse = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 6, style: .continuous)
+            .fill(Color.primary.opacity(0.14))
+            .frame(width: width, height: max(16, fontSize + 2))
+            .overlay(alignment: .leading) {
+                Text("Generating title...")
+                    .font(.system(size: fontSize, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+            }
+            .opacity(pulse ? 0.45 : 0.92)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                    pulse = true
+                }
+            }
     }
 }
 
@@ -416,6 +509,7 @@ private struct V2MessageRow: View, Equatable {
     let row: MessageRowViewData
     let displayedContent: String
     let isLiveStreaming: Bool
+    let resolvedModelName: String?
 
     @Environment(\.textBaseSize) private var textBaseSize
 
@@ -425,7 +519,8 @@ private struct V2MessageRow: View, Equatable {
     static func == (lhs: V2MessageRow, rhs: V2MessageRow) -> Bool {
         lhs.row == rhs.row &&
         lhs.displayedContent == rhs.displayedContent &&
-        lhs.isLiveStreaming == rhs.isLiveStreaming
+        lhs.isLiveStreaming == rhs.isLiveStreaming &&
+        lhs.resolvedModelName == rhs.resolvedModelName
     }
 
     var body: some View {
@@ -435,8 +530,8 @@ private struct V2MessageRow: View, Equatable {
             }
 
             VStack(alignment: isUser ? .trailing : .leading, spacing: 5) {
-                if !isUser, let modelID = row.modelID {
-                    Text(displayModelName(modelID))
+                if !isUser, let resolvedModelName {
+                    Text(resolvedModelName)
                         .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -494,12 +589,6 @@ private struct V2MessageRow: View, Equatable {
         return String(displayedContent.prefix(renderCharacterLimit)) + "\n\n[Truncated in stability mode]"
     }
 
-    private func displayModelName(_ id: String) -> String {
-        if let slashIndex = id.lastIndex(of: "/") {
-            return String(id[id.index(after: slashIndex)...])
-        }
-        return id
-    }
 }
 
 private struct V2Composer: View {

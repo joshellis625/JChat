@@ -100,20 +100,26 @@ final class CachedModel {
         return result
     }
 
+    var uiDisplayName: String {
+        ModelNaming.cleanedDisplayName(for: self)
+    }
+
+    var modelSlug: String {
+        ModelNaming.slug(fromModelID: id)
+    }
+
     // MARK: - Pricing
 
     var isFree: Bool {
-        let prompt = Double(promptPricing) ?? 0.0
-        let completion = Double(completionPricing) ?? 0.0
-        return prompt == 0 && completion == 0
+        nonNegativePromptPricePerToken == 0 && nonNegativeCompletionPricePerToken == 0
     }
 
     var promptPricePerMillion: Double {
-        (Double(promptPricing) ?? 0.0) * 1_000_000
+        nonNegativePromptPricePerToken * 1_000_000
     }
 
     var completionPricePerMillion: Double {
-        (Double(completionPricing) ?? 0.0) * 1_000_000
+        nonNegativeCompletionPricePerToken * 1_000_000
     }
 
     var displayPrice: String {
@@ -133,9 +139,17 @@ final class CachedModel {
     }
 
     func calculateCost(promptTokens: Int, completionTokens: Int) -> Double {
-        let promptCost = Double(promptTokens) * (Double(promptPricing) ?? 0.0)
-        let completionCost = Double(completionTokens) * (Double(completionPricing) ?? 0.0)
+        let promptCost = Double(promptTokens) * nonNegativePromptPricePerToken
+        let completionCost = Double(completionTokens) * nonNegativeCompletionPricePerToken
         return promptCost + completionCost
+    }
+
+    private var nonNegativePromptPricePerToken: Double {
+        max(0, Double(promptPricing) ?? 0.0)
+    }
+
+    private var nonNegativeCompletionPricePerToken: Double {
+        max(0, Double(completionPricing) ?? 0.0)
     }
 
     private func formatPrice(_ price: Double) -> String {

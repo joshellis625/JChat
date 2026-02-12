@@ -81,7 +81,7 @@ struct SettingsView: View {
                     Picker("Default Model", selection: $selectedModelID) {
                         Text("None").tag(String?.none)
                         ForEach(favoriteModels, id: \.id) { model in
-                            Text(model.displayName).tag(Optional(model.id))
+                            Text(model.uiDisplayName).tag(Optional(model.id))
                         }
                     }
 

@@ -45,30 +45,42 @@ struct JChatApp: App {
 
         #if os(macOS)
         .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("New Chat") {
+                    NotificationCenter.default.post(name: AppCommandNotification.newChat, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: [.command])
+            }
+
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings...") {
+                    NotificationCenter.default.post(name: AppCommandNotification.openSettings, object: nil)
+                }
+                .keyboardShortcut(",", modifiers: [.command])
+            }
+
             CommandGroup(after: .textEditing) {
                 Button("Zoom In") {
-                    NotificationCenter.default.post(
-                        name: Notification.Name("JChatTextSizeIncrease"),
-                        object: nil
-                    )
+                    NotificationCenter.default.post(name: AppCommandNotification.textSizeIncrease, object: nil)
                 }
                 .keyboardShortcut("=", modifiers: [.command])
 
                 Button("Zoom Out") {
-                    NotificationCenter.default.post(
-                        name: Notification.Name("JChatTextSizeDecrease"),
-                        object: nil
-                    )
+                    NotificationCenter.default.post(name: AppCommandNotification.textSizeDecrease, object: nil)
                 }
                 .keyboardShortcut("-", modifiers: [.command])
 
                 Button("Actual Size") {
-                    NotificationCenter.default.post(
-                        name: Notification.Name("JChatTextSizeReset"),
-                        object: nil
-                    )
+                    NotificationCenter.default.post(name: AppCommandNotification.textSizeReset, object: nil)
                 }
                 .keyboardShortcut("0", modifiers: [.command])
+            }
+
+            CommandMenu("Chat") {
+                Button("Delete Chat") {
+                    NotificationCenter.default.post(name: AppCommandNotification.deleteSelectedChat, object: nil)
+                }
+                .keyboardShortcut(.delete, modifiers: [.command])
             }
 
             CommandGroup(replacing: .help) {
