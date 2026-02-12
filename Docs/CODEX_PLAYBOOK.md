@@ -27,7 +27,7 @@ Example:
 
 ## XcodeBuildMCP Workflow (Preferred)
 When available, ask Codex to:
-1. Build/test with `XcodeBuildMCP` (or fallback shell if scheme destination requires it).
+1. Use macOS `XcodeBuildMCP` workflows first (`build`, then `build-and-run` + `stop` when needed).
 2. Run focused UI checks for V2 views.
 3. Iterate with screenshot-backed feedback.
 
@@ -41,9 +41,21 @@ xcodebuildmcp tools
 xcodebuildmcp doctor
 ```
 
+Fast validation commands:
+```bash
+xcodebuildmcp macos build --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+xcodebuildmcp macos build-and-run --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+xcodebuildmcp macos stop --app-name JChat --output text
+```
+
+Full suite command (use at checkpoints / pre-push):
+```bash
+xcodebuildmcp macos test --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+```
+
 ## Guardrails
 - Don’t batch unrelated work in one branch.
-- Don’t skip local build/test before claiming done.
+- Don’t skip local validation before claiming done: build is the default loop; run full tests for higher-risk changes.
 - Don’t reintroduce heavy UI layering while stability issues are active.
 - No PR/CI flow for this project.
 - Push only with explicit approval.

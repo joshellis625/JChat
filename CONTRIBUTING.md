@@ -18,10 +18,11 @@ Use clear conventional commit prefixes:
 
 ## Definition of Done
 Before pushing:
-1. Build and tests pass locally.
-2. UI changes include a manual UX check.
-3. Any changed behavior is documented.
-4. Risks and follow-up work are recorded in notes/changelog.
+1. Local macOS build passes (`xcodebuildmcp macos build`).
+2. Run full local tests (`xcodebuildmcp macos test`) for risky behavior changes (conversation flow, streaming, persistence, networking, usage accounting) and before final push checkpoints.
+3. UI changes include a manual UX check.
+4. Any changed behavior is documented.
+5. Risks and follow-up work are recorded in notes/changelog.
 
 ## V2 Stability Gate
 When changes touch transcript rendering, streaming, or input behavior:
@@ -85,3 +86,25 @@ Rules to prevent mess:
 - CI is disabled by choice for this solo workflow.
 - Local validation is the quality gate.
 - No PR flow is used.
+
+## Preferred Validation Commands (macOS / XcodeBuildMCP)
+Fast default:
+```bash
+xcodebuildmcp macos build --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+```
+
+Launch/stop sanity check:
+```bash
+xcodebuildmcp macos build-and-run --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+xcodebuildmcp macos stop --app-name JChat --output text
+```
+
+Full suite:
+```bash
+xcodebuildmcp macos test --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+```
+
+Policy notes:
+- Prefer macOS XcodeBuildMCP workflows in this repo.
+- Avoid simulator-target validation in the default iteration loop.
+- If a client does not expose wrapper tools, run `xcodebuildmcp ...` directly in terminal.

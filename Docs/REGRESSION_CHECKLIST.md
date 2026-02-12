@@ -3,9 +3,9 @@
 Run this before shipping any change that touches chat behavior, streaming, layout, or persistence.
 
 ## Build + Launch
-- [ ] Build succeeds.
-- [ ] Tests pass.
-- [ ] App launches with existing local data.
+- [ ] Build succeeds (`xcodebuildmcp macos build`).
+- [ ] For risky behavior changes, tests pass (`xcodebuildmcp macos test`).
+- [ ] App launches and can be stopped cleanly (`xcodebuildmcp macos build-and-run` + `xcodebuildmcp macos stop --app-name JChat`).
 
 ## Core V2 Chat Flow
 - [ ] Create new chat.
@@ -42,7 +42,7 @@ Run this before shipping any change that touches chat behavior, streaming, layou
 
 ## Setup Guardrails
 - [ ] Missing API key shows setup UI.
-- [ ] Configured API key + model allows normal chat usage.
+- [ ] Configured API key allows normal chat usage (model can be selected per chat if no global default is set).
 
 ## Rendering Mode
 - [ ] Plain text rendering works for assistant output.

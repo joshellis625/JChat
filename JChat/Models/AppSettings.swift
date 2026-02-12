@@ -13,12 +13,14 @@ final class AppSettings {
     var defaultModelID: String?
     var modelCacheMaxAge: TimeInterval
     var lastModelFetchDate: Date?
-    var textSizeMultiplier: Double = 1.0
+    var textPointSize: Double = 15.0
+    var didApplyTextSizeDefaultMigration: Bool = false
 
     init() {
         self.id = UUID()
         self.modelCacheMaxAge = 86400 // 24 hours
-        self.textSizeMultiplier = 1.0
+        self.textPointSize = 15.0
+        self.didApplyTextSizeDefaultMigration = false
     }
 
     static func fetchOrCreate(in context: ModelContext) -> AppSettings {

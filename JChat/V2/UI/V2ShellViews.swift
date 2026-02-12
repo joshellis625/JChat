@@ -6,6 +6,12 @@
 import SwiftUI
 import SwiftData
 
+private let v2DefaultTextBaseSize: CGFloat = 14
+
+private func v2TextSize(_ original: CGFloat, baseSize: CGFloat) -> CGFloat {
+    original + (baseSize - v2DefaultTextBaseSize)
+}
+
 struct V2SidebarView: View {
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
     @Bindable var store: ConversationStore
@@ -163,7 +169,7 @@ struct V2ConversationPane: View {
     let chat: Chat
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.textSizeMultiplier) private var textSizeMultiplier
+    @Environment(\.textBaseSize) private var textBaseSize
     @State private var rows: [MessageRowViewData] = []
     @State private var totalMessageCount = 0
     @State private var lastStreamAutoScrollAt = ContinuousClock.now
@@ -184,7 +190,7 @@ struct V2ConversationPane: View {
                 List {
                     if totalMessageCount > rows.count {
                         Text("Showing most recent \(rows.count) messages for stability")
-                            .font(.system(size: 11 * textSizeMultiplier, weight: .semibold, design: .rounded))
+                            .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 4, trailing: 12))
@@ -251,11 +257,11 @@ struct V2ConversationPane: View {
                         .foregroundStyle(.yellow)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(error)
-                            .font(.system(size: 13 * textSizeMultiplier, weight: .semibold, design: .rounded))
+                            .font(.system(size: v2TextSize(13, baseSize: textBaseSize), weight: .semibold, design: .rounded))
                             .foregroundStyle(.primary)
                         if let suggestion = store.errorSuggestion {
                             Text(suggestion)
-                                .font(.system(size: 12 * textSizeMultiplier, weight: .medium, design: .rounded))
+                                .font(.system(size: v2TextSize(12, baseSize: textBaseSize), weight: .medium, design: .rounded))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -315,12 +321,12 @@ struct V2ConversationPane: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(chat.title)
-                    .font(.system(size: 17 * textSizeMultiplier, weight: .semibold, design: .rounded))
+                    .font(.system(size: v2TextSize(17, baseSize: textBaseSize), weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Text("\(chat.totalTokens) tokens • \(chat.totalCost, format: .currency(code: "USD"))")
-                    .font(.system(size: 11 * textSizeMultiplier, weight: .medium, design: .rounded))
+                    .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
             }
 
@@ -411,7 +417,7 @@ private struct V2MessageRow: View, Equatable {
     let displayedContent: String
     let isLiveStreaming: Bool
 
-    @Environment(\.textSizeMultiplier) private var textSizeMultiplier
+    @Environment(\.textBaseSize) private var textBaseSize
 
     private var isUser: Bool { row.role == .user }
     private let renderCharacterLimit = 6000
@@ -431,13 +437,13 @@ private struct V2MessageRow: View, Equatable {
             VStack(alignment: isUser ? .trailing : .leading, spacing: 5) {
                 if !isUser, let modelID = row.modelID {
                     Text(displayModelName(modelID))
-                        .font(.system(size: 11 * textSizeMultiplier, weight: .semibold, design: .rounded))
+                        .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Text(renderedContent)
-                    .font(.system(size: 14 * textSizeMultiplier, weight: .regular, design: .default))
+                    .font(.system(size: v2TextSize(14, baseSize: textBaseSize), weight: .regular, design: .default))
                     .foregroundStyle(.primary)
                     .textSelection(.enabled)
                     .multilineTextAlignment(.leading)
@@ -462,7 +468,7 @@ private struct V2MessageRow: View, Equatable {
                         Text(row.cost, format: .currency(code: "USD"))
                     }
                 }
-                .font(.system(size: 11 * textSizeMultiplier, weight: .medium, design: .rounded))
+                .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
             }
@@ -503,7 +509,7 @@ private struct V2Composer: View {
     let onStop: () -> Void
 
     @State private var draft = ""
-    @Environment(\.textSizeMultiplier) private var textSizeMultiplier
+    @Environment(\.textBaseSize) private var textBaseSize
     @FocusState private var focused: Bool
 
     private var canSend: Bool {
@@ -515,7 +521,7 @@ private struct V2Composer: View {
             TextField("Message OpenRouter...", text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($focused)
-                .font(.system(size: 15 * textSizeMultiplier, weight: .regular, design: .default))
+                .font(.system(size: v2TextSize(15, baseSize: textBaseSize), weight: .regular, design: .default))
                 .foregroundStyle(.primary)
                 .textFieldStyle(.plain)
                 .onSubmit {

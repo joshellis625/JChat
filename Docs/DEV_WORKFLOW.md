@@ -17,16 +17,25 @@
 If unsure, start direct and escalate only if complexity grows.
 
 ## Local Validation Standard
-Primary command:
+Fast iteration default (use this on most edit cycles):
 ```bash
-xcodebuild test -project /Users/josh/Projects/JChat/JChat.xcodeproj -scheme JChat -destination 'platform=macOS,arch=arm64' -derivedDataPath /Users/josh/Projects/JChat/DerivedData
+xcodebuildmcp macos build --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
 ```
 
-Optional MCP checks:
+Launch/stop check (when UI behavior changed):
 ```bash
-xcodebuildmcp doctor
-xcodebuildmcp tools
+xcodebuildmcp macos build-and-run --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+xcodebuildmcp macos stop --app-name JChat --output text
 ```
+
+Full suite check (run before push for risky behavior changes):
+```bash
+xcodebuildmcp macos test --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+```
+
+Rules:
+- Prefer XcodeBuildMCP macOS workflows. Do not use simulator-target validation in the default loop.
+- If an MCP client does not expose a needed wrapper tool, run the equivalent `xcodebuildmcp ...` command directly in terminal.
 
 ## V2 Regression Gate
 Before merge/push, run through:

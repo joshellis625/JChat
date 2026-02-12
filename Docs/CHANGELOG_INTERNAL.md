@@ -1,5 +1,11 @@
 # Internal Changelog
 
+## 2026-02-12
+- Updated workflow docs to prefer macOS-only `xcodebuildmcp` validation in daily loops (build-first, tests at higher-risk checkpoints).
+- Documented explicit run/stop flow using `xcodebuildmcp macos build-and-run` and `xcodebuildmcp macos stop --app-name JChat`.
+- Standardized guidance to avoid simulator-target validation in default iteration.
+- Updated setup guardrail docs to reflect that API key is required while model can be selected per chat when no global default is set.
+
 ## 2026-02-11
 - Made V2 conversation shell the documented primary app surface.
 - Updated canonical docs to reflect current `ConversationStore` + V2 architecture.

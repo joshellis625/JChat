@@ -15,6 +15,8 @@ Read `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md` first.
 - Character stores identity/system prompt, not per-parameter overrides.
 - Markdown rendering is intentionally disabled right now (plain text transcript rendering in V2 rows).
 - Prefer `XcodeBuildMCP` workflows when available.
+- Default to macOS `XcodeBuildMCP` workflows (`macos build`, `macos build-and-run`, `macos stop`); avoid simulator-target validation in normal iteration.
+- If a wrapper tool is not exposed in the MCP client, run the equivalent `xcodebuildmcp ...` command directly in terminal.
 
 ## Active UI Files
 - `/Users/josh/Projects/JChat/JChat/Views/ContentView.swift`
@@ -30,7 +32,8 @@ Read `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md` first.
 ## Workflow Contract
 - Use `codex/<topic>` branches for code changes.
 - Documentation-only changes can be made directly on `main`.
-- Run local validation before merge.
+- Run local validation before merge: fast loop is `macos build`; run `macos test` for risky behavior changes / pre-push checkpoints.
+- Always run `xcodebuildmcp macos clean --platform macOS ...` before `xcodebuildmcp macos build ...` or `xcodebuildmcp macos build-and-run ...`.
 - No PR and no CI flow.
 - Push only with explicit approval.
 

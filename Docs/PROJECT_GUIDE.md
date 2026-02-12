@@ -92,16 +92,25 @@ Markdown is intentionally disabled in stabilization mode:
   - `/Users/josh/Projects/JChat/JChat/V2/UI/V2ShellViews.swift`
 
 ## Build and Test
-Preferred command (current local standard):
+Fast iteration default (current local standard):
 ```bash
-xcodebuild test -project /Users/josh/Projects/JChat/JChat.xcodeproj -scheme JChat -destination 'platform=macOS,arch=arm64' -derivedDataPath /Users/josh/Projects/JChat/DerivedData
+xcodebuildmcp macos build --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
 ```
 
-Optional MCP-first workflow when available:
+Launch/stop validation:
 ```bash
-xcodebuildmcp doctor
-xcodebuildmcp tools
+xcodebuildmcp macos build-and-run --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+xcodebuildmcp macos stop --app-name JChat --output text
 ```
+
+Full suite validation (use before push for riskier behavior changes):
+```bash
+xcodebuildmcp macos test --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat --configuration Debug --output text
+```
+
+Notes:
+- Prefer XcodeBuildMCP macOS workflows over simulator-target validation for daily iteration.
+- If MCP wrappers are unavailable in a client, run the equivalent `xcodebuildmcp ...` command directly in terminal.
 
 ## Engineering Workflow Standards
 - Code changes: use `codex/<topic>` branch.

@@ -6,16 +6,31 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Text Size Environment Key
+// MARK: - Text Size Environment Key (point size)
 
-private struct TextSizeMultiplierKey: EnvironmentKey {
-    static let defaultValue: Double = 1.0
+private enum TextSizeConfig {
+    static let minimum: CGFloat = 10
+    static let maximum: CGFloat = 20
+    static let step: CGFloat = 1
+    static let startupDefaultSize: CGFloat = 15
+    static let resetSize: CGFloat = 14
+    static let previousDefaultSize: Double = 14
+}
+
+private enum TextSizeNotification {
+    static let increase = Notification.Name("JChatTextSizeIncrease")
+    static let decrease = Notification.Name("JChatTextSizeDecrease")
+    static let reset = Notification.Name("JChatTextSizeReset")
+}
+
+private struct TextBaseSizeKey: EnvironmentKey {
+    static let defaultValue: CGFloat = TextSizeConfig.startupDefaultSize
 }
 
 extension EnvironmentValues {
-    var textSizeMultiplier: Double {
-        get { self[TextSizeMultiplierKey.self] }
-        set { self[TextSizeMultiplierKey.self] = newValue }
+    var textBaseSize: CGFloat {
+        get { self[TextBaseSizeKey.self] }
+        set { self[TextBaseSizeKey.self] = newValue }
     }
 }
 
@@ -24,7 +39,7 @@ struct ContentView: View {
     @State private var modelManager = ModelManager()
     @State private var showingSettings = false
     @State private var showingModelManager = false
-    @State private var textSizeMultiplier: Double = 1.0
+    @State private var textBaseSize: CGFloat = TextSizeConfig.startupDefaultSize
     @State private var hasAPIKey = false
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
@@ -48,7 +63,7 @@ struct ContentView: View {
             }
         }
         .background(V2CanvasBackground())
-        .environment(\.textSizeMultiplier, textSizeMultiplier)
+        .environment(\.textBaseSize, textBaseSize)
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 Button {
@@ -98,11 +113,50 @@ struct ContentView: View {
                 conversationStore.selectedChat = chats.first
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: TextSizeNotification.increase)) { _ in
+            adjustTextSize(by: TextSizeConfig.step)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: TextSizeNotification.decrease)) { _ in
+            adjustTextSize(by: -TextSizeConfig.step)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: TextSizeNotification.reset)) { _ in
+            resetTextSize()
+        }
     }
 
     private func loadTextSize() {
         let settings = AppSettings.fetchOrCreate(in: modelContext)
-        textSizeMultiplier = settings.textSizeMultiplier
+        if !settings.didApplyTextSizeDefaultMigration {
+            if settings.textPointSize == TextSizeConfig.previousDefaultSize {
+                settings.textPointSize = Double(TextSizeConfig.startupDefaultSize)
+            }
+            settings.didApplyTextSizeDefaultMigration = true
+            try? modelContext.save()
+        }
+        textBaseSize = clampedTextSize(settings.textPointSize)
+    }
+
+    private func adjustTextSize(by delta: CGFloat) {
+        let next = clampedTextSize(Double(textBaseSize + delta))
+        guard next != textBaseSize else { return }
+        textBaseSize = next
+        saveTextSize()
+    }
+
+    private func resetTextSize() {
+        guard textBaseSize != TextSizeConfig.resetSize else { return }
+        textBaseSize = TextSizeConfig.resetSize
+        saveTextSize()
+    }
+
+    private func saveTextSize() {
+        let settings = AppSettings.fetchOrCreate(in: modelContext)
+        settings.textPointSize = Double(textBaseSize)
+        try? modelContext.save()
+    }
+
+    private func clampedTextSize(_ value: Double) -> CGFloat {
+        CGFloat(min(max(value, Double(TextSizeConfig.minimum)), Double(TextSizeConfig.maximum)))
     }
 
     private func loadAPIKeyStatus() {

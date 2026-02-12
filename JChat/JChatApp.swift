@@ -45,6 +45,32 @@ struct JChatApp: App {
 
         #if os(macOS)
         .commands {
+            CommandGroup(after: .textEditing) {
+                Button("Zoom In") {
+                    NotificationCenter.default.post(
+                        name: Notification.Name("JChatTextSizeIncrease"),
+                        object: nil
+                    )
+                }
+                .keyboardShortcut("=", modifiers: [.command])
+
+                Button("Zoom Out") {
+                    NotificationCenter.default.post(
+                        name: Notification.Name("JChatTextSizeDecrease"),
+                        object: nil
+                    )
+                }
+                .keyboardShortcut("-", modifiers: [.command])
+
+                Button("Actual Size") {
+                    NotificationCenter.default.post(
+                        name: Notification.Name("JChatTextSizeReset"),
+                        object: nil
+                    )
+                }
+                .keyboardShortcut("0", modifiers: [.command])
+            }
+
             CommandGroup(replacing: .help) {
                 Link("JChat Help", destination: URL(string: "https://jchat.app/help")!)
             }
