@@ -168,9 +168,11 @@ struct V2ConversationPane: View {
     @State private var totalMessageCount = 0
     @State private var lastStreamAutoScrollAt = ContinuousClock.now
     @State private var didInitialBottomScroll = false
+    @State private var errorDismissTask: Task<Void, Never>?
     private let bottomAnchorID = "v2-conversation-bottom-anchor"
     private let streamAutoScrollInterval: Duration = .milliseconds(140)
     private let maxVisibleMessages = 60
+    private let errorAutoDismissDelay: Duration = .seconds(6)
 
     var body: some View {
         VStack(spacing: 8) {
@@ -258,9 +260,18 @@ struct V2ConversationPane: View {
                         }
                     }
                     Spacer()
+                    Button {
+                        dismissErrorBanner()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(12)
                 .surfaceCard(cornerRadius: 12, borderOpacity: 0.14, fillOpacity: 0.06)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             V2Composer(
@@ -280,6 +291,24 @@ struct V2ConversationPane: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+        .onChange(of: store.errorMessage) { _, newError in
+            errorDismissTask?.cancel()
+            guard let newError else { return }
+            errorDismissTask = Task {
+                try? await Task.sleep(for: errorAutoDismissDelay)
+                await MainActor.run {
+                    guard store.errorMessage == newError else { return }
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        store.clearError()
+                    }
+                }
+            }
+        }
+        .onDisappear {
+            errorDismissTask?.cancel()
+            errorDismissTask = nil
+        }
+        .animation(.easeOut(duration: 0.2), value: store.errorMessage != nil)
     }
 
     private var headerCard: some View {
@@ -353,6 +382,14 @@ struct V2ConversationPane: View {
         guard now - lastStreamAutoScrollAt >= streamAutoScrollInterval else { return }
         lastStreamAutoScrollAt = now
         scrollToBottom(proxy: proxy, animated: false)
+    }
+
+    private func dismissErrorBanner() {
+        errorDismissTask?.cancel()
+        errorDismissTask = nil
+        withAnimation(.easeOut(duration: 0.2)) {
+            store.clearError()
+        }
     }
 
     @ViewBuilder

@@ -78,6 +78,11 @@ final class ConversationStore {
         isStreaming = false
     }
 
+    func clearError() {
+        errorMessage = nil
+        errorSuggestion = nil
+    }
+
     func regenerateMessage(withID messageID: UUID, in context: ModelContext) async {
         guard let chat = selectedChat else { return }
 
