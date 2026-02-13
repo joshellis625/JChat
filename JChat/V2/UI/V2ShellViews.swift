@@ -221,6 +221,7 @@ struct V2ConversationPane: View {
     @State private var lastStreamAutoScrollAt = ContinuousClock.now
     @State private var didInitialBottomScroll = false
     @State private var errorDismissTask: Task<Void, Never>?
+    @State private var showParameterInspector = false
     private let bottomAnchorID = "v2-conversation-bottom-anchor"
     private let streamAutoScrollInterval: Duration = .milliseconds(140)
     private let maxVisibleMessages = 60
@@ -343,6 +344,10 @@ struct V2ConversationPane: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+        .inspector(isPresented: $showParameterInspector) {
+            V2ParameterInspector(chat: chat)
+                .inspectorColumnWidth(min: 260, ideal: 300, max: 380)
+        }
         .onChange(of: store.errorMessage) { _, newError in
             errorDismissTask?.cancel()
             guard let newError else { return }
@@ -401,6 +406,8 @@ struct V2ConversationPane: View {
                 modelManager: modelManager
             )
             .layoutPriority(2)
+
+            V2ParameterInspectorButton(chat: chat, isPresented: $showParameterInspector)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
