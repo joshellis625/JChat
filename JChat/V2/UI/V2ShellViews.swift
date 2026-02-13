@@ -402,11 +402,6 @@ struct V2ConversationPane: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                V2ParameterInspectorButton(chat: chat, isPresented: $showParameterInspector)
-            }
-        }
         .inspector(isPresented: $showParameterInspector) {
             V2ParameterInspector(chat: chat)
                 .inspectorColumnWidth(min: 300, ideal: 300, max: 300)
@@ -469,6 +464,32 @@ struct V2ConversationPane: View {
                 modelManager: modelManager
             )
             .layoutPriority(2)
+
+            // Parameter inspector toggle — Liquid Glass circle, moves left with content as inspector opens
+            Button {
+                showParameterInspector.toggle()
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(showParameterInspector ? Color.accentColor : .secondary)
+                    .frame(width: 28, height: 28)
+                    .overlay(alignment: .topTrailing) {
+                        let count = chat.activeOverrideCount
+                        if count > 0 {
+                            Text("\(count)")
+                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 3.5)
+                                .padding(.vertical, 1)
+                                .background(Color.accentColor)
+                                .clipShape(Capsule())
+                                .offset(x: 6, y: -4)
+                        }
+                    }
+            }
+            .buttonStyle(.plain)
+            .glassEffect(in: .circle)
+            .help("Chat Parameters")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)

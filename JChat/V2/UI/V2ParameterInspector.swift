@@ -189,7 +189,6 @@ struct V2ParameterInspector: View {
             reasoningSection
         }
         .formStyle(.grouped)
-        .navigationTitle("Parameters")
         .frame(width: 300)
     }
 
@@ -449,55 +448,3 @@ struct V2ParameterInspector: View {
     }
 }
 
-// MARK: - Inspector Trigger Button
-
-struct V2ParameterInspectorButton: View {
-    @Bindable var chat: Chat
-    @Binding var isPresented: Bool
-
-    private var activeOverrideCount: Int {
-        var count = 0
-        if let v = chat.temperatureOverride, v != ParamDefault.temperature { count += 1 }
-        if let v = chat.maxTokensOverride, v != ParamDefault.maxTokens { count += 1 }
-        if let v = chat.topPOverride, v != ParamDefault.topP { count += 1 }
-        if let v = chat.topKOverride, v != ParamDefault.topK { count += 1 }
-        if let v = chat.minPOverride, v != ParamDefault.minP { count += 1 }
-        if let v = chat.topAOverride, v != ParamDefault.topA { count += 1 }
-        if let v = chat.frequencyPenaltyOverride, v != ParamDefault.frequencyPenalty { count += 1 }
-        if let v = chat.presencePenaltyOverride, v != ParamDefault.presencePenalty { count += 1 }
-        if let v = chat.repetitionPenaltyOverride, v != ParamDefault.repetitionPenalty { count += 1 }
-        if let v = chat.streamOverride, v != ParamDefault.stream { count += 1 }
-        if let v = chat.reasoningEnabledOverride, v != ParamDefault.reasoningEnabled { count += 1 }
-        if let v = chat.reasoningEffortOverride, v != ParamDefault.reasoningEffort { count += 1 }
-        if let v = chat.reasoningMaxTokensOverride, v != ParamDefault.reasoningMaxTokens { count += 1 }
-        if let v = chat.reasoningExcludeOverride, v != ParamDefault.reasoningExclude { count += 1 }
-        if let v = chat.verbosityOverride, v != ParamDefault.verbosity { count += 1 }
-        return count
-    }
-
-    var body: some View {
-        Button {
-            isPresented.toggle()
-        } label: {
-            ZStack(alignment: .topTrailing) {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(isPresented ? Color.accentColor : .secondary)
-
-                if activeOverrideCount > 0 {
-                    Text("\(activeOverrideCount)")
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 1)
-                        .background(Color.accentColor)
-                        .clipShape(Capsule())
-                        .offset(x: 8, y: -6)
-                }
-            }
-            .frame(width: 28, height: 28)
-        }
-        .buttonStyle(.plain)
-        .help("Chat Parameters")
-    }
-}

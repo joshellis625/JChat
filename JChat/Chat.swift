@@ -140,6 +140,28 @@ final class Chat {
         return count
     }
 
+    /// Count of overrides that differ from their default values.
+    /// Used for the badge on the parameter inspector button.
+    var activeOverrideCount: Int {
+        var count = 0
+        if let v = temperatureOverride,      v != 1.0      { count += 1 }
+        if let v = topPOverride,             v != 1.0      { count += 1 }
+        if let v = topKOverride,             v != 0        { count += 1 }
+        if let v = maxTokensOverride,        v != 0        { count += 1 }
+        if let v = frequencyPenaltyOverride, v != 0.0      { count += 1 }
+        if let v = presencePenaltyOverride,  v != 0.0      { count += 1 }
+        if let v = repetitionPenaltyOverride, v != 1.0     { count += 1 }
+        if let v = minPOverride,             v != 0.0      { count += 1 }
+        if let v = topAOverride,             v != 0.0      { count += 1 }
+        if let v = streamOverride,           v != true     { count += 1 }
+        if let v = reasoningEnabledOverride, v != true     { count += 1 }
+        if let v = reasoningEffortOverride,  v != "medium" { count += 1 }
+        if let v = reasoningMaxTokensOverride, v != 0      { count += 1 }
+        if let v = reasoningExcludeOverride, v != false    { count += 1 }
+        if let v = verbosityOverride,        v != "medium" { count += 1 }
+        return count
+    }
+
     // MARK: - Usage Totals
 
     func addUsage(promptTokens: Int, completionTokens: Int, cost: Double) {
