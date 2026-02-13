@@ -23,7 +23,8 @@ struct V2SidebarView: View {
     @State private var showingModelManager = false
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 0) {
+            // Header
             HStack(alignment: .center, spacing: 6) {
                 Text("JChat")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -36,28 +37,12 @@ struct V2SidebarView: View {
                     .background(Color.primary.opacity(0.08))
                     .clipShape(Capsule())
                 Spacer()
-                Button {
-                    showingModelManager = true
-                } label: {
-                    Image(systemName: "server.rack")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .help("Model Manager")
-                Button {
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gear")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .help("Settings")
             }
             .padding(.top, 4)
             .padding(.horizontal, 4)
+            .padding(.bottom, 10)
 
+            // Chat list
             ScrollViewReader { proxy in
                 List {
                     ForEach(chats) { chat in
@@ -94,8 +79,51 @@ struct V2SidebarView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Color.clear)
+
+            // Bottom navigation
+            Divider()
+                .padding(.horizontal, 4)
+                .padding(.top, 4)
+
+            Button {
+                showingModelManager = true
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "server.rack")
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(width: 18)
+                    Text("Model Manager")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                    Spacer()
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 9)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                showingSettings = true
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "gear")
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(width: 18)
+                    Text("Settings")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                    Spacer()
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 9)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.bottom, 4)
         }
-        .padding(12)
+        .padding(.horizontal, 12)
+        .padding(.top, 12)
         .alert("Delete Chat", isPresented: Binding(
             get: { chatToDelete != nil },
             set: { if !$0 { chatToDelete = nil } }
@@ -374,6 +402,11 @@ struct V2ConversationPane: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                V2ParameterInspectorButton(chat: chat, isPresented: $showParameterInspector)
+            }
+        }
         .inspector(isPresented: $showParameterInspector) {
             V2ParameterInspector(chat: chat)
                 .inspectorColumnWidth(min: 300, ideal: 300, max: 300)
@@ -436,8 +469,6 @@ struct V2ConversationPane: View {
                 modelManager: modelManager
             )
             .layoutPriority(2)
-
-            V2ParameterInspectorButton(chat: chat, isPresented: $showParameterInspector)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)

@@ -494,6 +494,8 @@ actor OpenRouterService {
         let chatMessages = modelRequest.messages.map { ChatMessage(role: $0.role, content: $0.content) }
         let parameters = modelRequest.parameters
 
+        // stream is ALWAYS included — OpenRouter defaults to false, so omitting it
+        // would silently disable streaming for every request.
         var requestBody = ChatRequest(
             model: modelRequest.modelID,
             messages: chatMessages,

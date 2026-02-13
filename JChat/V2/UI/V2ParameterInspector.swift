@@ -208,8 +208,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0...2,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
 
             IntSliderRow(
@@ -254,8 +254,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0...1,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
 
             IntSliderRow(
@@ -284,8 +284,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0...1,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
 
             SliderRow(
@@ -299,8 +299,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0...1,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
         }
     }
@@ -320,8 +320,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0...2,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
 
             SliderRow(
@@ -335,8 +335,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0...2,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
 
             SliderRow(
@@ -350,8 +350,8 @@ struct V2ParameterInspector: View {
                     }
                 ),
                 range: 0.5...2,
-                step: 0.1,
-                formatValue: { String(format: "%.1f", $0) }
+                step: 0.05,
+                formatValue: { String(format: "%.2f", $0) }
             )
         }
     }
