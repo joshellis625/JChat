@@ -22,7 +22,6 @@ struct SettingsView: View {
 
     @State private var selectedCharacterID: UUID?
     @State private var selectedModelID: String?
-    @State private var textSizeMultiplier: Double = 1.0
 
     private let service = OpenRouterService.shared
 
@@ -82,7 +81,7 @@ struct SettingsView: View {
                     Picker("Default Model", selection: $selectedModelID) {
                         Text("None").tag(String?.none)
                         ForEach(favoriteModels, id: \.id) { model in
-                            Text(model.displayName).tag(Optional(model.id))
+                            Text(model.uiDisplayName).tag(Optional(model.id))
                         }
                     }
 
@@ -91,16 +90,6 @@ struct SettingsView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
-
-                    // TODO - REMOVE ANY APP GATING TIED TO A DEFAULT MODEL SELECTION. A default model for new chats can be implemented in future onboarding wizard.
-                    if selectedModelID == nil {
-                        HStack(spacing: 6) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("A Global Default Model is required to use the app.")
-                        }
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(Color.red)
-                    }
                 } header: {
                     Text("Defaults")
                 } footer: {
@@ -108,41 +97,6 @@ struct SettingsView: View {
                         .font(.caption2)
                 }
 
-                // MARK: - Appearance
-                Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Text Size")
-                            Spacer()
-                            Text("\(normalizedPercent)%")
-                                .font(.system(size: 15, weight: .semibold).monospaced())
-                                .foregroundStyle(.secondary)
-                        }
-                        HStack(spacing: 8) {
-                            Text("A")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                            Slider(
-                                value: Binding(
-                                    get: { normalizedValue },
-                                    set: { textSizeMultiplier = $0 * normalizedScale }
-                                ),
-                                in: 0.7...1.3,
-                                step: 0.1
-                            )
-                            Text("A")
-                                .font(.title3)
-                                .foregroundStyle(.secondary)
-                        }
-                        Button("Reset to Default") {
-                            textSizeMultiplier = normalizedScale
-                        }
-                        .font(.caption)
-                        .disabled(textSizeMultiplier == normalizedScale)
-                    }
-                } header: {
-                    Text("Appearance")
-                }
             }
             .formStyle(.grouped)
             .navigationTitle("Settings")
@@ -173,7 +127,6 @@ struct SettingsView: View {
         let settings = AppSettings.fetchOrCreate(in: modelContext)
         selectedCharacterID = settings.defaultCharacterID
         selectedModelID = settings.defaultModelID
-        textSizeMultiplier = settings.textSizeMultiplier
     }
 
     private func loadAPIKeyFromKeychain() -> String {
@@ -241,19 +194,8 @@ struct SettingsView: View {
         let settings = AppSettings.fetchOrCreate(in: modelContext)
         settings.defaultCharacterID = selectedCharacterID
         settings.defaultModelID = selectedModelID
-        settings.textSizeMultiplier = textSizeMultiplier
         try? modelContext.save()
     }
-
-    private var normalizedValue: Double {
-        textSizeMultiplier / normalizedScale
-    }
-
-    private var normalizedPercent: Int {
-        Int((normalizedValue * 10).rounded()) * 10
-    }
-
-    private var normalizedScale: Double { 1.1 }
 }
 
 #Preview {

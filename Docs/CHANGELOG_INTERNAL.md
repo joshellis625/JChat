@@ -1,5 +1,29 @@
 # Internal Changelog
 
+## 2026-02-12 (Docs Standards Update)
+- Standardized active docs to reference [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui) as the UI source of truth.
+- Added explicit UI direction to prefer native SwiftUI controls, Liquid Glass/material surfaces, and SF Symbols.
+- Standardized workflow docs to require `xcodebuildmcp` for all Xcode tasks and avoid raw `xcodebuild`.
+- Added clean-before-build/build-and-run examples in active workflow docs.
+- Added set-once `session-set-defaults` guidance so project/scheme defaults are not reconfigured every new chat thread.
+- Consolidated repeated docs into `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md`.
+- Updated defaults schema docs to use canonical object fields (`projectPath`, `configuration`, `arch`, `platform`).
+- Removed redundant markdown files and archive snapshots to keep docs lean.
+
+## 2026-02-12
+- Updated workflow docs to prefer macOS-only `xcodebuildmcp` validation in daily loops (build-first, tests at higher-risk checkpoints).
+- Documented explicit run/stop flow using `xcodebuildmcp macos build-and-run` and `xcodebuildmcp macos stop --app-name JChat`.
+- Standardized guidance to avoid simulator-target validation in default iteration.
+- Updated setup guardrail docs to reflect that API key is required while model can be selected per chat when no global default is set.
+
+## 2026-02-11
+- Made V2 conversation shell the documented primary app surface.
+- Updated canonical docs to reflect current `ConversationStore` + V2 architecture.
+- Documented OpenRouter pipeline refactor status (`ModelCallRequest`, retry policy, hardened SSE parsing).
+- Added explicit V2 stability guidance for long-chat behavior and streaming updates.
+- Updated regression checklist for freeze-focused QA (typing + scrolling + streaming).
+- Added archive clarity guidance so historical docs are not mistaken for current behavior.
+
 ## 2026-02-10
 - Standardized docs on a no-PR, no-CI solo workflow.
 - Added explicit push-approval gate to workflow guidance.

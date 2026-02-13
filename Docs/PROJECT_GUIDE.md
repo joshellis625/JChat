@@ -1,96 +1,123 @@
 # JChat Project Guide (Canonical)
 
-This is the single source of truth for project architecture, constraints, and development standards.
+This is the single source of truth for architecture, workflow, validation, and active direction.
 
 ## Product Overview
-JChat is a native macOS (future iOS) SwiftUI chat app that uses the OpenRouter API to chat with multiple models, manage conversation history, tune model parameters, track usage/costs, and use reusable "Characters" (persona presets).
+JChat is a native SwiftUI chat app that uses OpenRouter.
 
-## Architecture
-- UI: SwiftUI
-- State: MVVM (`ChatViewModel`, `ModelManager`)
-- Persistence: SwiftData (`Chat`, `Message`, `AppSettings`, `Character`, `CachedModel`)
-- API layer: `OpenRouterService` actor with raw `URLRequest` and JSON
-- Secrets: Keychain (`KeychainManager`)
+Current direction:
+- V2 conversation UI is the default experience.
+- Stability and responsiveness are prioritized over feature breadth.
+- macOS (`arm64`) is the primary daily target.
 
-## Core Behavior
-- Parameter precedence: chat override -> global settings fallback
-- Character model is identity-only (name/prompt/preferred model), no parameter storage
-- New chat inherits parameter overrides from most recent chat
-- App does not require a global default model before chatting.
+## UI Standards
+- Source of truth: [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui) and current Apple HIG behavior.
+- Prefer native SwiftUI controls, Liquid Glass/material surfaces, and SF Symbols.
 
-## Key Files
-- `/Users/josh/Projects/JChat/JChat/Views/ChatViewModel.swift`
+## Runtime Architecture (V2)
+- UI shell: `NavigationSplitView` with `V2SidebarView` + `V2ConversationPane`.
+- State owner: `ConversationStore`.
+- Persistence: `ChatRepositoryProtocol` + `SwiftDataChatRepository`.
+- Engine: `ChatEngineProtocol` + `OpenRouterChatEngine`.
+- Networking: `OpenRouterService` unified on `ModelCallRequest` (send + stream).
+
+Primary files:
+- `/Users/josh/Projects/JChat/JChat/Views/ContentView.swift`
+- `/Users/josh/Projects/JChat/JChat/V2/UI/V2ShellViews.swift`
+- `/Users/josh/Projects/JChat/JChat/V2/Design/V2Design.swift`
+- `/Users/josh/Projects/JChat/JChat/Core/Conversation/ConversationStore.swift`
+- `/Users/josh/Projects/JChat/JChat/Core/Conversation/ChatEngine.swift`
+- `/Users/josh/Projects/JChat/JChat/Core/Conversation/ChatRepository.swift`
 - `/Users/josh/Projects/JChat/JChat/Services/OpenRouterService.swift`
-- `/Users/josh/Projects/JChat/JChat/Views/ConversationView.swift`
-- `/Users/josh/Projects/JChat/JChat/Views/MessageInputView.swift`
-- `/Users/josh/Projects/JChat/JChat/Views/MessageBubble.swift`
-- `/Users/josh/Projects/JChat/JChat/Views/ChatToolbarView.swift`
+- `/Users/josh/Projects/JChat/JChat/Chat.swift`
 
-## Engineering Standards
-- Code changes use feature branches: `codex/<topic>`.
-- Documentation-only changes are made directly on `main`.
-- **No PRs**. Merge locally when done.
-- **No CI required**. Local build/run is the gate.
-- **Push only with explicit approval.**
-- Keep changes reasonably scoped per branch (feature/bugfix/doc pass).
+## Behavioral Rules
+- Parameter precedence: chat override -> global settings fallback.
+- Character stores identity/system prompt/preferred model only.
+- API key is Keychain-only (`com.josh.jchat` / `openrouter-api-key`).
+- Message delete/regenerate does not refund usage totals.
+- Markdown rendering is intentionally disabled in current stability mode (plain text transcript rows).
 
-## Accessibility Guidelines
-- Lead dev is red-green color-deficient. Use of colors is encouraged but avoid problematic combinations and consider the visual context. Prefer primary colors but creativity is encouraged.
-- If color alone might be an issue, use text labels to supplement.
-- Use strong contrast for important visual elements.
-- Prefer emphasis through hierarchy/weight/color/contrast, not opacity dimming.
+## XcodeBuildMCP Defaults (Set Once)
+Use `xcodebuildmcp` for all Xcode tasks in this repo. Do not use raw `xcodebuild`.
 
-## Build and Test
-Preferred (via `XcodeBuildMCP`):
-```bash
-xcodebuildmcp macos build-macos --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat
-xcodebuildmcp macos test-macos --project-path /Users/josh/Projects/JChat/JChat.xcodeproj --scheme JChat
+Canonical defaults schema:
+```json
+{
+  "projectPath": "/Users/josh/Projects/JChat/JChat.xcodeproj",
+  "configuration": "Debug",
+  "arch": "arm64",
+  "platform": "macOS"
+}
 ```
 
-Fallback (direct shell):
-```bash
-xcodebuild build -project JChat.xcodeproj -scheme JChat -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
-xcodebuild test -project JChat.xcodeproj -scheme JChat -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+Suggested one-time setup:
+```text
+session-set-defaults {
+  "projectPath": "/Users/josh/Projects/JChat/JChat.xcodeproj",
+  "configuration": "Debug",
+  "arch": "arm64",
+  "platform": "macOS"
+}
+session-set-defaults { "scheme": "JChat" }
 ```
 
-## Xcode MCP Integration
-JChat uses `XcodeBuildMCP` as the primary MCP server for Apple platform development workflows.
+Hint: Save a default with `session-set-defaults { projectPath: '...' }` or `{ workspacePath: '...' }`.
+JChat hint: Consider saving a default scheme with `session-set-defaults { scheme: "JChat" }` to avoid repeating it.
 
-### Primary Server (Required)
-Use the third-party `XcodeBuildMCP` server first for all Xcode workflows.
+Notes:
+- If you open a workspace, use `workspacePath` instead of `projectPath`.
+- Do not re-set these defaults every new chat thread.
 
-Quick local verification commands:
+## Validation Commands
+Fast default:
 ```bash
-xcodebuildmcp --help
-xcodebuildmcp tools
-xcodebuildmcp doctor
+xcodebuildmcp macos clean --platform macOS --output text
+xcodebuildmcp macos build --output text
 ```
 
-Verified in this repository:
-- `xcodebuildmcp --help` is available and returns command help.
-- MCP project discovery finds `/Users/josh/Projects/JChat/JChat.xcodeproj`.
-- `xcodebuildmcp macos build-macos` succeeds for scheme `JChat`.
-- `xcodebuildmcp macos test-macos` succeeds for scheme `JChat` (`7/7` tests passed on 2026-02-10).
+Launch/stop sanity check:
+```bash
+xcodebuildmcp macos clean --platform macOS --output text
+xcodebuildmcp macos build-and-run --output text
+xcodebuildmcp macos stop --app-name JChat --output text
+```
 
-### Fallback Mode (If MCP Is Not Needed)
-Use direct `xcodebuild` shell commands when MCP-specific features are unnecessary.
+Full suite checkpoint:
+```bash
+xcodebuildmcp macos test --output text
+```
 
-### Verified `XcodeBuildMCP` Capabilities for This Project
-- Project discovery (`discover_projs`)
-- Build/test workflows for simulator (`build_sim`, `test_sim`, `build_run_sim`)
-- Simulator lifecycle and app control (`list_sims`, `boot_sim`, `install_app_sim`, `launch_app_sim`)
-- UI inspection and visual validation (`snapshot_ui`, `screenshot`, `record_sim_video`)
-- Logging and diagnostics (`start_sim_log_cap`, `stop_sim_log_cap`, `show_build_settings`)
+## Regression Checklist
+Run before shipping behavior-affecting changes (chat/streaming/layout/persistence):
+- Build passes, and tests pass for risky changes.
+- App launches/stops cleanly.
+- New chat/send/stream/stop/regenerate flow works.
+- Long-chat typing + scrolling has no freeze.
+- Sidebar selection is immediate and stable.
+- Usage accounting remains non-refundable and accurate.
+- Setup guardrails still work (missing API key vs configured key).
+- Persistence works after restart (chats/settings/key access).
+- Update `/Users/josh/Projects/JChat/Docs/CHANGELOG_INTERNAL.md` for behavior changes.
 
-### Recommended Usage
-- Prefer `XcodeBuildMCP` for build/test/simulator/UI verification loops.
-- Use simulator screenshots/videos for UI regression checks and iteration.
-- Fall back to direct `xcodebuild` shell commands only when MCP tooling is unnecessary.
+## Workflow Rules
+- Code changes: `codex/<topic>` branch.
+- Docs-only changes: direct to `main` allowed.
+- Push only with explicit approval.
+- No PR flow and no CI gate for this solo workflow.
 
-## Related Docs
-- Workflow: `/Users/josh/Projects/JChat/Docs/DEV_WORKFLOW.md`
-- Regression QA: `/Users/josh/Projects/JChat/Docs/REGRESSION_CHECKLIST.md`
-- Codex usage: `/Users/josh/Projects/JChat/Docs/CODEX_PLAYBOOK.md`
-- Roadmap: `/Users/josh/Projects/JChat/Docs/ROADMAP.md`
-- Internal change log: `/Users/josh/Projects/JChat/Docs/CHANGELOG_INTERNAL.md`
-- Historical docs archive: `/Users/josh/Projects/JChat/Docs/archive/`
+## Roadmap (Current)
+Priority order:
+1. Freeze prevention and transcript stability in long chats.
+2. V2 UI polish toward a clean ChatGPT-style experience.
+3. OpenRouter streaming reliability and consistency.
+4. Documentation simplicity and low-friction solo workflow.
+5. Feature re-expansion only after stability is locked.
+
+Near-term backlog:
+- Improve conversation list density/readability.
+- Add stress coverage for streaming/cancellation edge cases.
+- Add targeted UI tests for long-chat scroll + send/regenerate.
+
+## History
+- Internal changelog: `/Users/josh/Projects/JChat/Docs/CHANGELOG_INTERNAL.md`
