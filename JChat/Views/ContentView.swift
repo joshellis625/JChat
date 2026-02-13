@@ -65,9 +65,6 @@ struct ContentView: View {
                 }
             }
             ToolbarItem {
-                textSizeControl
-            }
-            ToolbarItem {
                 Button {
                     showingModelManager = true
                 } label: {
@@ -151,37 +148,6 @@ struct ContentView: View {
 
     private func clampedTextSize(_ value: Double) -> CGFloat {
         CGFloat(min(max(value, Double(TextSizeConfig.minimum)), Double(TextSizeConfig.maximum)))
-    }
-
-    private var canDecreaseTextSize: Bool {
-        textBaseSize > TextSizeConfig.minimum
-    }
-
-    private var canIncreaseTextSize: Bool {
-        textBaseSize < TextSizeConfig.maximum
-    }
-
-    private var textSizeControl: some View {
-        ControlGroup {
-            Button {
-                adjustTextSize(by: -TextSizeConfig.step)
-            } label: {
-                Label("Decrease Text Size", systemImage: "textformat.size.smaller")
-            }
-            .labelStyle(.iconOnly)
-            .help("Zoom Out")
-            .disabled(!canDecreaseTextSize)
-
-            Button {
-                adjustTextSize(by: TextSizeConfig.step)
-            } label: {
-                Label("Increase Text Size", systemImage: "textformat.size.larger")
-            }
-            .labelStyle(.iconOnly)
-            .help("Zoom In")
-            .disabled(!canIncreaseTextSize)
-        }
-        .controlSize(.regular)
     }
 
     private func loadAPIKeyStatus() {
