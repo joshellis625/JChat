@@ -607,7 +607,7 @@ private struct V2Composer: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            TextField("Message OpenRouter...", text: $draft, axis: .vertical)
+            TextField("Ask anything", text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($focused)
                 .font(.system(size: v2TextSize(15, baseSize: textBaseSize), weight: .regular, design: .default))
