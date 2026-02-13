@@ -4,8 +4,11 @@ This project is a solo hobby app, but we use professional workflow standards so 
 
 ## Branching Rules
 - `main` is stable.
-- Code changes start on a feature branch: `codex/<short-topic>`.
-- Documentation-only changes are made directly on `main`.
+- Code changes start on a typed feature branch matching the commit prefix:
+  - `feature/<topic>` — new functionality
+  - `fix/<topic>` — bug fixes
+  - `chore/<topic>` — cleanup, dead code removal, refactoring with no behavior change
+  - `docs/<topic>` — documentation only (can also go directly to `main`)
 - Do not push any branch or `main` without explicit approval.
 
 ## Commit Style
