@@ -16,16 +16,18 @@ struct V2SidebarView: View {
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
     @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
     @Bindable var store: ConversationStore
+    @Bindable var modelManager: ModelManager
     @Environment(\.modelContext) private var modelContext
     @State private var chatToDelete: Chat?
+    @State private var showingSettings = false
+    @State private var showingModelManager = false
 
     var body: some View {
         VStack(spacing: 10) {
-            HStack(alignment: .center) {
+            HStack(alignment: .center, spacing: 6) {
                 Text("JChat")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(.primary)
-                Spacer()
                 Text("\(chats.count)")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
@@ -33,6 +35,25 @@ struct V2SidebarView: View {
                     .padding(.vertical, 3)
                     .background(Color.primary.opacity(0.08))
                     .clipShape(Capsule())
+                Spacer()
+                Button {
+                    showingModelManager = true
+                } label: {
+                    Image(systemName: "server.rack")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Model Manager")
+                Button {
+                    showingSettings = true
+                } label: {
+                    Image(systemName: "gear")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Settings")
             }
             .padding(.top, 4)
             .padding(.horizontal, 4)
@@ -104,6 +125,15 @@ struct V2SidebarView: View {
         .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.deleteSelectedChat)) { _ in
             guard chatToDelete == nil else { return }
             chatToDelete = store.selectedChat
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.openSettings)) { _ in
+            showingSettings = true
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
+        .sheet(isPresented: $showingModelManager) {
+            ModelManagerView(modelManager: modelManager)
         }
     }
 
@@ -346,7 +376,7 @@ struct V2ConversationPane: View {
         .padding(.vertical, 8)
         .inspector(isPresented: $showParameterInspector) {
             V2ParameterInspector(chat: chat)
-                .inspectorColumnWidth(min: 260, ideal: 300, max: 380)
+                .inspectorColumnWidth(min: 300, ideal: 300, max: 300)
         }
         .onChange(of: store.errorMessage) { _, newError in
             errorDismissTask?.cancel()

@@ -63,7 +63,7 @@ final class Chat {
     var effectiveTemperature: Double { temperatureOverride ?? 1.0 }
     var effectiveTopP: Double { topPOverride ?? 1.0 }
     var effectiveTopK: Int { topKOverride ?? 0 }
-    var effectiveMaxTokens: Int { maxTokensOverride ?? 4096 }
+    var effectiveMaxTokens: Int { maxTokensOverride ?? 0 }  // 0 = unlimited (Off)
     var effectiveFrequencyPenalty: Double { frequencyPenaltyOverride ?? 0.0 }
     var effectivePresencePenalty: Double { presencePenaltyOverride ?? 0.0 }
     var effectiveRepetitionPenalty: Double { repetitionPenaltyOverride ?? 1.0 }

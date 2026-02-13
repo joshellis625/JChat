@@ -6,9 +6,9 @@
 import Foundation
 
 nonisolated struct ChatParameters: Sendable {
-    var temperature: Double = 1.0
-    var maxTokens: Int = 4096
-    var topP: Double = 1.0
+    var temperature: Double? = nil        // nil = use default (1.0); omitted from API when nil
+    var maxTokens: Int? = nil             // nil = unlimited (omitted from API)
+    var topP: Double? = nil               // nil = use default (1.0); omitted from API when nil
     var topK: Int? = nil
     var frequencyPenalty: Double? = nil
     var presencePenalty: Double? = nil
@@ -22,7 +22,7 @@ nonisolated struct ChatParameters: Sendable {
     var reasoningEffort: String = "medium"
     var reasoningMaxTokens: Int? = nil
     var reasoningExclude: Bool? = nil
-    var verbosity: String? = nil
+    var verbosity: String? = nil          // nil = omitted from API (OpenRouter default)
 }
 
 nonisolated struct ModelCallRequest: Sendable {
@@ -497,11 +497,13 @@ actor OpenRouterService {
         var requestBody = ChatRequest(
             model: modelRequest.modelID,
             messages: chatMessages,
-            stream: modelRequest.stream,
-            temperature: parameters.temperature,
-            max_tokens: parameters.maxTokens,
-            top_p: parameters.topP
+            stream: modelRequest.stream
         )
+
+        // Core sampling — only sent when non-default
+        if let temp = parameters.temperature, temp != 1.0 { requestBody.temperature = temp }
+        if let maxTok = parameters.maxTokens, maxTok > 0 { requestBody.max_tokens = maxTok }
+        if let topP = parameters.topP, topP != 1.0 { requestBody.top_p = topP }
 
         // Optional sampling parameters
         if let topK = parameters.topK, topK > 0 { requestBody.top_k = topK }

@@ -6,7 +6,167 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Parameter Inspector View
+// MARK: - Default values (source of truth for "is this overridden?")
+
+private enum ParamDefault {
+    static let temperature: Double = 1.0
+    static let maxTokens: Int = 0          // 0 = unlimited / Off
+    static let topP: Double = 1.0
+    static let topK: Int = 0              // 0 = Off
+    static let minP: Double = 0.0
+    static let topA: Double = 0.0
+    static let frequencyPenalty: Double = 0.0
+    static let presencePenalty: Double = 0.0
+    static let repetitionPenalty: Double = 1.0
+    static let stream: Bool = true
+    static let reasoningEnabled: Bool = true
+    static let reasoningEffort: String = "medium"
+    static let reasoningMaxTokens: Int = 0  // 0 = unlimited / Off
+    static let reasoningExclude: Bool = false
+    static let verbosity: String = "medium"
+}
+
+// MARK: - Keyboard-editable numeric field
+
+/// A TextField that buffers string input and only commits on blur/submit,
+/// preventing the "stuck single digit" bug from live-binding to numeric types.
+private struct NumberField<T: Numeric & Comparable>: View {
+    let label: String
+    @Binding var value: T
+    let range: ClosedRange<T>
+    let format: (T) -> String
+    let parse: (String) -> T?
+
+    @State private var draft: String = ""
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        TextField("", text: $draft)
+            .focused($focused)
+            .multilineTextAlignment(.trailing)
+            .frame(width: 62)
+            .font(.system(size: 13, weight: .regular, design: .monospaced))
+            .foregroundStyle(.primary)
+            .onAppear { draft = format(value) }
+            .onChange(of: value) { _, newVal in
+                if !focused { draft = format(newVal) }
+            }
+            .onChange(of: focused) { _, isFocused in
+                if !isFocused { commit() }
+            }
+            .onSubmit { commit(); focused = false }
+    }
+
+    private func commit() {
+        let trimmed = draft.trimmingCharacters(in: .whitespaces)
+        if let parsed = parse(trimmed) {
+            let clamped: T = parsed < range.lowerBound ? range.lowerBound
+                           : parsed > range.upperBound ? range.upperBound
+                           : parsed
+            value = clamped
+            draft = format(clamped)
+        } else {
+            // Restore to current value if unparseable
+            draft = format(value)
+        }
+    }
+}
+
+// MARK: - Slider row (label + value display + slider + text field)
+
+private struct SliderRow: View {
+    let title: String
+    let isOverridden: Bool
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let formatValue: (Double) -> String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                paramLabel(title, isOverridden: isOverridden)
+                Spacer()
+                NumberField(
+                    label: title,
+                    value: $value,
+                    range: range,
+                    format: formatValue,
+                    parse: { Double($0) }
+                )
+            }
+            Slider(value: $value, in: range, step: step)
+                .tint(.accentColor)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Int slider row (for Top K and token counts)
+
+private struct IntSliderRow: View {
+    let title: String
+    let isOverridden: Bool
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let step: Int
+    let zeroLabel: String?    // if set, display this instead of "0"
+
+    private var doubleBinding: Binding<Double> {
+        Binding(
+            get: { Double(value) },
+            set: { value = Int($0.rounded()) }
+        )
+    }
+
+    var displayValue: String {
+        if value == 0, let zeroLabel { return zeroLabel }
+        return "\(value)"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                paramLabel(title, isOverridden: isOverridden)
+                Spacer()
+                NumberField(
+                    label: title,
+                    value: $value,
+                    range: range.lowerBound...range.upperBound,
+                    format: { v in
+                        if v == 0, let zeroLabel { return zeroLabel }
+                        return "\(v)"
+                    },
+                    parse: { s in
+                        if let zeroLabel, s.lowercased() == zeroLabel.lowercased() { return 0 }
+                        return Int(s)
+                    }
+                )
+            }
+            Slider(value: doubleBinding, in: Double(range.lowerBound)...Double(range.upperBound), step: Double(step))
+                .tint(.accentColor)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Label helper
+
+@ViewBuilder
+private func paramLabel(_ name: String, isOverridden: Bool) -> some View {
+    HStack(spacing: 5) {
+        Text(name)
+            .font(.system(size: 13, weight: .medium, design: .default))
+            .foregroundStyle(.primary)
+        if isOverridden {
+            Circle()
+                .fill(Color.accentColor)
+                .frame(width: 6, height: 6)
+        }
+    }
+}
+
+// MARK: - Parameter Inspector
 
 struct V2ParameterInspector: View {
     @Bindable var chat: Chat
@@ -14,69 +174,67 @@ struct V2ParameterInspector: View {
 
     var body: some View {
         Form {
+            // Reset button at the top
+            Section {
+                Button("Reset to Defaults", role: .destructive) {
+                    chat.resetAllOverrides()
+                    saveQuiet()
+                }
+                .frame(maxWidth: .infinity)
+            }
+
             basicSection
             samplingSection
             penaltiesSection
             reasoningSection
-            Section {
-                Button("Reset to Defaults", role: .destructive) {
-                    chat.resetAllOverrides()
-                    try? modelContext.save()
-                }
-            }
         }
         .formStyle(.grouped)
         .navigationTitle("Parameters")
+        .frame(width: 300)
     }
 
     // MARK: - Basic
 
     private var basicSection: some View {
         Section("Basic") {
-            // Temperature
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectiveTemperature))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.temperatureOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectiveTemperature },
-                            set: { chat.temperatureOverride = $0; saveQuiet() }
-                        ),
-                        in: 0...2,
-                        step: 0.01
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Temperature", isOverridden: chat.temperatureOverride != nil)
-            }
+            SliderRow(
+                title: "Temperature",
+                isOverridden: chat.temperatureOverride != nil && chat.temperatureOverride != ParamDefault.temperature,
+                value: Binding(
+                    get: { chat.effectiveTemperature },
+                    set: { newVal in
+                        chat.temperatureOverride = (newVal == ParamDefault.temperature) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...2,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
 
-            // Max Tokens
-            LabeledContent {
-                Stepper(
-                    value: Binding(
-                        get: { chat.effectiveMaxTokens },
-                        set: { chat.maxTokensOverride = $0; saveQuiet() }
-                    ),
-                    in: 256...32768,
-                    step: 256
-                ) {
-                    Text("\(chat.effectiveMaxTokens)")
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.maxTokensOverride != nil ? .primary : .secondary)
-                }
-            } label: {
-                paramLabel("Max Tokens", isOverridden: chat.maxTokensOverride != nil)
-            }
+            IntSliderRow(
+                title: "Max Tokens",
+                isOverridden: chat.maxTokensOverride != nil && chat.maxTokensOverride != ParamDefault.maxTokens,
+                value: Binding(
+                    get: { chat.effectiveMaxTokens },
+                    set: { newVal in
+                        chat.maxTokensOverride = (newVal == ParamDefault.maxTokens) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...32768,
+                step: 256,
+                zeroLabel: "Off"
+            )
 
-            // Stream
             Toggle(isOn: Binding(
                 get: { chat.effectiveStream },
-                set: { chat.streamOverride = $0; saveQuiet() }
+                set: { newVal in
+                    chat.streamOverride = (newVal == ParamDefault.stream) ? nil : newVal
+                    saveQuiet()
+                }
             )) {
-                paramLabel("Stream", isOverridden: chat.streamOverride != nil)
+                paramLabel("Stream", isOverridden: chat.streamOverride != nil && chat.streamOverride != ParamDefault.stream)
             }
         }
     }
@@ -85,80 +243,65 @@ struct V2ParameterInspector: View {
 
     private var samplingSection: some View {
         Section("Sampling") {
-            // Top P
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectiveTopP))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.topPOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectiveTopP },
-                            set: { chat.topPOverride = $0; saveQuiet() }
-                        ),
-                        in: 0...1
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Top P", isOverridden: chat.topPOverride != nil)
-            }
+            SliderRow(
+                title: "Top P",
+                isOverridden: chat.topPOverride != nil && chat.topPOverride != ParamDefault.topP,
+                value: Binding(
+                    get: { chat.effectiveTopP },
+                    set: { newVal in
+                        chat.topPOverride = (newVal == ParamDefault.topP) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...1,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
 
-            // Top K
-            LabeledContent {
-                Stepper(
-                    value: Binding(
-                        get: { chat.effectiveTopK },
-                        set: { chat.topKOverride = $0; saveQuiet() }
-                    ),
-                    in: 0...200,
-                    step: 1
-                ) {
-                    Text("\(chat.effectiveTopK)")
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.topKOverride != nil ? .primary : .secondary)
-                }
-            } label: {
-                paramLabel("Top K", isOverridden: chat.topKOverride != nil)
-            }
+            IntSliderRow(
+                title: "Top K",
+                isOverridden: chat.topKOverride != nil && chat.topKOverride != ParamDefault.topK,
+                value: Binding(
+                    get: { chat.effectiveTopK },
+                    set: { newVal in
+                        chat.topKOverride = (newVal == ParamDefault.topK) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...200,
+                step: 1,
+                zeroLabel: "Off"
+            )
 
-            // Min P
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectiveMinP))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.minPOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectiveMinP },
-                            set: { chat.minPOverride = $0; saveQuiet() }
-                        ),
-                        in: 0...1
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Min P", isOverridden: chat.minPOverride != nil)
-            }
+            SliderRow(
+                title: "Min P",
+                isOverridden: chat.minPOverride != nil && chat.minPOverride != ParamDefault.minP,
+                value: Binding(
+                    get: { chat.effectiveMinP },
+                    set: { newVal in
+                        chat.minPOverride = (newVal == ParamDefault.minP) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...1,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
 
-            // Top A
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectiveTopA))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.topAOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectiveTopA },
-                            set: { chat.topAOverride = $0; saveQuiet() }
-                        ),
-                        in: 0...1
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Top A", isOverridden: chat.topAOverride != nil)
-            }
+            SliderRow(
+                title: "Top A",
+                isOverridden: chat.topAOverride != nil && chat.topAOverride != ParamDefault.topA,
+                value: Binding(
+                    get: { chat.effectiveTopA },
+                    set: { newVal in
+                        chat.topAOverride = (newVal == ParamDefault.topA) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...1,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
         }
     }
 
@@ -166,62 +309,50 @@ struct V2ParameterInspector: View {
 
     private var penaltiesSection: some View {
         Section("Penalties") {
-            // Frequency Penalty
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectiveFrequencyPenalty))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.frequencyPenaltyOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectiveFrequencyPenalty },
-                            set: { chat.frequencyPenaltyOverride = $0; saveQuiet() }
-                        ),
-                        in: 0...2
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Frequency", isOverridden: chat.frequencyPenaltyOverride != nil)
-            }
+            SliderRow(
+                title: "Frequency",
+                isOverridden: chat.frequencyPenaltyOverride != nil && chat.frequencyPenaltyOverride != ParamDefault.frequencyPenalty,
+                value: Binding(
+                    get: { chat.effectiveFrequencyPenalty },
+                    set: { newVal in
+                        chat.frequencyPenaltyOverride = (newVal == ParamDefault.frequencyPenalty) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...2,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
 
-            // Presence Penalty
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectivePresencePenalty))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.presencePenaltyOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectivePresencePenalty },
-                            set: { chat.presencePenaltyOverride = $0; saveQuiet() }
-                        ),
-                        in: 0...2
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Presence", isOverridden: chat.presencePenaltyOverride != nil)
-            }
+            SliderRow(
+                title: "Presence",
+                isOverridden: chat.presencePenaltyOverride != nil && chat.presencePenaltyOverride != ParamDefault.presencePenalty,
+                value: Binding(
+                    get: { chat.effectivePresencePenalty },
+                    set: { newVal in
+                        chat.presencePenaltyOverride = (newVal == ParamDefault.presencePenalty) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0...2,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
 
-            // Repetition Penalty
-            LabeledContent {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.2f", chat.effectiveRepetitionPenalty))
-                        .font(.system(.callout, design: .monospaced))
-                        .foregroundStyle(chat.repetitionPenaltyOverride != nil ? .primary : .secondary)
-                    Slider(
-                        value: Binding(
-                            get: { chat.effectiveRepetitionPenalty },
-                            set: { chat.repetitionPenaltyOverride = $0; saveQuiet() }
-                        ),
-                        in: 0.5...2
-                    )
-                    .frame(width: 140)
-                }
-            } label: {
-                paramLabel("Repetition", isOverridden: chat.repetitionPenaltyOverride != nil)
-            }
+            SliderRow(
+                title: "Repetition",
+                isOverridden: chat.repetitionPenaltyOverride != nil && chat.repetitionPenaltyOverride != ParamDefault.repetitionPenalty,
+                value: Binding(
+                    get: { chat.effectiveRepetitionPenalty },
+                    set: { newVal in
+                        chat.repetitionPenaltyOverride = (newVal == ParamDefault.repetitionPenalty) ? nil : newVal
+                        saveQuiet()
+                    }
+                ),
+                range: 0.5...2,
+                step: 0.1,
+                formatValue: { String(format: "%.1f", $0) }
+            )
         }
     }
 
@@ -229,104 +360,89 @@ struct V2ParameterInspector: View {
 
     private var reasoningSection: some View {
         Section("Reasoning") {
-            // Reasoning Enabled
             Toggle(isOn: Binding(
                 get: { chat.effectiveReasoningEnabled },
-                set: { chat.reasoningEnabledOverride = $0; saveQuiet() }
+                set: { newVal in
+                    chat.reasoningEnabledOverride = (newVal == ParamDefault.reasoningEnabled) ? nil : newVal
+                    saveQuiet()
+                }
             )) {
-                paramLabel("Reasoning", isOverridden: chat.reasoningEnabledOverride != nil)
+                paramLabel("Reasoning", isOverridden: chat.reasoningEnabledOverride != nil && chat.reasoningEnabledOverride != ParamDefault.reasoningEnabled)
             }
 
-            if chat.effectiveReasoningEnabled {
-                // Reasoning Effort (mutually exclusive with Max Tokens)
-                LabeledContent {
-                    Picker("", selection: Binding(
-                        get: { chat.reasoningEffortOverride ?? "medium" },
-                        set: {
-                            chat.reasoningEffortOverride = $0
-                            // Mutually exclusive with max tokens
-                            chat.reasoningMaxTokensOverride = nil
-                            saveQuiet()
-                        }
-                    )) {
-                        Text("Low").tag("low")
-                        Text("Medium").tag("medium")
-                        Text("High").tag("high")
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 180)
-                } label: {
-                    paramLabel("Effort", isOverridden: chat.reasoningEffortOverride != nil)
-                }
-
-                // Reasoning Max Tokens (mutually exclusive with Effort)
-                LabeledContent {
-                    Stepper(
-                        value: Binding(
-                            get: { chat.reasoningMaxTokensOverride ?? 0 },
-                            set: {
-                                if $0 == 0 {
-                                    chat.reasoningMaxTokensOverride = nil
-                                } else {
-                                    chat.reasoningMaxTokensOverride = $0
-                                    // Mutually exclusive with effort
-                                    chat.reasoningEffortOverride = nil
-                                }
-                                saveQuiet()
-                            }
-                        ),
-                        in: 0...32000,
-                        step: 256
-                    ) {
-                        let value = chat.reasoningMaxTokensOverride ?? 0
-                        Text(value == 0 ? "Off" : "\(value)")
-                            .font(.system(.callout, design: .monospaced))
-                            .foregroundStyle(chat.reasoningMaxTokensOverride != nil ? .primary : .secondary)
-                    }
-                } label: {
-                    paramLabel("Max Tokens", isOverridden: chat.reasoningMaxTokensOverride != nil)
-                }
-
-                // Reasoning Exclude
-                Toggle(isOn: Binding(
-                    get: { chat.effectiveReasoningExclude ?? false },
-                    set: { chat.reasoningExcludeOverride = $0; saveQuiet() }
-                )) {
-                    paramLabel("Exclude from Output", isOverridden: chat.reasoningExcludeOverride != nil)
-                }
-            }
-
-            // Verbosity
+            // Reasoning Effort (segmented, mutually exclusive with Reasoning Max Tokens)
             LabeledContent {
                 Picker("", selection: Binding(
-                    get: { chat.effectiveVerbosity ?? "" },
-                    set: { chat.verbosityOverride = $0.isEmpty ? nil : $0; saveQuiet() }
+                    get: { chat.reasoningEffortOverride ?? ParamDefault.reasoningEffort },
+                    set: { newVal in
+                        chat.reasoningEffortOverride = (newVal == ParamDefault.reasoningEffort) ? nil : newVal
+                        chat.reasoningMaxTokensOverride = nil  // mutually exclusive
+                        saveQuiet()
+                    }
                 )) {
-                    Text("Default").tag("")
                     Text("Low").tag("low")
-                    Text("Medium").tag("medium")
+                    Text("Med").tag("medium")
                     Text("High").tag("high")
                 }
-                .pickerStyle(.menu)
+                .pickerStyle(.segmented)
+                .frame(width: 160)
             } label: {
-                paramLabel("Verbosity", isOverridden: chat.verbosityOverride != nil)
+                paramLabel("Effort", isOverridden: chat.reasoningEffortOverride != nil && chat.reasoningEffortOverride != ParamDefault.reasoningEffort)
+            }
+
+            // Reasoning Max Tokens (mutually exclusive with Effort)
+            IntSliderRow(
+                title: "Rsn Tokens",
+                isOverridden: chat.reasoningMaxTokensOverride != nil && chat.reasoningMaxTokensOverride != ParamDefault.reasoningMaxTokens,
+                value: Binding(
+                    get: { chat.reasoningMaxTokensOverride ?? ParamDefault.reasoningMaxTokens },
+                    set: { newVal in
+                        if newVal == ParamDefault.reasoningMaxTokens {
+                            chat.reasoningMaxTokensOverride = nil
+                        } else {
+                            chat.reasoningMaxTokensOverride = newVal
+                            chat.reasoningEffortOverride = nil  // mutually exclusive
+                        }
+                        saveQuiet()
+                    }
+                ),
+                range: 0...32000,
+                step: 256,
+                zeroLabel: "Off"
+            )
+
+            Toggle(isOn: Binding(
+                get: { chat.effectiveReasoningExclude ?? ParamDefault.reasoningExclude },
+                set: { newVal in
+                    chat.reasoningExcludeOverride = (newVal == ParamDefault.reasoningExclude) ? nil : newVal
+                    saveQuiet()
+                }
+            )) {
+                paramLabel("Exclude from Output", isOverridden: chat.reasoningExcludeOverride != nil && chat.reasoningExcludeOverride != ParamDefault.reasoningExclude)
+            }
+
+            // Verbosity — segmented picker matching Effort style
+            LabeledContent {
+                Picker("", selection: Binding(
+                    get: { chat.verbosityOverride ?? ParamDefault.verbosity },
+                    set: { newVal in
+                        chat.verbosityOverride = (newVal == ParamDefault.verbosity) ? nil : newVal
+                        saveQuiet()
+                    }
+                )) {
+                    Text("Low").tag("low")
+                    Text("Med").tag("medium")
+                    Text("High").tag("high")
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 160)
+            } label: {
+                paramLabel("Verbosity", isOverridden: chat.verbosityOverride != nil && chat.verbosityOverride != ParamDefault.verbosity)
             }
         }
     }
 
     // MARK: - Helpers
-
-    @ViewBuilder
-    private func paramLabel(_ name: String, isOverridden: Bool) -> some View {
-        HStack(spacing: 5) {
-            Text(name)
-            if isOverridden {
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 6, height: 6)
-            }
-        }
-    }
 
     private func saveQuiet() {
         try? modelContext.save()
@@ -339,6 +455,26 @@ struct V2ParameterInspectorButton: View {
     @Bindable var chat: Chat
     @Binding var isPresented: Bool
 
+    private var activeOverrideCount: Int {
+        var count = 0
+        if let v = chat.temperatureOverride, v != ParamDefault.temperature { count += 1 }
+        if let v = chat.maxTokensOverride, v != ParamDefault.maxTokens { count += 1 }
+        if let v = chat.topPOverride, v != ParamDefault.topP { count += 1 }
+        if let v = chat.topKOverride, v != ParamDefault.topK { count += 1 }
+        if let v = chat.minPOverride, v != ParamDefault.minP { count += 1 }
+        if let v = chat.topAOverride, v != ParamDefault.topA { count += 1 }
+        if let v = chat.frequencyPenaltyOverride, v != ParamDefault.frequencyPenalty { count += 1 }
+        if let v = chat.presencePenaltyOverride, v != ParamDefault.presencePenalty { count += 1 }
+        if let v = chat.repetitionPenaltyOverride, v != ParamDefault.repetitionPenalty { count += 1 }
+        if let v = chat.streamOverride, v != ParamDefault.stream { count += 1 }
+        if let v = chat.reasoningEnabledOverride, v != ParamDefault.reasoningEnabled { count += 1 }
+        if let v = chat.reasoningEffortOverride, v != ParamDefault.reasoningEffort { count += 1 }
+        if let v = chat.reasoningMaxTokensOverride, v != ParamDefault.reasoningMaxTokens { count += 1 }
+        if let v = chat.reasoningExcludeOverride, v != ParamDefault.reasoningExclude { count += 1 }
+        if let v = chat.verbosityOverride, v != ParamDefault.verbosity { count += 1 }
+        return count
+    }
+
     var body: some View {
         Button {
             isPresented.toggle()
@@ -348,8 +484,8 @@ struct V2ParameterInspectorButton: View {
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(isPresented ? Color.accentColor : .secondary)
 
-                if chat.overrideCount > 0 {
-                    Text("\(chat.overrideCount)")
+                if activeOverrideCount > 0 {
+                    Text("\(activeOverrideCount)")
                         .font(.system(size: 9, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)

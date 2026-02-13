@@ -225,10 +225,16 @@ final class ConversationStore {
     }
 
     private func buildParameters(for chat: Chat) -> ChatParameters {
-        ChatParameters(
-            temperature: chat.effectiveTemperature,
-            maxTokens: chat.effectiveMaxTokens,
-            topP: chat.effectiveTopP,
+        // Only include a parameter when it differs from its API default.
+        // nil values are omitted from the JSON payload entirely.
+        let temp = chat.effectiveTemperature
+        let topP = chat.effectiveTopP
+        let maxTok = chat.effectiveMaxTokens  // 0 = unlimited/off
+
+        return ChatParameters(
+            temperature: temp != 1.0 ? temp : nil,
+            maxTokens: maxTok > 0 ? maxTok : nil,
+            topP: topP != 1.0 ? topP : nil,
             topK: chat.effectiveTopK > 0 ? chat.effectiveTopK : nil,
             frequencyPenalty: chat.effectiveFrequencyPenalty != 0 ? chat.effectiveFrequencyPenalty : nil,
             presencePenalty: chat.effectivePresencePenalty != 0 ? chat.effectivePresencePenalty : nil,

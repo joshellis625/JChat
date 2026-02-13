@@ -29,16 +29,19 @@ extension EnvironmentValues {
 struct ContentView: View {
     @State private var conversationStore = ConversationStore()
     @State private var modelManager = ModelManager()
-    @State private var showingSettings = false
-    @State private var showingModelManager = false
     @State private var textBaseSize: CGFloat = TextSizeConfig.defaultSize
     @State private var hasAPIKey = false
+
+    // Setup screen only — sidebar owns its own copies for normal use
+    @State private var showingSettingsFromSetup = false
+    @State private var showingModelManagerFromSetup = false
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
 
     var body: some View {
         NavigationSplitView {
-            V2SidebarView(store: conversationStore)
+            V2SidebarView(store: conversationStore, modelManager: modelManager)
                 .navigationSplitViewColumnWidth(min: 270, ideal: 300, max: 360)
         } detail: {
             if needsSetup {
@@ -64,31 +67,17 @@ struct ContentView: View {
                     Label("New Chat", systemImage: "plus")
                 }
             }
-            ToolbarItem {
-                Button {
-                    showingModelManager = true
-                } label: {
-                    Label("Model Manager", systemImage: "server.rack")
-                }
-            }
-            ToolbarItem {
-                Button {
-                    showingSettings = true
-                } label: {
-                    Label("Settings", systemImage: "gear")
-                }
-            }
         }
-        .sheet(isPresented: $showingSettings) {
+        .sheet(isPresented: $showingSettingsFromSetup) {
             SettingsView()
         }
-        .onChange(of: showingSettings) { _, isShowing in
+        .onChange(of: showingSettingsFromSetup) { _, isShowing in
             if !isShowing {
                 loadTextSize()
                 loadAPIKeyStatus()
             }
         }
-        .sheet(isPresented: $showingModelManager) {
+        .sheet(isPresented: $showingModelManagerFromSetup) {
             ModelManagerView(modelManager: modelManager)
         }
         .task {
@@ -113,9 +102,6 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.textSizeReset)) { _ in
             resetTextSize()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.openSettings)) { _ in
-            showingSettings = true
         }
         .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.newChat)) { _ in
             conversationStore.createNewChat(in: modelContext)
@@ -191,12 +177,12 @@ struct ContentView: View {
 
             HStack(spacing: 10) {
                 Button("Open Settings") {
-                    showingSettings = true
+                    showingSettingsFromSetup = true
                 }
                 .buttonStyle(.borderedProminent)
 
                 Button("Open Model Manager") {
-                    showingModelManager = true
+                    showingModelManagerFromSetup = true
                 }
                 .buttonStyle(.bordered)
             }
