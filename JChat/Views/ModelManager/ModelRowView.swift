@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ModelRowView: View {
     let model: CachedModel

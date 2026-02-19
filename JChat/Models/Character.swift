@@ -22,12 +22,12 @@ final class Character {
         preferredModelID: String? = nil,
         isDefault: Bool = false
     ) {
-        self.id = UUID()
+        id = UUID()
         self.name = name
         self.systemPrompt = systemPrompt
         self.preferredModelID = preferredModelID
         self.isDefault = isDefault
-        self.createdAt = Date()
+        createdAt = Date()
     }
 
     static func createDefault(in context: ModelContext) -> Character {

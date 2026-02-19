@@ -15,11 +15,11 @@ enum V2Palette {
 struct V2CanvasBackground: View {
     var body: some View {
         #if os(macOS)
-        Color(nsColor: .windowBackgroundColor)
-            .ignoresSafeArea()
+            Color(nsColor: .windowBackgroundColor)
+                .ignoresSafeArea()
         #else
-        Color(uiColor: .systemBackground)
-            .ignoresSafeArea()
+            Color(uiColor: .systemBackground)
+                .ignoresSafeArea()
         #endif
     }
 }

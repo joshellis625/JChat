@@ -1,10 +1,9 @@
 import Foundation
-import Testing
 @testable import JChat
+import Testing
 
 @Suite(.serialized)
 struct OpenRouterServiceTests {
-
     @Test
     func requestEncodingIncludesExpectedFields() async throws {
         let session = makeMockSession()
@@ -135,9 +134,9 @@ struct OpenRouterServiceTests {
 
         for event in combined {
             switch event {
-            case .delta(let text):
+            case let .delta(text):
                 output += text
-            case .usage(let prompt, let completion):
+            case let .usage(prompt, completion):
                 usage = (prompt, completion)
             case .done:
                 doneSeen = true
@@ -156,7 +155,7 @@ struct OpenRouterServiceTests {
         let messageEvents = OpenRouterService.parseSSEPayloadForTesting(messageContentPayload)
         var messageText = ""
         for event in messageEvents {
-            if case .delta(let text) = event {
+            if case let .delta(text) = event {
                 messageText += text
             }
         }
@@ -171,7 +170,7 @@ struct OpenRouterServiceTests {
             #"data: {"bad_json":"#,
             #"data: {"choices":[{"delta":{"content":"lo"}}],"model":"openai/gpt-5-nano"}"#,
             #"data: {"usage":{"prompt_tokens":4,"completion_tokens":6},"model":"openai/gpt-5-nano"}"#,
-            "data: [DONE]"
+            "data: [DONE]",
         ].joined(separator: "\n")
 
         MockURLProtocol.requestHandler = { _ in
@@ -201,9 +200,9 @@ struct OpenRouterServiceTests {
 
         for try await event in stream {
             switch event {
-            case .delta(let text):
+            case let .delta(text):
                 output += text
-            case .usage(let prompt, let completion):
+            case let .usage(prompt, completion):
                 usage = (prompt, completion)
             case .done:
                 doneSeen = true
@@ -290,7 +289,7 @@ struct OpenRouterServiceTests {
         )
 
         #expect(attempts.value == 2)
-        #expect(sleeps.values.first == 7_000_000_000)
+        #expect(sleeps.values.first == 7000000000)
     }
 
     private func makeMockSession() -> URLSession {

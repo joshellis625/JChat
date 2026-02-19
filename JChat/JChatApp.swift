@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct JChatApp: App {
@@ -36,11 +36,11 @@ struct JChatApp: App {
         .windowResizability(.contentSize)
 
         #if os(iOS)
-        .commands {
-            CommandGroup(replacing: .help) {
-                Link("JChat Help", destination: URL(string: "https://jchat.app/help")!)
+            .commands {
+                CommandGroup(replacing: .help) {
+                    Link("JChat Help", destination: URL(string: "https://jchat.app/help")!)
+                }
             }
-        }
         #endif
 
         #if os(macOS)

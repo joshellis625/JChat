@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -29,12 +29,13 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 // MARK: - API Configuration
+
                 Section {
                     SecureField("OpenRouter API Key", text: $apiKey)
                         .textFieldStyle(.roundedBorder)
 
                     HStack {
-                        // TODO - Can we change this to the iCloud Keychain? Or does that require paid Apple Dev status?
+                        // TODO: - Can we change this to the iCloud Keychain? Or does that require paid Apple Dev status?
                         Text("Stored securely in your local keychain.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -51,7 +52,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    // TODO - Make keyValidationMessage and creditsBalance look prettier and have a cleaner presentation, be creative.
+                    // TODO: - Make keyValidationMessage and creditsBalance look prettier and have a cleaner presentation, be creative.
                     if let message = keyValidationMessage {
                         Text(message)
                             .font(.caption)
@@ -68,6 +69,7 @@ struct SettingsView: View {
                 }
 
                 // MARK: - Defaults
+
                 Section {
                     // Default Character picker
                     Picker("Default Character", selection: $selectedCharacterID) {
@@ -96,7 +98,6 @@ struct SettingsView: View {
                     Text("Applied when creating new chats without an explicit character or model.")
                         .font(.caption2)
                 }
-
             }
             .formStyle(.grouped)
             .navigationTitle("Settings")

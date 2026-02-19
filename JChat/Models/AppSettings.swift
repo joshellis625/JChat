@@ -18,10 +18,10 @@ final class AppSettings {
     var didApplyTextSizeDefaultMigration: Bool = false
 
     init() {
-        self.id = UUID()
-        self.modelCacheMaxAge = 86400 // 24 hours
-        self.textPointSize = 15.0
-        self.didApplyTextSizeDefaultMigration = false
+        id = UUID()
+        modelCacheMaxAge = 86400 // 24 hours
+        textPointSize = 15.0
+        didApplyTextSizeDefaultMigration = false
     }
 
     static func fetchOrCreate(in context: ModelContext) -> AppSettings {

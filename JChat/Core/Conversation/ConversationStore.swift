@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 /// Primary state store for the V2 chat surface.
 @MainActor
@@ -229,7 +229,7 @@ final class ConversationStore {
         // nil values are omitted from the JSON payload entirely.
         let temp = chat.effectiveTemperature
         let topP = chat.effectiveTopP
-        let maxTok = chat.effectiveMaxTokens  // 0 = unlimited/off
+        let maxTok = chat.effectiveMaxTokens // 0 = unlimited/off
 
         return ChatParameters(
             temperature: temp != 1.0 ? temp : nil,
@@ -278,14 +278,14 @@ final class ConversationStore {
                 let stream = await engine.streamAssistantResponse(request: request)
                 for try await event in stream {
                     switch event {
-                    case .delta(let text):
+                    case let .delta(text):
                         if let flushed = accumulator.append(text) {
                             renderedContent += flushed
                             if activeStreamingSessionID == sessionID {
                                 streamingContent = renderedContent
                             }
                         }
-                    case .usage(let promptTokens, let completionTokens):
+                    case let .usage(promptTokens, completionTokens):
                         let previousPromptTokens = assistantMessage.promptTokens
                         let previousCompletionTokens = assistantMessage.completionTokens
                         let previousCost = assistantMessage.cost
@@ -317,7 +317,7 @@ final class ConversationStore {
                                 cost: max(0, -costDelta)
                             )
                         }
-                    case .modelID(let id):
+                    case let .modelID(id):
                         assistantMessage.modelID = id
                     case .done:
                         break

@@ -6,9 +6,9 @@
 import Foundation
 
 nonisolated struct ChatParameters: Sendable {
-    var temperature: Double? = nil        // nil = use default (1.0); omitted from API when nil
-    var maxTokens: Int? = nil             // nil = unlimited (omitted from API)
-    var topP: Double? = nil               // nil = use default (1.0); omitted from API when nil
+    var temperature: Double? = nil // nil = use default (1.0); omitted from API when nil
+    var maxTokens: Int? = nil // nil = unlimited (omitted from API)
+    var topP: Double? = nil // nil = use default (1.0); omitted from API when nil
     var topK: Int? = nil
     var frequencyPenalty: Double? = nil
     var presencePenalty: Double? = nil
@@ -22,7 +22,7 @@ nonisolated struct ChatParameters: Sendable {
     var reasoningEffort: String = "medium"
     var reasoningMaxTokens: Int? = nil
     var reasoningExclude: Bool? = nil
-    var verbosity: String? = nil          // nil = omitted from API (OpenRouter default)
+    var verbosity: String? = nil // nil = omitted from API (OpenRouter default)
 }
 
 nonisolated struct ModelCallRequest: Sendable {
@@ -110,7 +110,7 @@ actor OpenRouterService {
         session: URLSession = .shared,
         chatRetryPolicy: RetryPolicy = .chatDefault,
         sleep: @escaping @Sendable (UInt64) async throws -> Void = { try await Task.sleep(nanoseconds: $0) },
-        randomUnit: @escaping @Sendable () -> Double = { Double.random(in: 0.0...1.0) }
+        randomUnit: @escaping @Sendable () -> Double = { Double.random(in: 0.0 ... 1.0) }
     ) {
         self.baseURL = baseURL
         self.session = session
@@ -703,7 +703,7 @@ actor OpenRouterService {
 
     private func sleepForRetry(attempt: Int, retryAfter: TimeInterval?, policy: RetryPolicy) async throws {
         let delaySeconds = retryDelay(attempt: attempt, retryAfter: retryAfter, policy: policy)
-        let nanoseconds = UInt64(max(0, delaySeconds) * 1_000_000_000)
+        let nanoseconds = UInt64(max(0, delaySeconds) * 1000000000)
         try await sleep(nanoseconds)
     }
 

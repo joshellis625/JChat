@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 private let v2DefaultTextBaseSize: CGFloat = 15
 
@@ -308,10 +308,10 @@ struct V2ConversationPane: View {
                             liveAssistantID: liveAssistantID,
                             liveStreamingContent: liveAssistantID == row.id ? store.streamingContent : nil
                         )
-                            .id(row.id)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8))
-                            .listRowBackground(Color.clear)
+                        .id(row.id)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8))
+                        .listRowBackground(Color.clear)
                     }
 
                     Color.clear
@@ -607,9 +607,9 @@ private struct V2MessageRow: View, Equatable {
 
     static func == (lhs: V2MessageRow, rhs: V2MessageRow) -> Bool {
         lhs.row == rhs.row &&
-        lhs.displayedContent == rhs.displayedContent &&
-        lhs.isLiveStreaming == rhs.isLiveStreaming &&
-        lhs.resolvedModelName == rhs.resolvedModelName
+            lhs.displayedContent == rhs.displayedContent &&
+            lhs.isLiveStreaming == rhs.isLiveStreaming &&
+            lhs.resolvedModelName == rhs.resolvedModelName
     }
 
     var body: some View {
@@ -677,7 +677,6 @@ private struct V2MessageRow: View, Equatable {
         guard displayedContent.count > renderCharacterLimit else { return displayedContent }
         return String(displayedContent.prefix(renderCharacterLimit)) + "\n\n[Truncated in stability mode]"
     }
-
 }
 
 private struct V2Composer: View {
@@ -697,7 +696,7 @@ private struct V2Composer: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             TextField("Ask anything", text: $draft, axis: .vertical)
-                .lineLimit(1...5)
+                .lineLimit(1 ... 5)
                 .focused($focused)
                 .font(.system(size: v2TextSize(15, baseSize: textBaseSize), weight: .regular, design: .default))
                 .foregroundStyle(.primary)

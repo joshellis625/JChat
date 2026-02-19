@@ -35,9 +35,9 @@ class ModelManager {
             let query = searchText.lowercased()
             result = result.filter {
                 $0.name.lowercased().contains(query) ||
-                $0.id.lowercased().contains(query) ||
-                $0.providerName.lowercased().contains(query) ||
-                $0.modelDescription.lowercased().contains(query)
+                    $0.id.lowercased().contains(query) ||
+                    $0.providerName.lowercased().contains(query) ||
+                    $0.modelDescription.lowercased().contains(query)
             }
         }
 
@@ -201,7 +201,7 @@ class ModelManager {
     private func extractProvider(from modelID: String) -> String {
         // OpenRouter model IDs are formatted as "provider/model-name"
         if let slashIndex = modelID.firstIndex(of: "/") {
-            let provider = String(modelID[modelID.startIndex..<slashIndex])
+            let provider = String(modelID[modelID.startIndex ..< slashIndex])
             // Capitalize first letter of each word
             return provider
                 .split(separator: "-")

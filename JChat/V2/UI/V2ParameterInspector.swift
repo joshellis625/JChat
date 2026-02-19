@@ -3,16 +3,16 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 // MARK: - Default values (source of truth for "is this overridden?")
 
 private enum ParamDefault {
     static let temperature: Double = 1.0
-    static let maxTokens: Int = 0          // 0 = unlimited / Off
+    static let maxTokens: Int = 0 // 0 = unlimited / Off
     static let topP: Double = 1.0
-    static let topK: Int = 0              // 0 = Off
+    static let topK: Int = 0 // 0 = Off
     static let minP: Double = 0.0
     static let topA: Double = 0.0
     static let frequencyPenalty: Double = 0.0
@@ -21,7 +21,7 @@ private enum ParamDefault {
     static let stream: Bool = true
     static let reasoningEnabled: Bool = true
     static let reasoningEffort: String = "medium"
-    static let reasoningMaxTokens: Int = 0  // 0 = unlimited / Off
+    static let reasoningMaxTokens: Int = 0 // 0 = unlimited / Off
     static let reasoningExclude: Bool = false
     static let verbosity: String = "medium"
 }
@@ -61,8 +61,8 @@ private struct NumberField<T: Numeric & Comparable>: View {
         let trimmed = draft.trimmingCharacters(in: .whitespaces)
         if let parsed = parse(trimmed) {
             let clamped: T = parsed < range.lowerBound ? range.lowerBound
-                           : parsed > range.upperBound ? range.upperBound
-                           : parsed
+                : parsed > range.upperBound ? range.upperBound
+                : parsed
             value = clamped
             draft = format(clamped)
         } else {
@@ -110,7 +110,7 @@ private struct IntSliderRow: View {
     @Binding var value: Int
     let range: ClosedRange<Int>
     let step: Int
-    let zeroLabel: String?    // if set, display this instead of "0"
+    let zeroLabel: String? // if set, display this instead of "0"
 
     private var doubleBinding: Binding<Double> {
         Binding(
@@ -132,7 +132,7 @@ private struct IntSliderRow: View {
                 NumberField(
                     label: title,
                     value: $value,
-                    range: range.lowerBound...range.upperBound,
+                    range: range.lowerBound ... range.upperBound,
                     format: { v in
                         if v == 0, let zeroLabel { return zeroLabel }
                         return "\(v)"
@@ -143,7 +143,7 @@ private struct IntSliderRow: View {
                     }
                 )
             }
-            Slider(value: doubleBinding, in: Double(range.lowerBound)...Double(range.upperBound), step: Double(step))
+            Slider(value: doubleBinding, in: Double(range.lowerBound) ... Double(range.upperBound), step: Double(step))
                 .tint(.accentColor)
         }
         .padding(.vertical, 2)
@@ -206,7 +206,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...2,
+                range: 0 ... 2,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -221,7 +221,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...32768,
+                range: 0 ... 32768,
                 step: 256,
                 zeroLabel: "Off"
             )
@@ -252,7 +252,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...1,
+                range: 0 ... 1,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -267,7 +267,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...200,
+                range: 0 ... 200,
                 step: 1,
                 zeroLabel: "Off"
             )
@@ -282,7 +282,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...1,
+                range: 0 ... 1,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -297,7 +297,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...1,
+                range: 0 ... 1,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -318,7 +318,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...2,
+                range: 0 ... 2,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -333,7 +333,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0...2,
+                range: 0 ... 2,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -348,7 +348,7 @@ struct V2ParameterInspector: View {
                         saveQuiet()
                     }
                 ),
-                range: 0.5...2,
+                range: 0.5 ... 2,
                 step: 0.05,
                 formatValue: { String(format: "%.2f", $0) }
             )
@@ -375,7 +375,7 @@ struct V2ParameterInspector: View {
                     get: { chat.reasoningEffortOverride ?? ParamDefault.reasoningEffort },
                     set: { newVal in
                         chat.reasoningEffortOverride = (newVal == ParamDefault.reasoningEffort) ? nil : newVal
-                        chat.reasoningMaxTokensOverride = nil  // mutually exclusive
+                        chat.reasoningMaxTokensOverride = nil // mutually exclusive
                         saveQuiet()
                     }
                 )) {
@@ -400,12 +400,12 @@ struct V2ParameterInspector: View {
                             chat.reasoningMaxTokensOverride = nil
                         } else {
                             chat.reasoningMaxTokensOverride = newVal
-                            chat.reasoningEffortOverride = nil  // mutually exclusive
+                            chat.reasoningEffortOverride = nil // mutually exclusive
                         }
                         saveQuiet()
                     }
                 ),
-                range: 0...32000,
+                range: 0 ... 32000,
                 step: 256,
                 zeroLabel: "Off"
             )
@@ -447,4 +447,3 @@ struct V2ParameterInspector: View {
         try? modelContext.save()
     }
 }
-

@@ -5,12 +5,11 @@
 //  Created by Josh Ellis on 1/31/26.
 //
 
-import Testing
-import SwiftData
 @testable import JChat
+import SwiftData
+import Testing
 
 struct JChatTests {
-
     // Minimal in-memory repository/engine doubles for ConversationStore tests.
     @MainActor
     private struct InMemoryChatRepository: ChatRepositoryProtocol {
@@ -291,5 +290,4 @@ struct JChatTests {
             configurations: config
         )
     }
-
 }

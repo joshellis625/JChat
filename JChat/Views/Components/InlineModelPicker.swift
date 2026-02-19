@@ -3,11 +3,11 @@
 //  JChat
 //
 
-import SwiftUI
-import SwiftData
 import Foundation
+import SwiftData
+import SwiftUI
 #if os(macOS)
-import AppKit
+    import AppKit
 #endif
 
 struct InlineModelPicker: View {
@@ -72,11 +72,11 @@ struct InlineModelPicker: View {
 
     private var measuredSelectedModelNameWidth: CGFloat {
         #if os(macOS)
-        let font = NSFont.systemFont(ofSize: 15, weight: .semibold)
-        let width = (selectedModelName as NSString).size(withAttributes: [.font: font]).width
-        return ceil(width)
+            let font = NSFont.systemFont(ofSize: 15, weight: .semibold)
+            let width = (selectedModelName as NSString).size(withAttributes: [.font: font]).width
+            return ceil(width)
         #else
-        return CGFloat(selectedModelName.count) * 8.5
+            return CGFloat(selectedModelName.count) * 8.5
         #endif
     }
 
@@ -194,8 +194,8 @@ struct InlineModelPicker: View {
         let query = pickerSearchText.lowercased()
         return favorites.filter {
             $0.name.lowercased().contains(query) ||
-            $0.id.lowercased().contains(query) ||
-            $0.providerName.lowercased().contains(query)
+                $0.id.lowercased().contains(query) ||
+                $0.providerName.lowercased().contains(query)
         }
     }
 
@@ -205,8 +205,8 @@ struct InlineModelPicker: View {
         let query = pickerSearchText.lowercased()
         return all.filter {
             $0.name.lowercased().contains(query) ||
-            $0.id.lowercased().contains(query) ||
-            $0.providerName.lowercased().contains(query)
+                $0.id.lowercased().contains(query) ||
+                $0.providerName.lowercased().contains(query)
         }
     }
 
