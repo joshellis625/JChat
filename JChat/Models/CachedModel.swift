@@ -81,7 +81,7 @@ final class CachedModel {
         self.modality = modality
         self.isFavorite = isFavorite
         self.sortOrder = sortOrder
-        self.lastFetchedAt = Date()
+        lastFetchedAt = Date()
     }
 
     // MARK: - Variant Detection
@@ -115,11 +115,11 @@ final class CachedModel {
     }
 
     var promptPricePerMillion: Double {
-        nonNegativePromptPricePerToken * 1_000_000
+        nonNegativePromptPricePerToken * 1000000
     }
 
     var completionPricePerMillion: Double {
-        nonNegativeCompletionPricePerToken * 1_000_000
+        nonNegativeCompletionPricePerToken * 1000000
     }
 
     var displayPrice: String {
@@ -130,10 +130,10 @@ final class CachedModel {
     }
 
     var contextLengthFormatted: String {
-        if contextLength >= 1_000_000 {
-            return "\(contextLength / 1_000_000)M"
-        } else if contextLength >= 1_000 {
-            return "\(contextLength / 1_000)K"
+        if contextLength >= 1000000 {
+            return "\(contextLength / 1000000)M"
+        } else if contextLength >= 1000 {
+            return "\(contextLength / 1000)K"
         }
         return "\(contextLength)"
     }
