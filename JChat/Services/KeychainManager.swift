@@ -25,8 +25,20 @@ final class KeychainManager: @unchecked Sendable {
     private let synchronizable = false
 
     // TODO: - ENSURE ROBUST ENCRYPTION OF API KEY. DO NOT LEAK THIS KEY UNDER ANY CIRCUMSTANCES. LEAKING THIS KEY OR USING WEAK ENCRYPTION/NO ENCRYPTION IS A BLATANT SECURITY VIOLATION AND NOT ACCEPTABLE.
+    static func normalizeKey(_ key: String) -> String {
+        var normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.lowercased().hasPrefix("bearer ") {
+            normalized = String(normalized.dropFirst(7))
+        }
+        if normalized.hasPrefix("\"") && normalized.hasSuffix("\"") && normalized.count >= 2 {
+            normalized = String(normalized.dropFirst().dropLast())
+        }
+        return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     func saveAPIKey(_ key: String) throws {
-        guard let data = key.data(using: .utf8) else {
+        let normalizedKey = Self.normalizeKey(key)
+        guard let data = normalizedKey.data(using: .utf8) else {
             throw KeychainError.conversionError
         }
 
@@ -85,7 +97,7 @@ final class KeychainManager: @unchecked Sendable {
             throw KeychainError.conversionError
         }
 
-        return key
+        return Self.normalizeKey(key)
     }
 
     func deleteAPIKey() throws {

@@ -14,6 +14,7 @@ struct InlineModelPicker: View {
     @Binding var selectedModelID: String?
     @Bindable var modelManager: ModelManager
     @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
+    @Environment(\.textBaseSize) private var textBaseSize
 
     @State private var showingPopover = false
     @State private var showingFullManager = false
@@ -25,18 +26,18 @@ struct InlineModelPicker: View {
         } label: {
             HStack(spacing: 7) {
                 Image(systemName: "cpu")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold))
                     .foregroundStyle(.secondary)
 
                 Text(selectedModelName)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.system(size: TextSizeConfig.scaled(15, base: textBaseSize), weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
                     .fixedSize(horizontal: true, vertical: false)
                     .minimumScaleFactor(0.85)
                     .allowsTightening(true)
 
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: TextSizeConfig.scaled(10, base: textBaseSize), weight: .semibold))
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 9)
@@ -71,12 +72,13 @@ struct InlineModelPicker: View {
     }
 
     private var measuredSelectedModelNameWidth: CGFloat {
+        let fontSize = TextSizeConfig.scaled(15, base: textBaseSize)
         #if os(macOS)
-            let font = NSFont.systemFont(ofSize: 15, weight: .semibold)
+            let font = NSFont.systemFont(ofSize: fontSize, weight: .semibold)
             let width = (selectedModelName as NSString).size(withAttributes: [.font: font]).width
             return ceil(width)
         #else
-            return CGFloat(selectedModelName.count) * 8.5
+            return CGFloat(selectedModelName.count) * (fontSize * 0.6)
         #endif
     }
 
@@ -89,9 +91,9 @@ struct InlineModelPicker: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Choose a Model")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: TextSizeConfig.scaled(14, base: textBaseSize), weight: .bold, design: .rounded))
                     Text("\(cachedModels.count) cached models")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
 
@@ -101,7 +103,7 @@ struct InlineModelPicker: View {
                     showingPopover = false
                     showingFullManager = true
                 }
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .semibold, design: .rounded))
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -110,12 +112,12 @@ struct InlineModelPicker: View {
 
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .semibold))
                     .foregroundStyle(.secondary)
 
                 TextField("Search models, IDs, providers...", text: $pickerSearchText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .medium))
 
                 if !pickerSearchText.isEmpty {
                     Button {
@@ -156,7 +158,7 @@ struct InlineModelPicker: View {
                         }
                     } else if !pickerSearchText.isEmpty {
                         Text("No models match \"\(pickerSearchText)\"")
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .medium))
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
@@ -179,7 +181,7 @@ struct InlineModelPicker: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold, design: .rounded))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
             }
@@ -225,7 +227,7 @@ struct InlineModelPicker: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 10, weight: .semibold, design: .rounded))
+            .font(.system(size: TextSizeConfig.scaled(10, base: textBaseSize), weight: .semibold, design: .rounded))
             .foregroundStyle(.secondary)
             .textCase(.uppercase)
             .padding(.horizontal, 6)
@@ -242,7 +244,7 @@ struct InlineModelPicker: View {
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(alignment: .center, spacing: 6) {
                         Text(model.uiDisplayName)
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold, design: .rounded))
                             .lineLimit(1)
 
                         if model.isFree {
@@ -252,19 +254,19 @@ struct InlineModelPicker: View {
 
                     HStack(spacing: 6) {
                         Text(model.modelSlug)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                             .foregroundStyle(.secondary)
                         Text("•")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .semibold))
                             .foregroundStyle(.tertiary)
                         Text("\(model.contextLengthFormatted) ctx")
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                             .foregroundStyle(.secondary)
                         Text("•")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .semibold))
                             .foregroundStyle(.tertiary)
                         Text(compactPrice(for: model))
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                             .foregroundStyle(model.isFree ? .green : .secondary)
                             .lineLimit(1)
                     }
@@ -274,7 +276,7 @@ struct InlineModelPicker: View {
 
                 if model.id == selectedModelID {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .bold))
                         .foregroundStyle(Color.accentColor)
                 }
             }

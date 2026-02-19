@@ -37,6 +37,7 @@ private struct NumberField<T: Numeric & Comparable>: View {
     let format: (T) -> String
     let parse: (String) -> T?
 
+    @Environment(\.textBaseSize) private var textBaseSize
     @State private var draft: String = ""
     @FocusState private var focused: Bool
 
@@ -45,7 +46,7 @@ private struct NumberField<T: Numeric & Comparable>: View {
             .focused($focused)
             .multilineTextAlignment(.trailing)
             .frame(width: 62)
-            .font(.system(size: 13, weight: .regular, design: .monospaced))
+            .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .regular, design: .monospaced))
             .foregroundStyle(.primary)
             .onAppear { draft = format(value) }
             .onChange(of: value) { _, newVal in
@@ -156,7 +157,7 @@ private struct IntSliderRow: View {
 private func paramLabel(_ name: String, isOverridden: Bool) -> some View {
     HStack(spacing: 5) {
         Text(name)
-            .font(.system(size: 13, weight: .medium, design: .default))
+            .appFont(.subheadline, weight: .medium)
             .foregroundStyle(.primary)
         if isOverridden {
             Circle()

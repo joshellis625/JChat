@@ -229,25 +229,7 @@ actor OpenRouterService {
         let data: [OpenRouterModel]
     }
 
-    // MARK: - Key/Credits API Types
-
-    struct KeyResponse: Codable, Sendable {
-        let data: KeyData
-
-        struct KeyData: Codable, Sendable {
-            let label: String?
-            let limit: Double?
-            let usage: Double?
-            let limit_remaining: Double?
-            let is_free_tier: Bool?
-            let rate_limit: RateLimit?
-
-            struct RateLimit: Codable, Sendable {
-                let requests: Int?
-                let interval: String?
-            }
-        }
-    }
+    // MARK: - Credits API Types
 
     struct CreditsResponse: Codable, Sendable {
         let data: CreditsData
@@ -268,6 +250,7 @@ actor OpenRouterService {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
         request.setValue("JChat", forHTTPHeaderField: "X-Title")
 
         let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
@@ -278,18 +261,56 @@ actor OpenRouterService {
 
     // MARK: - Key Validation & Credits
 
-    func validateAPIKey(apiKey: String) async throws -> KeyResponse {
-        guard let url = URL(string: "\(baseURL)/key") else {
-            throw JChatError.serverError(statusCode: 0, message: "Invalid URL")
+    struct KeyValidationDiagnostics: Sendable {
+        let endpoint: String
+        let statusCode: Int
+        let errorBody: String?
+        let modelsCount: Int?
+        let isValid: Bool
+    }
+
+    func validateAPIKeyWithDiagnostics(apiKey: String) async -> KeyValidationDiagnostics {
+        let endpoint = "\(baseURL)/models"
+        guard let url = URL(string: endpoint) else {
+            return KeyValidationDiagnostics(endpoint: endpoint, statusCode: 0, errorBody: "Invalid URL", modelsCount: nil, isValid: false)
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("JChat", forHTTPHeaderField: "X-Title")
 
-        let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
-        try throwIfNotSuccess(httpResponse: httpResponse, data: data)
-        return try JSONDecoder().decode(KeyResponse.self, from: data)
+        do {
+            let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
+            if httpResponse.statusCode == 200 {
+                let modelsResponse = try JSONDecoder().decode(ModelsResponse.self, from: data)
+                return KeyValidationDiagnostics(
+                    endpoint: endpoint,
+                    statusCode: httpResponse.statusCode,
+                    errorBody: nil,
+                    modelsCount: modelsResponse.data.count,
+                    isValid: true
+                )
+            }
+
+            let message = Self.errorMessage(from: data)
+            return KeyValidationDiagnostics(
+                endpoint: endpoint,
+                statusCode: httpResponse.statusCode,
+                errorBody: message,
+                modelsCount: nil,
+                isValid: false
+            )
+        } catch {
+            return KeyValidationDiagnostics(
+                endpoint: endpoint,
+                statusCode: 0,
+                errorBody: error.localizedDescription,
+                modelsCount: nil,
+                isValid: false
+            )
+        }
     }
 
     func fetchCredits(apiKey: String) async throws -> CreditsResponse {
@@ -300,6 +321,8 @@ actor OpenRouterService {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("JChat", forHTTPHeaderField: "X-Title")
 
         let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
         try throwIfNotSuccess(httpResponse: httpResponse, data: data)

@@ -16,7 +16,7 @@ struct ModelRowView: View {
             Button(action: onToggleFavorite) {
                 Image(systemName: model.isFavorite ? "star.fill" : "star")
                     .foregroundStyle(model.isFavorite ? .yellow : .secondary)
-                    .font(.body)
+                    .appFont(.body)
             }
             .buttonStyle(.plain)
 
@@ -25,7 +25,7 @@ struct ModelRowView: View {
                 // Top row: name + badges
                 HStack(spacing: 6) {
                     Text(model.uiDisplayName)
-                        .font(.body.weight(.semibold))
+                        .appFont(.body, weight: .semibold)
                         .lineLimit(1)
 
                     if model.isFree {
@@ -42,15 +42,15 @@ struct ModelRowView: View {
                 // Bottom row: slug + moderation
                 HStack(spacing: 8) {
                     Text(model.modelSlug)
-                        .font(.caption)
+                        .appFont(.caption)
                         .foregroundStyle(.secondary)
 
                     if model.isModerated {
                         HStack(spacing: 2) {
                             Image(systemName: "shield.fill")
-                                .font(.caption2)
+                                .appFont(.caption2)
                             Text("Moderated")
-                                .font(.caption2)
+                                .appFont(.caption2)
                         }
                         .foregroundStyle(.orange)
                     }
@@ -62,14 +62,14 @@ struct ModelRowView: View {
             // Trailing: context + pricing
             VStack(alignment: .trailing, spacing: 4) {
                 Text(model.contextLengthFormatted)
-                    .font(.caption)
+                    .appFont(.caption)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(.secondary.opacity(0.15))
                     .clipShape(Capsule())
 
                 Text(model.displayPrice)
-                    .font(.caption2)
+                    .appFont(.caption2)
                     .foregroundStyle(model.isFree ? .green : .secondary)
             }
         }
@@ -85,7 +85,7 @@ struct BadgeCapsule: View {
 
     var body: some View {
         Text(text)
-            .font(.caption2.weight(.bold))
+            .appFont(.caption2, weight: .bold)
             .foregroundStyle(.white)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)

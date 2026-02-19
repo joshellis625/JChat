@@ -13,8 +13,9 @@ struct SettingsView: View {
     @State private var apiKey: String = ""
     @State private var isValidatingKey = false
     @State private var keyValidationMessage: String?
+    @State private var keyValidationDetails: String?
+    @State private var lastRequestInfo: RequestInfo?
     @State private var creditsBalance: String?
-
     // Defaults
     @Query(sort: \Character.createdAt, order: .reverse) private var characters: [Character]
     @Query(filter: #Predicate<CachedModel> { $0.isFavorite == true },
@@ -35,19 +36,16 @@ struct SettingsView: View {
                         .textFieldStyle(.roundedBorder)
 
                     HStack {
-                        // TODO: - Can we change this to the iCloud Keychain? Or does that require paid Apple Dev status?
-                        Text("Stored securely in your local keychain.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Text("Stored securely in your keychain.")
                         Spacer()
                         if isValidatingKey {
                             ProgressView()
-                                .scaleEffect(0.7)
+                                .scaleEffect(0.6)
                         } else {
                             Button("Validate") {
                                 Task { await validateKey() }
                             }
-                            .font(.caption)
+                            .appFont(.caption)
                             .disabled(apiKey.isEmpty)
                         }
                     }
@@ -55,17 +53,50 @@ struct SettingsView: View {
                     // TODO: - Make keyValidationMessage and creditsBalance look prettier and have a cleaner presentation, be creative.
                     if let message = keyValidationMessage {
                         Text(message)
-                            .font(.caption)
+                            .bold()
                             .foregroundStyle(message.contains("Valid") ? .green : .red)
+                    }
+
+                    if let details = keyValidationDetails {
+                        Text(details)
                     }
 
                     if let credits = creditsBalance {
                         Text("Credits: \(credits)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .appFont(.footnote)
+                            .bold()
+                            .foregroundStyle(.green)
                     }
-                } header: {
+
+                    if let requestInfo = lastRequestInfo {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                                Text("Endpoint: ")
+                                    .appFont(.footnote)
+                                    .bold()
+                                Text(requestInfo.endpoint)
+                                    .appFont(.footnote, design: .monospaced)
+                            }
+                            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                                Text("Status: ")
+                                    .appFont(.footnote)
+                                    .bold()
+                                if case requestInfo.statusCode = 200 {
+                                    Text(requestInfo.statusText)
+                                        .foregroundStyle(.green)
+                                }
+                            }
+                        }
+                        if let errorBody = requestInfo.errorBody, !errorBody.isEmpty {
+                            Text("Error: \(errorBody)")
+                                .appFont(.footnote)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                }
+            header: {
                     Text("API Configuration")
+                        .bold()
                 }
 
                 // MARK: - Defaults
@@ -89,14 +120,14 @@ struct SettingsView: View {
 
                     if favoriteModels.isEmpty {
                         Text("Favorite some models in the Model Manager to see them here.")
-                            .font(.caption2)
+                            .appFont(.caption2)
                             .foregroundStyle(.secondary)
                     }
                 } header: {
                     Text("Defaults")
                 } footer: {
                     Text("Applied when creating new chats without an explicit character or model.")
-                        .font(.caption2)
+                        .appFont(.caption2)
                 }
             }
             .formStyle(.grouped)
@@ -138,39 +169,67 @@ struct SettingsView: View {
         }
     }
 
+    private func normalizeKey(_ key: String) -> String {
+        var normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.lowercased().hasPrefix("bearer ") {
+            normalized = String(normalized.dropFirst(7))
+        }
+        if normalized.hasPrefix("\"") && normalized.hasSuffix("\"") && normalized.count >= 2 {
+            normalized = String(normalized.dropFirst().dropLast())
+        }
+        return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func validateKey() async {
         isValidatingKey = true
         keyValidationMessage = nil
+        keyValidationDetails = nil
+        lastRequestInfo = nil
         creditsBalance = nil
 
-        // Step 1: Validate the key via /api/v1/key
-        do {
-            let keyInfo = try await service.validateAPIKey(apiKey: apiKey)
-            let usage = keyInfo.data.usage ?? 0
-            let isFreeTier = keyInfo.data.is_free_tier ?? false
+        let normalizedKey = normalizeKey(apiKey)
+        apiKey = normalizedKey
 
-            if let limit = keyInfo.data.limit, let remaining = keyInfo.data.limit_remaining {
-                creditsBalance = String(format: "$%.4f remaining of $%.2f limit", remaining, limit)
-            } else if isFreeTier {
-                creditsBalance = "Free tier (usage: $\(String(format: "%.4f", usage)))"
-            } else {
-                creditsBalance = String(format: "Usage: $%.4f", usage)
-            }
+        guard !normalizedKey.isEmpty else {
+            keyValidationMessage = JChatError.apiKeyNotConfigured.errorDescription
+            isValidatingKey = false
+            return
+        }
 
+        // Step 1: Validate the key via /api/v1/models
+        let diagnostics = await service.validateAPIKeyWithDiagnostics(apiKey: normalizedKey)
+        lastRequestInfo = RequestInfo(
+            endpoint: diagnostics.endpoint,
+            statusCode: diagnostics.statusCode,
+            errorBody: diagnostics.errorBody
+        )
+
+        if diagnostics.isValid {
             keyValidationMessage = "Valid API key"
-        } catch let error as JChatError {
-            keyValidationMessage = error.errorDescription
-        } catch {
-            keyValidationMessage = "Validation failed: \(error.localizedDescription)"
+            if let modelsCount = diagnostics.modelsCount {
+                keyValidationDetails = "Models available: \(modelsCount)"
+            }
+        } else {
+            if diagnostics.statusCode > 0 {
+                keyValidationMessage = "Validation failed (status \(diagnostics.statusCode))"
+                if let errorBody = diagnostics.errorBody, !errorBody.isEmpty {
+                    keyValidationDetails = errorBody
+                }
+            } else {
+                keyValidationMessage = "Validation failed"
+                if let errorBody = diagnostics.errorBody, !errorBody.isEmpty {
+                    keyValidationDetails = errorBody
+                }
+            }
         }
 
         // Step 2: Try to fetch credits (requires management key — may fail, that's OK)
         if keyValidationMessage == "Valid API key" {
             do {
-                let credits = try await service.fetchCredits(apiKey: apiKey)
+                let credits = try await service.fetchCredits(apiKey: normalizedKey)
                 let total = credits.data.total_credits ?? 0
                 let used = credits.data.total_usage ?? 0
-                creditsBalance = String(format: "$%.4f remaining", total - used)
+                creditsBalance = String(format: "$%.2f", total - used)
             } catch {
                 // Credits endpoint requires management key — not an error for regular keys
             }
@@ -181,11 +240,13 @@ struct SettingsView: View {
 
     private func saveSettings() {
         // Save API key
+        let normalizedKey = normalizeKey(apiKey)
+        apiKey = normalizedKey
         do {
-            if apiKey.isEmpty {
+            if normalizedKey.isEmpty {
                 try KeychainManager.shared.deleteAPIKey()
             } else {
-                try KeychainManager.shared.saveAPIKey(apiKey)
+                try KeychainManager.shared.saveAPIKey(normalizedKey)
             }
         } catch {
             // Silently handle keychain errors for now
@@ -196,6 +257,16 @@ struct SettingsView: View {
         settings.defaultCharacterID = selectedCharacterID
         settings.defaultModelID = selectedModelID
         try? modelContext.save()
+    }
+}
+
+private struct RequestInfo: Sendable {
+    let endpoint: String
+    let statusCode: Int
+    let errorBody: String?
+
+    var statusText: String {
+        statusCode > 0 ? "\(statusCode)" : "No response"
     }
 }
 

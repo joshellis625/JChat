@@ -125,7 +125,7 @@ struct ModelManagerView: View {
         .overlay(alignment: .bottom) {
             if let error = modelManager.errorMessage {
                 Text(error)
-                    .font(.caption)
+                    .appFont(.caption)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -187,7 +187,7 @@ struct FilterPill: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.caption.weight(isSelected ? .semibold : .regular))
+                .appFont(.caption, weight: isSelected ? .semibold : .regular)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
