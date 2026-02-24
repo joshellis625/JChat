@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ModelManagerView: View {
     @Bindable var modelManager: ModelManager
@@ -42,7 +42,8 @@ struct ModelManagerView: View {
     }
 
     // MARK: - Provider Filter Bar
-    // TODO - This selection should only be for search assistance and for reducing the number of listed models. Once the Model Manager is closed, these filters should be removed and they should NEVER effect the Inline Model Picker (See related TODO in InlineModelPicker.swift)
+
+    // TODO: - This selection should only be for search assistance and for reducing the number of listed models. Once the Model Manager is closed, these filters should be removed and they should NEVER effect the Inline Model Picker (See related TODO in InlineModelPicker.swift)
     private var providerFilterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -124,7 +125,7 @@ struct ModelManagerView: View {
         .overlay(alignment: .bottom) {
             if let error = modelManager.errorMessage {
                 Text(error)
-                    .font(.caption)
+                    .appFont(.caption)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -186,7 +187,7 @@ struct FilterPill: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.caption.weight(isSelected ? .semibold : .regular))
+                .appFont(.caption, weight: isSelected ? .semibold : .regular)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))

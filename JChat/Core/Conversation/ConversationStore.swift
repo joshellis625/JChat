@@ -3,8 +3,8 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 /// Primary state store for the V2 chat surface.
 @MainActor
@@ -225,10 +225,16 @@ final class ConversationStore {
     }
 
     private func buildParameters(for chat: Chat) -> ChatParameters {
-        ChatParameters(
-            temperature: chat.effectiveTemperature,
-            maxTokens: chat.effectiveMaxTokens,
-            topP: chat.effectiveTopP,
+        // Only include a parameter when it differs from its API default.
+        // nil values are omitted from the JSON payload entirely.
+        let temp = chat.effectiveTemperature
+        let topP = chat.effectiveTopP
+        let maxTok = chat.effectiveMaxTokens // 0 = unlimited/off
+
+        return ChatParameters(
+            temperature: temp != 1.0 ? temp : nil,
+            maxTokens: maxTok > 0 ? maxTok : nil,
+            topP: topP != 1.0 ? topP : nil,
             topK: chat.effectiveTopK > 0 ? chat.effectiveTopK : nil,
             frequencyPenalty: chat.effectiveFrequencyPenalty != 0 ? chat.effectiveFrequencyPenalty : nil,
             presencePenalty: chat.effectivePresencePenalty != 0 ? chat.effectivePresencePenalty : nil,
@@ -272,14 +278,14 @@ final class ConversationStore {
                 let stream = await engine.streamAssistantResponse(request: request)
                 for try await event in stream {
                     switch event {
-                    case .delta(let text):
+                    case let .delta(text):
                         if let flushed = accumulator.append(text) {
                             renderedContent += flushed
                             if activeStreamingSessionID == sessionID {
                                 streamingContent = renderedContent
                             }
                         }
-                    case .usage(let promptTokens, let completionTokens):
+                    case let .usage(promptTokens, completionTokens):
                         let previousPromptTokens = assistantMessage.promptTokens
                         let previousCompletionTokens = assistantMessage.completionTokens
                         let previousCost = assistantMessage.cost
@@ -311,7 +317,7 @@ final class ConversationStore {
                                 cost: max(0, -costDelta)
                             )
                         }
-                    case .modelID(let id):
+                    case let .modelID(id):
                         assistantMessage.modelID = id
                     case .done:
                         break

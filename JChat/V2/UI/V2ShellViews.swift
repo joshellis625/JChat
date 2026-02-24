@@ -3,40 +3,40 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
-
-private let v2DefaultTextBaseSize: CGFloat = 15
-
-private func v2TextSize(_ original: CGFloat, baseSize: CGFloat) -> CGFloat {
-    original + (baseSize - v2DefaultTextBaseSize)
-}
+import SwiftUI
 
 struct V2SidebarView: View {
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
     @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
     @Bindable var store: ConversationStore
+    @Bindable var modelManager: ModelManager
     @Environment(\.modelContext) private var modelContext
     @State private var chatToDelete: Chat?
+    @State private var showingSettings = false
+    @State private var showingModelManager = false
 
     var body: some View {
-        VStack(spacing: 10) {
-            HStack(alignment: .center) {
+        VStack(spacing: 0) {
+            // Header
+            HStack(alignment: .center, spacing: 6) {
                 Text("JChat")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .appFont(size: 24, weight: .bold, design: .rounded)
                     .foregroundStyle(.primary)
-                Spacer()
                 Text("\(chats.count)")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .appFont(size: 12, weight: .semibold, design: .rounded)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(Color.primary.opacity(0.08))
                     .clipShape(Capsule())
+                Spacer()
             }
             .padding(.top, 4)
             .padding(.horizontal, 4)
+            .padding(.bottom, 10)
 
+            // Chat list
             ScrollViewReader { proxy in
                 List {
                     ForEach(chats) { chat in
@@ -73,8 +73,51 @@ struct V2SidebarView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Color.clear)
+
+            // Bottom navigation
+            Divider()
+                .padding(.horizontal, 4)
+                .padding(.top, 4)
+
+            Button {
+                showingModelManager = true
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "server.rack")
+                        .appFont(size: 13, weight: .medium)
+                        .frame(width: 18)
+                    Text("Model Manager")
+                        .appFont(size: 13, weight: .medium, design: .rounded)
+                    Spacer()
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 9)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                showingSettings = true
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "gear")
+                        .appFont(size: 13, weight: .medium)
+                        .frame(width: 18)
+                    Text("Settings")
+                        .appFont(size: 13, weight: .medium, design: .rounded)
+                    Spacer()
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 9)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.bottom, 4)
         }
-        .padding(12)
+        .padding(.horizontal, 12)
+        .padding(.top, 12)
         .alert("Delete Chat", isPresented: Binding(
             get: { chatToDelete != nil },
             set: { if !$0 { chatToDelete = nil } }
@@ -105,6 +148,15 @@ struct V2SidebarView: View {
             guard chatToDelete == nil else { return }
             chatToDelete = store.selectedChat
         }
+        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.openSettings)) { _ in
+            showingSettings = true
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
+        .sheet(isPresented: $showingModelManager) {
+            ModelManagerView(modelManager: modelManager)
+        }
     }
 
     private var modelNamesByID: [String: String] {
@@ -133,20 +185,20 @@ private struct V2SidebarRow: View {
             } else {
                 HStack(spacing: 6) {
                     Text(displayTitle)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .appFont(size: 15, weight: .semibold, design: .rounded)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
 
                     if didFailGeneratingTitle && chat.title == "New Chat" {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 10, weight: .semibold))
+                            .appFont(size: 10, weight: .semibold)
                             .foregroundStyle(.orange)
                     }
                 }
             }
 
             Text(previewText)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .appFont(size: 12, weight: .medium, design: .rounded)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
@@ -161,7 +213,7 @@ private struct V2SidebarRow: View {
                 Text("•")
                 Text(chatTimestampText)
             }
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .appFont(size: 11, weight: .semibold, design: .rounded)
             .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
@@ -221,6 +273,7 @@ struct V2ConversationPane: View {
     @State private var lastStreamAutoScrollAt = ContinuousClock.now
     @State private var didInitialBottomScroll = false
     @State private var errorDismissTask: Task<Void, Never>?
+    @State private var showParameterInspector = false
     private let bottomAnchorID = "v2-conversation-bottom-anchor"
     private let streamAutoScrollInterval: Duration = .milliseconds(140)
     private let maxVisibleMessages = 60
@@ -236,7 +289,7 @@ struct V2ConversationPane: View {
                 List {
                     if totalMessageCount > rows.count {
                         Text("Showing most recent \(rows.count) messages for stability")
-                            .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .semibold, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .semibold, design: .rounded))
                             .foregroundStyle(.secondary)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 4, trailing: 12))
@@ -249,10 +302,10 @@ struct V2ConversationPane: View {
                             liveAssistantID: liveAssistantID,
                             liveStreamingContent: liveAssistantID == row.id ? store.streamingContent : nil
                         )
-                            .id(row.id)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8))
-                            .listRowBackground(Color.clear)
+                        .id(row.id)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8))
+                        .listRowBackground(Color.clear)
                     }
 
                     Color.clear
@@ -303,11 +356,11 @@ struct V2ConversationPane: View {
                         .foregroundStyle(.yellow)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(error)
-                            .font(.system(size: v2TextSize(13, baseSize: textBaseSize), weight: .semibold, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold, design: .rounded))
                             .foregroundStyle(.primary)
                         if let suggestion = store.errorSuggestion {
                             Text(suggestion)
-                                .font(.system(size: v2TextSize(12, baseSize: textBaseSize), weight: .medium, design: .rounded))
+                                .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .medium, design: .rounded))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -316,7 +369,7 @@ struct V2ConversationPane: View {
                         dismissErrorBanner()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 16, weight: .semibold))
+                            .appFont(size: 16, weight: .semibold)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -343,6 +396,10 @@ struct V2ConversationPane: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
+        .inspector(isPresented: $showParameterInspector) {
+            V2ParameterInspector(chat: chat)
+                .inspectorColumnWidth(min: 300, ideal: 300, max: 300)
+        }
         .onChange(of: store.errorMessage) { _, newError in
             errorDismissTask?.cancel()
             guard let newError else { return }
@@ -367,24 +424,24 @@ struct V2ConversationPane: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 if store.isGeneratingTitle(for: chat.id) {
-                    AutoTitleLoadingTitleView(fontSize: v2TextSize(17, baseSize: textBaseSize), width: 220)
+                    AutoTitleLoadingTitleView(fontSize: TextSizeConfig.scaled(17, base: textBaseSize), width: 220)
                 } else {
                     HStack(spacing: 8) {
                         Text(displayTitle)
-                            .font(.system(size: v2TextSize(17, baseSize: textBaseSize), weight: .semibold, design: .rounded))
+                            .font(.system(size: TextSizeConfig.scaled(17, base: textBaseSize), weight: .semibold, design: .rounded))
                             .foregroundStyle(.primary)
                             .lineLimit(1)
 
                         if store.didFailGeneratingTitle(for: chat.id) && chat.title == "New Chat" {
                             Text("Title generation failed")
-                                .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
+                                .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                                 .foregroundStyle(.orange)
                         }
                     }
                 }
 
                 Text("\(chat.totalTokens) tokens • \(chat.totalCost, format: .currency(code: "USD"))")
-                    .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
+                    .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
             }
 
@@ -401,6 +458,32 @@ struct V2ConversationPane: View {
                 modelManager: modelManager
             )
             .layoutPriority(2)
+
+            // Parameter inspector toggle — Liquid Glass circle, moves left with content as inspector opens
+            Button {
+                showParameterInspector.toggle()
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .appFont(size: 13, weight: .medium)
+                    .foregroundStyle(showParameterInspector ? Color.accentColor : .secondary)
+                    .frame(width: 28, height: 28)
+                    .overlay(alignment: .topTrailing) {
+                        let count = chat.activeOverrideCount
+                        if count > 0 {
+                            Text("\(count)")
+                                .appFont(size: 9, weight: .bold, design: .rounded)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 3.5)
+                                .padding(.vertical, 1)
+                                .background(Color.accentColor)
+                                .clipShape(Capsule())
+                                .offset(x: 6, y: -4)
+                        }
+                    }
+            }
+            .buttonStyle(.plain)
+            .glassEffect(in: .circle)
+            .help("Chat Parameters")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
@@ -518,9 +601,9 @@ private struct V2MessageRow: View, Equatable {
 
     static func == (lhs: V2MessageRow, rhs: V2MessageRow) -> Bool {
         lhs.row == rhs.row &&
-        lhs.displayedContent == rhs.displayedContent &&
-        lhs.isLiveStreaming == rhs.isLiveStreaming &&
-        lhs.resolvedModelName == rhs.resolvedModelName
+            lhs.displayedContent == rhs.displayedContent &&
+            lhs.isLiveStreaming == rhs.isLiveStreaming &&
+            lhs.resolvedModelName == rhs.resolvedModelName
     }
 
     var body: some View {
@@ -532,13 +615,13 @@ private struct V2MessageRow: View, Equatable {
             VStack(alignment: isUser ? .trailing : .leading, spacing: 5) {
                 if !isUser, let resolvedModelName {
                     Text(resolvedModelName)
-                        .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .semibold, design: .rounded))
+                        .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Text(renderedContent)
-                    .font(.system(size: v2TextSize(14, baseSize: textBaseSize), weight: .regular, design: .default))
+                    .font(.system(size: TextSizeConfig.scaled(14, base: textBaseSize), weight: .regular, design: .default))
                     .foregroundStyle(.primary)
                     .textSelection(.enabled)
                     .multilineTextAlignment(.leading)
@@ -563,7 +646,7 @@ private struct V2MessageRow: View, Equatable {
                         Text(row.cost, format: .currency(code: "USD"))
                     }
                 }
-                .font(.system(size: v2TextSize(11, baseSize: textBaseSize), weight: .medium, design: .rounded))
+                .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
             }
@@ -588,7 +671,6 @@ private struct V2MessageRow: View, Equatable {
         guard displayedContent.count > renderCharacterLimit else { return displayedContent }
         return String(displayedContent.prefix(renderCharacterLimit)) + "\n\n[Truncated in stability mode]"
     }
-
 }
 
 private struct V2Composer: View {
@@ -608,9 +690,9 @@ private struct V2Composer: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             TextField("Ask anything", text: $draft, axis: .vertical)
-                .lineLimit(1...5)
+                .lineLimit(1 ... 5)
                 .focused($focused)
-                .font(.system(size: v2TextSize(15, baseSize: textBaseSize), weight: .regular, design: .default))
+                .font(.system(size: TextSizeConfig.scaled(15, base: textBaseSize), weight: .regular, design: .default))
                 .foregroundStyle(.primary)
                 .textFieldStyle(.plain)
                 .onSubmit {
@@ -639,7 +721,7 @@ private struct V2Composer: View {
         if isStreaming {
             Button(action: onStop) {
                 Image(systemName: "stop.fill")
-                    .font(.system(size: 14, weight: .bold))
+                    .appFont(size: 14, weight: .bold)
                     .foregroundStyle(.primary)
                     .frame(width: 30, height: 30)
                     .background(Color.red.opacity(0.22))
@@ -649,7 +731,7 @@ private struct V2Composer: View {
         } else {
             Button(action: sendIfPossible) {
                 Image(systemName: "arrow.up")
-                    .font(.system(size: 14, weight: .bold))
+                    .appFont(size: 14, weight: .bold)
                     .foregroundStyle(.primary)
                     .frame(width: 30, height: 30)
                     .background(canSend ? Color.primary.opacity(0.16) : Color.primary.opacity(0.08))

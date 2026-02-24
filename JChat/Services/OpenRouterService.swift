@@ -6,9 +6,9 @@
 import Foundation
 
 nonisolated struct ChatParameters: Sendable {
-    var temperature: Double = 1.0
-    var maxTokens: Int = 4096
-    var topP: Double = 1.0
+    var temperature: Double? = nil // nil = use default (1.0); omitted from API when nil
+    var maxTokens: Int? = nil // nil = unlimited (omitted from API)
+    var topP: Double? = nil // nil = use default (1.0); omitted from API when nil
     var topK: Int? = nil
     var frequencyPenalty: Double? = nil
     var presencePenalty: Double? = nil
@@ -22,7 +22,7 @@ nonisolated struct ChatParameters: Sendable {
     var reasoningEffort: String = "medium"
     var reasoningMaxTokens: Int? = nil
     var reasoningExclude: Bool? = nil
-    var verbosity: String? = nil
+    var verbosity: String? = nil // nil = omitted from API (OpenRouter default)
 }
 
 nonisolated struct ModelCallRequest: Sendable {
@@ -110,7 +110,7 @@ actor OpenRouterService {
         session: URLSession = .shared,
         chatRetryPolicy: RetryPolicy = .chatDefault,
         sleep: @escaping @Sendable (UInt64) async throws -> Void = { try await Task.sleep(nanoseconds: $0) },
-        randomUnit: @escaping @Sendable () -> Double = { Double.random(in: 0.0...1.0) }
+        randomUnit: @escaping @Sendable () -> Double = { Double.random(in: 0.0 ... 1.0) }
     ) {
         self.baseURL = baseURL
         self.session = session
@@ -229,25 +229,7 @@ actor OpenRouterService {
         let data: [OpenRouterModel]
     }
 
-    // MARK: - Key/Credits API Types
-
-    struct KeyResponse: Codable, Sendable {
-        let data: KeyData
-
-        struct KeyData: Codable, Sendable {
-            let label: String?
-            let limit: Double?
-            let usage: Double?
-            let limit_remaining: Double?
-            let is_free_tier: Bool?
-            let rate_limit: RateLimit?
-
-            struct RateLimit: Codable, Sendable {
-                let requests: Int?
-                let interval: String?
-            }
-        }
-    }
+    // MARK: - Credits API Types
 
     struct CreditsResponse: Codable, Sendable {
         let data: CreditsData
@@ -268,6 +250,7 @@ actor OpenRouterService {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
         request.setValue("JChat", forHTTPHeaderField: "X-Title")
 
         let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
@@ -278,18 +261,56 @@ actor OpenRouterService {
 
     // MARK: - Key Validation & Credits
 
-    func validateAPIKey(apiKey: String) async throws -> KeyResponse {
-        guard let url = URL(string: "\(baseURL)/key") else {
-            throw JChatError.serverError(statusCode: 0, message: "Invalid URL")
+    struct KeyValidationDiagnostics: Sendable {
+        let endpoint: String
+        let statusCode: Int
+        let errorBody: String?
+        let modelsCount: Int?
+        let isValid: Bool
+    }
+
+    func validateAPIKeyWithDiagnostics(apiKey: String) async -> KeyValidationDiagnostics {
+        let endpoint = "\(baseURL)/models"
+        guard let url = URL(string: endpoint) else {
+            return KeyValidationDiagnostics(endpoint: endpoint, statusCode: 0, errorBody: "Invalid URL", modelsCount: nil, isValid: false)
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("JChat", forHTTPHeaderField: "X-Title")
 
-        let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
-        try throwIfNotSuccess(httpResponse: httpResponse, data: data)
-        return try JSONDecoder().decode(KeyResponse.self, from: data)
+        do {
+            let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
+            if httpResponse.statusCode == 200 {
+                let modelsResponse = try JSONDecoder().decode(ModelsResponse.self, from: data)
+                return KeyValidationDiagnostics(
+                    endpoint: endpoint,
+                    statusCode: httpResponse.statusCode,
+                    errorBody: nil,
+                    modelsCount: modelsResponse.data.count,
+                    isValid: true
+                )
+            }
+
+            let message = Self.errorMessage(from: data)
+            return KeyValidationDiagnostics(
+                endpoint: endpoint,
+                statusCode: httpResponse.statusCode,
+                errorBody: message,
+                modelsCount: nil,
+                isValid: false
+            )
+        } catch {
+            return KeyValidationDiagnostics(
+                endpoint: endpoint,
+                statusCode: 0,
+                errorBody: error.localizedDescription,
+                modelsCount: nil,
+                isValid: false
+            )
+        }
     }
 
     func fetchCredits(apiKey: String) async throws -> CreditsResponse {
@@ -300,6 +321,8 @@ actor OpenRouterService {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("JChat", forHTTPHeaderField: "X-Title")
 
         let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
         try throwIfNotSuccess(httpResponse: httpResponse, data: data)
@@ -494,14 +517,18 @@ actor OpenRouterService {
         let chatMessages = modelRequest.messages.map { ChatMessage(role: $0.role, content: $0.content) }
         let parameters = modelRequest.parameters
 
+        // stream is ALWAYS included — OpenRouter defaults to false, so omitting it
+        // would silently disable streaming for every request.
         var requestBody = ChatRequest(
             model: modelRequest.modelID,
             messages: chatMessages,
-            stream: modelRequest.stream,
-            temperature: parameters.temperature,
-            max_tokens: parameters.maxTokens,
-            top_p: parameters.topP
+            stream: modelRequest.stream
         )
+
+        // Core sampling — only sent when non-default
+        if let temp = parameters.temperature, temp != 1.0 { requestBody.temperature = temp }
+        if let maxTok = parameters.maxTokens, maxTok > 0 { requestBody.max_tokens = maxTok }
+        if let topP = parameters.topP, topP != 1.0 { requestBody.top_p = topP }
 
         // Optional sampling parameters
         if let topK = parameters.topK, topK > 0 { requestBody.top_k = topK }
@@ -699,7 +726,7 @@ actor OpenRouterService {
 
     private func sleepForRetry(attempt: Int, retryAfter: TimeInterval?, policy: RetryPolicy) async throws {
         let delaySeconds = retryDelay(attempt: attempt, retryAfter: retryAfter, policy: policy)
-        let nanoseconds = UInt64(max(0, delaySeconds) * 1_000_000_000)
+        let nanoseconds = UInt64(max(0, delaySeconds) * 1000000000)
         try await sleep(nanoseconds)
     }
 

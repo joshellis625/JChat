@@ -3,42 +3,25 @@
 //  JChat
 //
 
-import SwiftUI
 import SwiftData
-
-// MARK: - Text Size Environment Key (point size)
-
-private enum TextSizeConfig {
-    static let minimum: CGFloat = 10
-    static let maximum: CGFloat = 20
-    static let step: CGFloat = 1
-    static let defaultSize: CGFloat = 15
-}
-
-private struct TextBaseSizeKey: EnvironmentKey {
-    static let defaultValue: CGFloat = TextSizeConfig.defaultSize
-}
-
-extension EnvironmentValues {
-    var textBaseSize: CGFloat {
-        get { self[TextBaseSizeKey.self] }
-        set { self[TextBaseSizeKey.self] = newValue }
-    }
-}
+import SwiftUI
 
 struct ContentView: View {
     @State private var conversationStore = ConversationStore()
     @State private var modelManager = ModelManager()
-    @State private var showingSettings = false
-    @State private var showingModelManager = false
     @State private var textBaseSize: CGFloat = TextSizeConfig.defaultSize
     @State private var hasAPIKey = false
+
+    // Setup screen only — sidebar owns its own copies for normal use
+    @State private var showingSettingsFromSetup = false
+    @State private var showingModelManagerFromSetup = false
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
 
     var body: some View {
         NavigationSplitView {
-            V2SidebarView(store: conversationStore)
+            V2SidebarView(store: conversationStore, modelManager: modelManager)
                 .navigationSplitViewColumnWidth(min: 270, ideal: 300, max: 360)
         } detail: {
             if needsSetup {
@@ -56,6 +39,7 @@ struct ContentView: View {
         }
         .background(V2CanvasBackground())
         .environment(\.textBaseSize, textBaseSize)
+        .environment(\.font, .system(size: TextSizeConfig.size(for: .body, base: textBaseSize)))
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 Button {
@@ -64,31 +48,17 @@ struct ContentView: View {
                     Label("New Chat", systemImage: "plus")
                 }
             }
-            ToolbarItem {
-                Button {
-                    showingModelManager = true
-                } label: {
-                    Label("Model Manager", systemImage: "server.rack")
-                }
-            }
-            ToolbarItem {
-                Button {
-                    showingSettings = true
-                } label: {
-                    Label("Settings", systemImage: "gear")
-                }
-            }
         }
-        .sheet(isPresented: $showingSettings) {
+        .sheet(isPresented: $showingSettingsFromSetup) {
             SettingsView()
         }
-        .onChange(of: showingSettings) { _, isShowing in
+        .onChange(of: showingSettingsFromSetup) { _, isShowing in
             if !isShowing {
                 loadTextSize()
                 loadAPIKeyStatus()
             }
         }
-        .sheet(isPresented: $showingModelManager) {
+        .sheet(isPresented: $showingModelManagerFromSetup) {
             ModelManagerView(modelManager: modelManager)
         }
         .task {
@@ -113,9 +83,6 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.textSizeReset)) { _ in
             resetTextSize()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.openSettings)) { _ in
-            showingSettings = true
         }
         .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.newChat)) { _ in
             conversationStore.createNewChat(in: modelContext)
@@ -166,15 +133,15 @@ struct ContentView: View {
     private var setupRequiredView: some View {
         VStack(spacing: 18) {
             Image(systemName: "sparkles.rectangle.stack")
-                .font(.system(size: 38, weight: .semibold))
+                .font(.system(size: TextSizeConfig.scaled(38, base: textBaseSize), weight: .semibold))
                 .foregroundStyle(.secondary)
 
             Text("Complete Setup")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .font(.system(size: TextSizeConfig.scaled(30, base: textBaseSize), weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
 
             Text("Add your OpenRouter key to begin.")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .font(.system(size: TextSizeConfig.scaled(15, base: textBaseSize), weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 440)
@@ -191,12 +158,12 @@ struct ContentView: View {
 
             HStack(spacing: 10) {
                 Button("Open Settings") {
-                    showingSettings = true
+                    showingSettingsFromSetup = true
                 }
                 .buttonStyle(.borderedProminent)
 
                 Button("Open Model Manager") {
-                    showingModelManager = true
+                    showingModelManagerFromSetup = true
                 }
                 .buttonStyle(.bordered)
             }
@@ -213,10 +180,10 @@ struct ContentView: View {
                 .foregroundStyle(isComplete ? Color.green.opacity(0.9) : Color.orange.opacity(0.9))
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
                 Text(detail)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
             }
         }
@@ -224,14 +191,16 @@ struct ContentView: View {
 }
 
 private struct V2EmptyStateView: View {
+    @Environment(\.textBaseSize) private var textBaseSize
+
     var body: some View {
         VStack(spacing: 14) {
             Image(systemName: "bubble.left.and.bubble.right.fill")
-                .font(.system(size: 40, weight: .semibold))
+                .font(.system(size: TextSizeConfig.scaled(40, base: textBaseSize), weight: .semibold))
                 .foregroundStyle(.secondary)
 
             Text("Select a chat or start a new one")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: TextSizeConfig.scaled(24, base: textBaseSize), weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

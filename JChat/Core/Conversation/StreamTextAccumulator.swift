@@ -16,7 +16,7 @@ struct StreamTextAccumulator {
         maxIntervalMilliseconds: Int = ConversationFeatureFlags.streamFlushIntervalMilliseconds
     ) {
         self.minCharactersBeforeFlush = max(1, minCharactersBeforeFlush)
-        self.maxInterval = .milliseconds(max(1, maxIntervalMilliseconds))
+        maxInterval = .milliseconds(max(1, maxIntervalMilliseconds))
     }
 
     mutating func append(_ chunk: String) -> String? {

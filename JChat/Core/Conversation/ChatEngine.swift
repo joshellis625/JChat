@@ -46,15 +46,15 @@ actor OpenRouterChatEngine: ChatEngineProtocol {
                 do {
                     for try await event in upstream {
                         switch event {
-                        case .delta(let text):
+                        case let .delta(text):
                             continuation.yield(.delta(text))
-                        case .usage(let prompt, let completion):
+                        case let .usage(prompt, completion):
                             continuation.yield(.usage(promptTokens: prompt, completionTokens: completion))
-                        case .modelID(let modelID):
+                        case let .modelID(modelID):
                             continuation.yield(.modelID(modelID))
                         case .done:
                             continuation.yield(.done)
-                        case .error(let error):
+                        case let .error(error):
                             throw error
                         }
                     }

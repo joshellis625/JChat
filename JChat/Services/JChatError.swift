@@ -30,17 +30,17 @@ enum JChatError: LocalizedError {
             return "Rate limit reached"
         case .insufficientCredits:
             return "Insufficient credits"
-        case .modelNotAvailable(let model):
+        case let .modelNotAvailable(model):
             return "Model unavailable: \(model)"
-        case .serverError(let code, _):
+        case let .serverError(code, _):
             return "Server error (\(code))"
         case .decodingError:
             return "Failed to read the response"
-        case .streamingError(let detail):
+        case let .streamingError(detail):
             return "Streaming error: \(detail)"
         case .noModelSelected:
             return "No model selected"
-        case .unknown(let error):
+        case let .unknown(error):
             return error.localizedDescription
         }
     }
@@ -53,7 +53,7 @@ enum JChatError: LocalizedError {
             return "Check your API key in Settings. It may have expired or been revoked."
         case .networkUnavailable:
             return "Check your internet connection and try again."
-        case .rateLimited(let retryAfter):
+        case let .rateLimited(retryAfter):
             if let seconds = retryAfter {
                 return "Please wait \(Int(seconds)) seconds before trying again."
             }
