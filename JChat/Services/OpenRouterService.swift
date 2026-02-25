@@ -16,8 +16,7 @@ nonisolated struct ChatParameters: Sendable {
     var minP: Double? = nil
     var topA: Double? = nil
 
-    // Stream + Reasoning + Verbosity
-    var stream: Bool = true
+    // Reasoning + Verbosity
     var reasoningEnabled: Bool = true
     var reasoningEffort: String = "medium"
     var reasoningMaxTokens: Int? = nil
@@ -37,13 +36,13 @@ nonisolated struct ModelCallRequest: Sendable {
         modelID: String,
         parameters: ChatParameters,
         apiKey: String,
-        stream: Bool? = nil
+        stream: Bool = true
     ) {
         self.messages = messages
         self.modelID = modelID
         self.parameters = parameters
         self.apiKey = apiKey
-        self.stream = stream ?? parameters.stream
+        self.stream = stream
     }
 
     func withStream(_ stream: Bool) -> ModelCallRequest {
@@ -88,12 +87,16 @@ nonisolated struct ChatCompletionResult: Sendable {
     let modelID: String
 }
 
+/// Events emitted by the OpenRouter SSE stream as chunks arrive.
+/// Each chunk from the API may produce one or more of these events.
 nonisolated enum StreamEvent: Sendable {
-    case delta(String)
-    case usage(promptTokens: Int, completionTokens: Int)
-    case modelID(String)
-    case done
-    case error(JChatError)
+    case delta(String)                                                  // A piece of the assistant's response text
+    case usage(promptTokens: Int, completionTokens: Int, rawJSON: String) // Token counts (arrives once, near end of stream)
+    case modelID(String)                                                // Which model actually served the request
+    case generationID(String)                                           // OpenRouter's unique ID for this generation (e.g. "gen-abc123")
+    case finishReason(String)                                           // Why the model stopped: "stop", "length", "content_filter", "tool_calls", or "error"
+    case done                                                           // The [DONE] sentinel — stream is complete
+    case error(JChatError)                                              // A mid-stream error from the provider
 }
 
 actor OpenRouterService {
@@ -156,6 +159,7 @@ actor OpenRouterService {
     }
 
     struct ChatResponse: Codable, Sendable {
+        let id: String?
         let choices: [Choice]
         let usage: Usage?
         let model: String?
@@ -179,6 +183,7 @@ actor OpenRouterService {
     }
 
     private struct StreamChunk: Codable, Sendable {
+        let id: String?
         let choices: [Choice]?
         let usage: Usage?
         let model: String?
@@ -509,38 +514,36 @@ actor OpenRouterService {
 
     // MARK: - Private Helpers
 
-    private func buildChatRequest(from modelRequest: ModelCallRequest) throws -> URLRequest {
-        guard let url = URL(string: "\(baseURL)/chat/completions") else {
-            throw JChatError.serverError(statusCode: 0, message: "Invalid URL")
-        }
-
+    /// Build the `ChatRequest` body struct from a `ModelCallRequest`.
+    /// Shared by both the network path and the pretty-print inspector path.
+    private func buildRequestBody(from modelRequest: ModelCallRequest) -> ChatRequest {
         let chatMessages = modelRequest.messages.map { ChatMessage(role: $0.role, content: $0.content) }
         let parameters = modelRequest.parameters
 
         // stream is ALWAYS included — OpenRouter defaults to false, so omitting it
         // would silently disable streaming for every request.
-        var requestBody = ChatRequest(
+        var body = ChatRequest(
             model: modelRequest.modelID,
             messages: chatMessages,
             stream: modelRequest.stream
         )
 
         // Core sampling — only sent when non-default
-        if let temp = parameters.temperature, temp != 1.0 { requestBody.temperature = temp }
-        if let maxTok = parameters.maxTokens, maxTok > 0 { requestBody.max_tokens = maxTok }
-        if let topP = parameters.topP, topP != 1.0 { requestBody.top_p = topP }
+        if let temp = parameters.temperature, temp != 1.0 { body.temperature = temp }
+        if let maxTok = parameters.maxTokens, maxTok > 0 { body.max_tokens = maxTok }
+        if let topP = parameters.topP, topP != 1.0 { body.top_p = topP }
 
         // Optional sampling parameters
-        if let topK = parameters.topK, topK > 0 { requestBody.top_k = topK }
-        if let fp = parameters.frequencyPenalty, fp != 0 { requestBody.frequency_penalty = fp }
-        if let pp = parameters.presencePenalty, pp != 0 { requestBody.presence_penalty = pp }
-        if let rp = parameters.repetitionPenalty, rp != 1.0 { requestBody.repetition_penalty = rp }
-        if let mp = parameters.minP, mp != 0 { requestBody.min_p = mp }
-        if let ta = parameters.topA, ta != 0 { requestBody.top_a = ta }
+        if let topK = parameters.topK, topK > 0 { body.top_k = topK }
+        if let fp = parameters.frequencyPenalty, fp != 0 { body.frequency_penalty = fp }
+        if let pp = parameters.presencePenalty, pp != 0 { body.presence_penalty = pp }
+        if let rp = parameters.repetitionPenalty, rp != 1.0 { body.repetition_penalty = rp }
+        if let mp = parameters.minP, mp != 0 { body.min_p = mp }
+        if let ta = parameters.topA, ta != 0 { body.top_a = ta }
 
         // Stream options - include usage for cost accounting
         if modelRequest.stream {
-            requestBody.stream_options = StreamOptions(include_usage: true)
+            body.stream_options = StreamOptions(include_usage: true)
         }
 
         // Reasoning payload
@@ -558,12 +561,22 @@ actor OpenRouterService {
             reasoning.exclude = true
         }
 
-        requestBody.reasoning = reasoning
+        body.reasoning = reasoning
 
         // Verbosity (nil = OpenRouter default)
         if let verbosity = parameters.verbosity {
-            requestBody.verbosity = verbosity
+            body.verbosity = verbosity
         }
+
+        return body
+    }
+
+    private func buildChatRequest(from modelRequest: ModelCallRequest) throws -> URLRequest {
+        guard let url = URL(string: "\(baseURL)/chat/completions") else {
+            throw JChatError.serverError(statusCode: 0, message: "Invalid URL")
+        }
+
+        let requestBody = buildRequestBody(from: modelRequest)
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -573,6 +586,15 @@ actor OpenRouterService {
         request.setValue("JChat", forHTTPHeaderField: "X-Title")
         request.httpBody = try JSONEncoder().encode(requestBody)
         return request
+    }
+
+    /// Serialize the exact POST body we'd send for this request, pretty-printed for the JSON inspector.
+    func prettyRequestJSON(for modelRequest: ModelCallRequest) -> String? {
+        let body = buildRequestBody(from: modelRequest)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
+        guard let data = try? encoder.encode(body) else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     private func performChatRequest(request: ModelCallRequest) async throws -> (Data, HTTPURLResponse) {
@@ -674,12 +696,43 @@ actor OpenRouterService {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    let completion = try await self.sendMessage(request: request.withStream(false))
-                    if !completion.content.isEmpty {
-                        continuation.yield(.delta(completion.content))
+                    let (data, httpResponse) = try await self.performChatRequest(request: request.withStream(false))
+                    try self.throwIfNotSuccess(httpResponse: httpResponse, data: data)
+
+                    let chatResponse = try JSONDecoder().decode(ChatResponse.self, from: data)
+                    guard let choice = chatResponse.choices.first, let message = choice.message else {
+                        throw JChatError.decodingError("No response content")
                     }
-                    continuation.yield(.usage(promptTokens: completion.promptTokens, completionTokens: completion.completionTokens))
-                    continuation.yield(.modelID(completion.modelID))
+
+                    // Emit metadata events first — mirrors the streaming path
+                    // where generationID and modelID arrive on the first chunk.
+                    if let id = chatResponse.id, !id.isEmpty {
+                        continuation.yield(.generationID(id))
+                    }
+                    continuation.yield(.modelID(chatResponse.model ?? request.modelID))
+
+                    if !message.content.isEmpty {
+                        continuation.yield(.delta(message.content))
+                    }
+
+                    if let reason = choice.finish_reason, !reason.isEmpty {
+                        continuation.yield(.finishReason(reason))
+                    }
+
+                    let usage = chatResponse.usage
+                    let prettyJSON: String
+                    if let jsonObject = try? JSONSerialization.jsonObject(with: data),
+                       let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]) {
+                        prettyJSON = String(data: prettyData, encoding: .utf8) ?? String(data: data, encoding: .utf8) ?? "{}"
+                    } else {
+                        prettyJSON = String(data: data, encoding: .utf8) ?? "{}"
+                    }
+
+                    continuation.yield(.usage(
+                        promptTokens: usage?.prompt_tokens ?? 0,
+                        completionTokens: usage?.completion_tokens ?? 0,
+                        rawJSON: prettyJSON
+                    ))
                     continuation.yield(.done)
                     continuation.finish()
                 } catch {
@@ -769,6 +822,9 @@ actor OpenRouterService {
         }
 
         var events: [StreamEvent] = []
+        if let id = chunk.id, !id.isEmpty {
+            events.append(.generationID(id))
+        }
         if let model = chunk.model {
             events.append(.modelID(model))
         }
@@ -781,13 +837,23 @@ actor OpenRouterService {
                 if let content = choice.message?.content, !content.isEmpty {
                     events.append(.delta(content))
                 }
+                if let reason = choice.finish_reason, !reason.isEmpty {
+                    events.append(.finishReason(reason))
+                }
             }
         }
 
         if let usage = chunk.usage,
            let promptTokens = usage.prompt_tokens,
            let completionTokens = usage.completion_tokens {
-            events.append(.usage(promptTokens: promptTokens, completionTokens: completionTokens))
+            let prettyJSON: String
+            if let jsonObject = try? JSONSerialization.jsonObject(with: jsonData),
+               let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]) {
+                prettyJSON = String(data: prettyData, encoding: .utf8) ?? trimmed
+            } else {
+                prettyJSON = trimmed
+            }
+            events.append(.usage(promptTokens: promptTokens, completionTokens: completionTokens, rawJSON: prettyJSON))
         }
 
         return events

@@ -5,6 +5,7 @@
 //  Created by Josh Ellis on 1/31/26.
 //
 
+import Foundation
 @testable import JChat
 import SwiftData
 import Testing
@@ -45,6 +46,10 @@ struct JChatTests {
                 continuation.finish()
             }
         }
+
+        func prettyRequestJSON(for request: ChatEngineRequest) async -> String? {
+            nil
+        }
     }
 
     @Test func chatTotalsIncludePromptAndCompletion() {
@@ -61,7 +66,6 @@ struct JChatTests {
         source.topPOverride = 0.9
         source.topKOverride = 40
         source.maxTokensOverride = 2000
-        source.streamOverride = false
         source.reasoningEnabledOverride = true
         source.reasoningEffortOverride = "high"
         source.reasoningMaxTokensOverride = 4096
@@ -75,7 +79,6 @@ struct JChatTests {
         #expect(target.topPOverride == 0.9)
         #expect(target.topKOverride == 40)
         #expect(target.maxTokensOverride == 2000)
-        #expect(target.streamOverride == false)
         #expect(target.reasoningEnabledOverride == true)
         #expect(target.reasoningEffortOverride == "high")
         #expect(target.reasoningMaxTokensOverride == 4096)
@@ -87,16 +90,14 @@ struct JChatTests {
         let chat = Chat()
         chat.temperatureOverride = 1.2
         chat.topKOverride = 50
-        chat.streamOverride = true
         chat.verbosityOverride = "low"
 
-        #expect(chat.overrideCount == 4)
+        #expect(chat.overrideCount == 3)
 
         chat.resetAllOverrides()
 
         #expect(chat.temperatureOverride == nil)
         #expect(chat.topKOverride == nil)
-        #expect(chat.streamOverride == nil)
         #expect(chat.verbosityOverride == nil)
         #expect(chat.overrideCount == 0)
     }
@@ -276,6 +277,175 @@ struct JChatTests {
         #expect(chat.totalCompletionTokens == originalCompletion)
         #expect(chat.totalCost == originalCost)
         #expect(!chat.messages.contains(where: { $0.id == regeneratedID }))
+    }
+
+    // MARK: - StreamTextAccumulator Edge Cases
+
+    @Test func streamAccumulatorEmptyStringIsNoop() {
+        var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 3, maxIntervalMilliseconds: 9999)
+        #expect(accumulator.append("") == nil)
+        #expect(accumulator.pending == "")
+        #expect(accumulator.append("ab") == nil)
+        #expect(accumulator.pending == "ab")
+    }
+
+    @Test func streamAccumulatorExactThresholdFlushes() {
+        var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 4, maxIntervalMilliseconds: 9999)
+        #expect(accumulator.append("abc") == nil)
+        #expect(accumulator.append("d") == "abcd")
+        #expect(accumulator.pending == "")
+    }
+
+    @Test func streamAccumulatorUnicodeCharacterCount() {
+        var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 3, maxIntervalMilliseconds: 9999)
+        #expect(accumulator.append("🎯") == nil)
+        #expect(accumulator.append("🚀") == nil)
+        #expect(accumulator.append("✅") == "🎯🚀✅")
+    }
+
+    @Test func streamAccumulatorResetClearsPending() {
+        var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 100, maxIntervalMilliseconds: 9999)
+        _ = accumulator.append("hello world")
+        accumulator.reset()
+        #expect(accumulator.pending == "")
+        #expect(accumulator.flush() == nil)
+    }
+
+    // MARK: - updateMessageContent
+
+    @Test @MainActor
+    func updateMessageContentSetsIsEdited() throws {
+        let container = try makeInMemoryModelContainer()
+        let context = container.mainContext
+        let store = ConversationStore(
+            repository: InMemoryChatRepository(),
+            engine: EmptyEngine()
+        )
+        let chat = Chat()
+        context.insert(chat)
+        store.selectedChat = chat
+
+        let msg = Message(role: .user, content: "Original")
+        msg.chat = chat
+        chat.messages.append(msg)
+
+        store.updateMessageContent(messageID: msg.id, newContent: "  Edited content  ", in: context)
+
+        #expect(msg.content == "Edited content")
+        #expect(msg.isEdited == true)
+    }
+
+    @Test @MainActor
+    func updateMessageContentRejectsWhitespaceOnly() throws {
+        let container = try makeInMemoryModelContainer()
+        let context = container.mainContext
+        let store = ConversationStore(
+            repository: InMemoryChatRepository(),
+            engine: EmptyEngine()
+        )
+        let chat = Chat()
+        context.insert(chat)
+        store.selectedChat = chat
+
+        let msg = Message(role: .user, content: "Original")
+        msg.chat = chat
+        chat.messages.append(msg)
+
+        store.updateMessageContent(messageID: msg.id, newContent: "   \n\t  ", in: context)
+
+        #expect(msg.content == "Original")
+        #expect(msg.isEdited == false)
+    }
+
+    // MARK: - deleteMessage edge cases
+
+    @Test @MainActor
+    func deleteMessageWithUnknownIDIsNoop() throws {
+        let container = try makeInMemoryModelContainer()
+        let context = container.mainContext
+        let store = ConversationStore(
+            repository: InMemoryChatRepository(),
+            engine: EmptyEngine()
+        )
+        let chat = Chat()
+        context.insert(chat)
+        store.selectedChat = chat
+
+        let msg = Message(role: .user, content: "Keep me")
+        msg.chat = chat
+        chat.messages.append(msg)
+
+        store.deleteMessage(withID: UUID(), in: context)
+
+        #expect(chat.messages.count == 1)
+        #expect(store.errorMessage == nil)
+    }
+
+    @Test @MainActor
+    func deleteMessageOnEmptyChatIsNoop() throws {
+        let container = try makeInMemoryModelContainer()
+        let context = container.mainContext
+        let store = ConversationStore(
+            repository: InMemoryChatRepository(),
+            engine: EmptyEngine()
+        )
+        let chat = Chat()
+        context.insert(chat)
+        store.selectedChat = chat
+
+        store.deleteMessage(withID: UUID(), in: context)
+
+        #expect(chat.messages.isEmpty)
+        #expect(store.errorMessage == nil)
+    }
+
+    // MARK: - MessageRowViewData
+
+    @Test func messageRowUpdatingContentPreservesAllFields() {
+        let msg = Message(
+            role: .user,
+            content: "Original",
+            promptTokens: 10,
+            completionTokens: 5,
+            cost: 0.001,
+            modelID: "openai/gpt-5"
+        )
+        msg.isEdited = true
+        msg.rawRequestJSON = "{\"test\": true}"
+        msg.rawResponseJSON = "{\"response\": true}"
+        msg.rawUsageJSON = "{\"usage\": true}"
+
+        let row = MessageRowViewData(message: msg)
+        let updated = row.updatingContent("Updated content")
+
+        #expect(updated.id == row.id)
+        #expect(updated.role == row.role)
+        #expect(updated.content == "Updated content")
+        #expect(updated.timestamp == row.timestamp)
+        #expect(updated.promptTokens == row.promptTokens)
+        #expect(updated.completionTokens == row.completionTokens)
+        #expect(updated.cost == row.cost)
+        #expect(updated.modelID == row.modelID)
+        #expect(updated.isEdited == row.isEdited)
+        #expect(updated.rawRequestJSON == row.rawRequestJSON)
+        #expect(updated.rawResponseJSON == row.rawResponseJSON)
+        #expect(updated.rawUsageJSON == row.rawUsageJSON)
+    }
+
+    // MARK: - Chat.effectiveXxx defaults
+
+    @Test func effectiveTemperatureDefaultsToOne() {
+        let chat = Chat()
+        #expect(chat.effectiveTemperature == 1.0)
+        chat.temperatureOverride = 0.3
+        #expect(chat.effectiveTemperature == 0.3)
+    }
+
+    @Test func effectiveReasoningEnabledDefaultsToTrue() {
+        let chat = Chat()
+        #expect(chat.effectiveReasoningEnabled == true)
+        chat.reasoningEnabledOverride = false
+        #expect(chat.effectiveReasoningEnabled == false)
     }
 
     @MainActor

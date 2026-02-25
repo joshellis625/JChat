@@ -6,6 +6,10 @@
 import SwiftData
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
 struct V2SidebarView: View {
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
     @Query(sort: \CachedModel.name) private var cachedModels: [CachedModel]
@@ -551,11 +555,39 @@ struct V2ConversationPane: View {
         liveAssistantID: UUID?,
         liveStreamingContent: String?
     ) -> some View {
+        let isLast = row.id == rows.last?.id
+        let isOrphaned = isLast && row.role == .user && !store.isLoading && !store.isStreaming
+
         V2MessageRow(
             row: row,
             displayedContent: liveStreamingContent ?? row.content,
             isLiveStreaming: liveAssistantID == row.id,
-            resolvedModelName: row.modelID.map { ModelNaming.displayName(forModelID: $0, namesByID: modelNamesByID) }
+            resolvedModelName: row.modelID.map { ModelNaming.displayName(forModelID: $0, namesByID: modelNamesByID) },
+            isOrphanedLastUserMessage: isOrphaned,
+            onDelete: {
+                store.deleteMessage(withID: row.id, in: modelContext)
+                refreshRows()
+            },
+            onEdit: { newContent in
+                store.updateMessageContent(messageID: row.id, newContent: newContent, in: modelContext)
+                refreshRows()
+            },
+            onRegenerate: {
+                Task {
+                    if isOrphaned {
+                        await store.resendLastUserMessage(in: modelContext)
+                    } else {
+                        await store.regenerateMessage(withID: row.id, in: modelContext)
+                    }
+                    refreshRows()
+                }
+            },
+            onResend: {
+                Task {
+                    await store.resendLastUserMessage(in: modelContext)
+                    refreshRows()
+                }
+            }
         )
     }
 
@@ -588,22 +620,148 @@ private struct AutoTitleLoadingTitleView: View {
     }
 }
 
+private struct MessageActionButtonStyle: ButtonStyle {
+    var isHovered: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 1.0 : (isHovered ? 0.85 : 0.55))
+    }
+}
+
+private struct MessageActionButton: View {
+    let systemImage: String
+    var tint: Color = .secondary
+    var activeTint: Color?
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    private var isActive: Bool { activeTint != nil }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .contentTransition(.symbolEffect(.replace))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(isActive ? .white : tint)
+                .frame(width: 30, height: 30)
+                .background {
+                    if let activeTint {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(activeTint)
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(MessageActionButtonStyle(isHovered: isHovered))
+        .onHover { isHovered = $0 }
+        .animation(.easeInOut(duration: 0.2), value: isActive)
+    }
+}
+
+private struct MessageInspectorSheet: View {
+    let title: String
+    let json: String
+    @Environment(\.dismiss) private var dismiss
+    @State private var copied = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header bar
+            HStack {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(json, forType: .string)
+                    copied = true
+                    Task { try? await Task.sleep(for: .seconds(1.5)); copied = false }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                        Text(copied ? "Copied" : "Copy")
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(copied ? .green : .secondary)
+                    .contentTransition(.interpolate)
+                    .animation(.easeInOut(duration: 0.25), value: copied)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Done")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.quaternary, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+
+            Divider()
+
+            // JSON content
+            ScrollView {
+                Text(json)
+                    .font(.system(size: 13, weight: .regular, design: .monospaced))
+                    .foregroundStyle(.primary)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(20)
+            }
+        }
+        .frame(minWidth: 640, minHeight: 520)
+        .background(.regularMaterial)
+    }
+}
+
 private struct V2MessageRow: View, Equatable {
     let row: MessageRowViewData
     let displayedContent: String
     let isLiveStreaming: Bool
     let resolvedModelName: String?
+    let isOrphanedLastUserMessage: Bool
+    var onDelete: () -> Void = {}
+    var onEdit: (_ newContent: String) -> Void = { _ in }
+    var onRegenerate: () -> Void = {}
+    var onResend: () -> Void = {}
 
     @Environment(\.textBaseSize) private var textBaseSize
+
+    // Action toolbar state
+    @State private var copied = false
+    @State private var isEditing = false
+    @State private var editText = ""
+    @State private var isCommitting = false
+    @State private var deleteArmed = false
+    @State private var deleteArmTask: Task<Void, Never>?
+    @State private var showInspector = false
+    @FocusState private var isEditFocused: Bool
 
     private var isUser: Bool { row.role == .user }
     private let renderCharacterLimit = 6000
 
+    // Closures excluded from Equatable — they capture stable references
     static func == (lhs: V2MessageRow, rhs: V2MessageRow) -> Bool {
         lhs.row == rhs.row &&
             lhs.displayedContent == rhs.displayedContent &&
             lhs.isLiveStreaming == rhs.isLiveStreaming &&
-            lhs.resolvedModelName == rhs.resolvedModelName
+            lhs.resolvedModelName == rhs.resolvedModelName &&
+            lhs.isOrphanedLastUserMessage == rhs.isOrphanedLastUserMessage
     }
 
     var body: some View {
@@ -620,22 +778,36 @@ private struct V2MessageRow: View, Equatable {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                Text(renderedContent)
-                    .font(.system(size: TextSizeConfig.scaled(14, base: textBaseSize), weight: .regular, design: .default))
-                    .foregroundStyle(.primary)
-                    .textSelection(.enabled)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .background(bubbleBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 13, style: .continuous)
-                            .stroke(Color.primary.opacity(isUser ? 0.12 : 0.10), lineWidth: 1)
-                    )
-                    .frame(maxWidth: 720, alignment: isUser ? .trailing : .leading)
-                    .opacity(isLiveStreaming ? 0.98 : 1.0)
+                Group {
+                    if isEditing {
+                        TextEditor(text: $editText)
+                            .font(.system(size: TextSizeConfig.scaled(14, base: textBaseSize), weight: .regular, design: .default))
+                            .foregroundStyle(.primary)
+                            .scrollContentBackground(.hidden)
+                            .focused($isEditFocused)
+                            .frame(minHeight: 60)
+                            .onAppear { isEditFocused = true }
+                    } else {
+                        Text(renderedContent)
+                            .font(.system(size: TextSizeConfig.scaled(14, base: textBaseSize), weight: .regular, design: .default))
+                            .foregroundStyle(.primary)
+                            .textSelection(.enabled)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(bubbleBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        .stroke(Color.primary.opacity(isEditing ? 0.25 : (isUser ? 0.12 : 0.10)), lineWidth: isEditing ? 1.5 : 1)
+                )
+                .frame(maxWidth: 720, alignment: isUser ? .trailing : .leading)
+                .opacity(isLiveStreaming ? 0.98 : 1.0)
+
+                actionToolbar
 
                 HStack(spacing: 8) {
                     Text(row.timestamp, style: .time)
@@ -651,6 +823,20 @@ private struct V2MessageRow: View, Equatable {
                 .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
             }
             .frame(maxWidth: 720, alignment: isUser ? .trailing : .leading)
+            .onChange(of: isEditFocused) { _, focused in
+                if !focused && !isCommitting { isEditing = false }
+            }
+            .onKeyPress(.escape) {
+                guard isEditing else { return .ignored }
+                isEditing = false
+                return .handled
+            }
+            .sheet(isPresented: $showInspector) {
+                MessageInspectorSheet(
+                    title: isUser ? "Request JSON" : "Response JSON",
+                    json: isUser ? (row.rawRequestJSON ?? "No request data captured") : (row.rawResponseJSON ?? "No response data captured")
+                )
+            }
 
             if !isUser {
                 Spacer(minLength: 0)
@@ -658,6 +844,91 @@ private struct V2MessageRow: View, Equatable {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 6)
+    }
+
+    // MARK: - Action Toolbar
+
+    @ViewBuilder
+    private var actionToolbar: some View {
+        HStack(spacing: 2) {
+            // Copy
+            MessageActionButton(
+                systemImage: copied ? "checkmark" : "doc.on.doc",
+                activeTint: copied ? .green : nil
+            ) {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(displayedContent, forType: .string)
+                copied = true
+                Task { try? await Task.sleep(for: .seconds(1.5)); copied = false }
+            }
+
+            // Edit — toggles between pencil (start editing) and checkmark (commit edit).
+            // When committing, isCommitting prevents the focus-loss handler from
+            // cancelling the edit before the save completes.
+            MessageActionButton(
+                systemImage: isEditing ? "checkmark.circle" : "pencil",
+                activeTint: isEditing ? .green : nil
+            ) {
+                if isEditing {
+                    isCommitting = true
+                    let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else {
+                        isCommitting = false
+                        return
+                    }
+                    onEdit(trimmed)
+                    isEditing = false
+                    // Must reset on the next runloop cycle — if we reset synchronously,
+                    // the focus-loss handler fires after us and sees isCommitting == false,
+                    // defeating the guard.
+                    DispatchQueue.main.async { isCommitting = false }
+                } else {
+                    editText = displayedContent
+                    isEditing = true
+                }
+            }
+
+            // Regenerate — assistant messages, or orphaned last user message
+            if !isEditing, row.role == .assistant || isOrphanedLastUserMessage {
+                MessageActionButton(systemImage: "arrow.2.circlepath") {
+                    if isOrphanedLastUserMessage {
+                        onResend()
+                    } else {
+                        onRegenerate()
+                    }
+                }
+            }
+
+            // Delete — two-tap safety pattern to prevent accidental deletion.
+            // First tap arms (turns red), second tap within 3 seconds confirms.
+            // Timer auto-disarms after 3 seconds if the user doesn't confirm.
+            if !isEditing {
+                MessageActionButton(
+                    systemImage: "trash",
+                    activeTint: deleteArmed ? .red : nil
+                ) {
+                    if deleteArmed {
+                        deleteArmTask?.cancel()
+                        deleteArmTask = nil
+                        onDelete()
+                    } else {
+                        deleteArmTask?.cancel()
+                        deleteArmed = true
+                        deleteArmTask = Task {
+                            try? await Task.sleep(for: .seconds(3))
+                            deleteArmed = false
+                            deleteArmTask = nil
+                        }
+                    }
+                }
+            }
+
+            // JSON Inspector
+            MessageActionButton(systemImage: "curlybraces") {
+                showInspector = true
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
     }
 
     private var bubbleBackground: some ShapeStyle {

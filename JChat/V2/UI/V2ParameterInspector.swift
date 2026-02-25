@@ -18,7 +18,6 @@ private enum ParamDefault {
     static let frequencyPenalty: Double = 0.0
     static let presencePenalty: Double = 0.0
     static let repetitionPenalty: Double = 1.0
-    static let stream: Bool = true
     static let reasoningEnabled: Bool = true
     static let reasoningEffort: String = "medium"
     static let reasoningMaxTokens: Int = 0 // 0 = unlimited / Off
@@ -226,16 +225,6 @@ struct V2ParameterInspector: View {
                 step: 256,
                 zeroLabel: "Off"
             )
-
-            Toggle(isOn: Binding(
-                get: { chat.effectiveStream },
-                set: { newVal in
-                    chat.streamOverride = (newVal == ParamDefault.stream) ? nil : newVal
-                    saveQuiet()
-                }
-            )) {
-                paramLabel("Stream", isOverridden: chat.streamOverride != nil && chat.streamOverride != ParamDefault.stream)
-            }
         }
     }
 

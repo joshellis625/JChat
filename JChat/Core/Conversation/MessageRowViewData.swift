@@ -15,6 +15,9 @@ struct MessageRowViewData: Identifiable, Equatable {
     let cost: Double
     let modelID: String?
     let isEdited: Bool
+    let rawRequestJSON: String?
+    let rawResponseJSON: String?
+    let rawUsageJSON: String?
 
     init(
         id: UUID,
@@ -25,7 +28,10 @@ struct MessageRowViewData: Identifiable, Equatable {
         completionTokens: Int,
         cost: Double,
         modelID: String?,
-        isEdited: Bool
+        isEdited: Bool,
+        rawRequestJSON: String?,
+        rawResponseJSON: String?,
+        rawUsageJSON: String?
     ) {
         self.id = id
         self.role = role
@@ -36,6 +42,9 @@ struct MessageRowViewData: Identifiable, Equatable {
         self.cost = cost
         self.modelID = modelID
         self.isEdited = isEdited
+        self.rawRequestJSON = rawRequestJSON
+        self.rawResponseJSON = rawResponseJSON
+        self.rawUsageJSON = rawUsageJSON
     }
 
     init(message: Message) {
@@ -48,7 +57,10 @@ struct MessageRowViewData: Identifiable, Equatable {
             completionTokens: message.completionTokens,
             cost: message.cost,
             modelID: message.modelID,
-            isEdited: message.isEdited
+            isEdited: message.isEdited,
+            rawRequestJSON: message.rawRequestJSON,
+            rawResponseJSON: message.rawResponseJSON,
+            rawUsageJSON: message.rawUsageJSON
         )
     }
 
@@ -62,7 +74,10 @@ struct MessageRowViewData: Identifiable, Equatable {
             completionTokens: completionTokens,
             cost: cost,
             modelID: modelID,
-            isEdited: isEdited
+            isEdited: isEdited,
+            rawRequestJSON: rawRequestJSON,
+            rawResponseJSON: rawResponseJSON,
+            rawUsageJSON: rawUsageJSON
         )
     }
 }

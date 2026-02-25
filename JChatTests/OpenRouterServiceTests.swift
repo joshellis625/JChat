@@ -32,7 +32,6 @@ struct OpenRouterServiceTests {
             repetitionPenalty: nil,
             minP: nil,
             topA: nil,
-            stream: true,
             reasoningEnabled: true,
             reasoningEffort: "medium",
             reasoningMaxTokens: nil,
@@ -91,7 +90,6 @@ struct OpenRouterServiceTests {
             repetitionPenalty: nil,
             minP: nil,
             topA: nil,
-            stream: false,
             reasoningEnabled: true,
             reasoningEffort: "high",
             reasoningMaxTokens: 4096,
@@ -136,11 +134,11 @@ struct OpenRouterServiceTests {
             switch event {
             case let .delta(text):
                 output += text
-            case let .usage(prompt, completion):
+            case let .usage(prompt, completion, _):
                 usage = (prompt, completion)
             case .done:
                 doneSeen = true
-            case .modelID, .error:
+            case .modelID, .generationID, .finishReason, .error:
                 break
             }
         }
@@ -160,6 +158,59 @@ struct OpenRouterServiceTests {
             }
         }
         #expect(messageText == "World")
+    }
+
+    @Test
+    func parseSSEPayloadYieldsFinishReason() {
+        let payload = #"{"choices":[{"delta":{"content":""},"finish_reason":"length"}],"model":"openai/gpt-5-nano"}"#
+        let events = OpenRouterService.parseSSEPayloadForTesting(payload)
+        let reasons = events.compactMap { if case let .finishReason(r) = $0 { return r } else { return nil } }
+        #expect(reasons == ["length"])
+    }
+
+    @Test
+    func parseSSEPayloadYieldsGenerationID() {
+        let payload = #"{"id":"gen-abc123","choices":[{"delta":{"content":"Hi"}}],"model":"openai/gpt-5-nano"}"#
+        let events = OpenRouterService.parseSSEPayloadForTesting(payload)
+        let ids = events.compactMap { if case let .generationID(id) = $0 { return id } else { return nil } }
+        #expect(ids == ["gen-abc123"])
+    }
+
+    @Test
+    func parseSSEPayloadContentFilterFinishReason() {
+        let payload = #"{"choices":[{"delta":{"content":""},"finish_reason":"content_filter"}],"model":"openai/gpt-5-nano"}"#
+        let events = OpenRouterService.parseSSEPayloadForTesting(payload)
+        let reasons = events.compactMap { if case let .finishReason(r) = $0 { return r } else { return nil } }
+        #expect(reasons == ["content_filter"])
+    }
+
+    @Test
+    func parseSSEPayloadEmptyFinishReasonIsNotEmitted() {
+        let payload = #"{"choices":[{"delta":{"content":"Hi"},"finish_reason":""}],"model":"openai/gpt-5-nano"}"#
+        let events = OpenRouterService.parseSSEPayloadForTesting(payload)
+        let reasons = events.compactMap { if case let .finishReason(r) = $0 { return r } else { return nil } }
+        #expect(reasons.isEmpty)
+    }
+
+    @Test
+    func parseSSEPayloadErrorEnvelopeYieldsErrorEvent() {
+        let payload = #"{"error":{"message":"Model is overloaded"}}"#
+        let events = OpenRouterService.parseSSEPayloadForTesting(payload)
+        let errors = events.compactMap { if case let .error(e) = $0 { return e } else { return nil } }
+        #expect(errors.count == 1)
+        if case .streamingError(let msg) = errors.first {
+            #expect(msg == "Model is overloaded")
+        } else {
+            Issue.record("Expected .streamingError")
+        }
+    }
+
+    @Test
+    func parseSSEPayloadErrorWithBlankMessageIsIgnored() {
+        let payload = #"{"error":{"message":"   "}}"#
+        let events = OpenRouterService.parseSSEPayloadForTesting(payload)
+        let errors = events.compactMap { if case let .error(e) = $0 { return e } else { return nil } }
+        #expect(errors.isEmpty)
     }
 
     @Test
@@ -189,7 +240,7 @@ struct OpenRouterServiceTests {
             request: ModelCallRequest(
                 messages: [(role: "user", content: "No blank line stream")],
                 modelID: "openai/gpt-5-nano",
-                parameters: ChatParameters(stream: true),
+                parameters: ChatParameters(),
                 apiKey: "test-key"
             )
         )
@@ -202,11 +253,11 @@ struct OpenRouterServiceTests {
             switch event {
             case let .delta(text):
                 output += text
-            case let .usage(prompt, completion):
+            case let .usage(prompt, completion, _):
                 usage = (prompt, completion)
             case .done:
                 doneSeen = true
-            case .modelID, .error:
+            case .modelID, .generationID, .finishReason, .error:
                 break
             }
         }
@@ -245,7 +296,7 @@ struct OpenRouterServiceTests {
             request: ModelCallRequest(
                 messages: [(role: "user", content: "Retry test")],
                 modelID: "openai/gpt-5-nano",
-                parameters: ChatParameters(stream: false),
+                parameters: ChatParameters(),
                 apiKey: "test-key"
             )
         )
@@ -283,7 +334,7 @@ struct OpenRouterServiceTests {
             request: ModelCallRequest(
                 messages: [(role: "user", content: "Retry-After test")],
                 modelID: "openai/gpt-5-nano",
-                parameters: ChatParameters(stream: false),
+                parameters: ChatParameters(),
                 apiKey: "test-key"
             )
         )

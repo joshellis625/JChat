@@ -68,8 +68,9 @@ final class ConversationStore {
         userMessage.chat = chat
         chat.messages.append(userMessage)
 
-        startAssistantResponse(
+        await startAssistantResponse(
             in: chat,
+            triggerUserMessage: userMessage,
             modelID: modelID,
             apiKey: apiKey,
             context: context
@@ -98,6 +99,8 @@ final class ConversationStore {
               index > 0,
               sorted[index - 1].role == .user else { return }
 
+        let precedingUserMessage = sorted[index - 1]
+
         if let target = chat.messages.first(where: { $0.id == messageID }) {
             chat.messages.removeAll { $0.id == messageID }
             context.delete(target)
@@ -107,8 +110,9 @@ final class ConversationStore {
               let apiKey = loadAPIKeyOrSetError() else { return }
         resetStreamingStateForNewRequest()
 
-        startAssistantResponse(
+        await startAssistantResponse(
             in: chat,
+            triggerUserMessage: precedingUserMessage,
             modelID: modelID,
             apiKey: apiKey,
             context: context
@@ -126,6 +130,22 @@ final class ConversationStore {
         } catch {
             setError((error as? JChatError) ?? .unknown(error))
         }
+    }
+
+    func resendLastUserMessage(in context: ModelContext) async {
+        guard let chat = selectedChat,
+              let lastUser = chat.sortedMessages.last,
+              lastUser.role == .user,
+              let modelID = selectedModelID(for: chat),
+              let apiKey = loadAPIKeyOrSetError() else { return }
+        resetStreamingStateForNewRequest()
+        await startAssistantResponse(
+            in: chat,
+            triggerUserMessage: lastUser,
+            modelID: modelID,
+            apiKey: apiKey,
+            context: context
+        )
     }
 
     func updateMessageContent(messageID: UUID, newContent: String, in context: ModelContext) {
@@ -241,7 +261,6 @@ final class ConversationStore {
             repetitionPenalty: chat.effectiveRepetitionPenalty != 1.0 ? chat.effectiveRepetitionPenalty : nil,
             minP: chat.effectiveMinP != 0 ? chat.effectiveMinP : nil,
             topA: chat.effectiveTopA != 0 ? chat.effectiveTopA : nil,
-            stream: chat.effectiveStream,
             reasoningEnabled: chat.effectiveReasoningEnabled,
             reasoningEffort: chat.effectiveReasoningEffort,
             reasoningMaxTokens: chat.effectiveReasoningMaxTokens,
@@ -252,10 +271,11 @@ final class ConversationStore {
 
     private func startAssistantResponse(
         in chat: Chat,
+        triggerUserMessage: Message,
         modelID: String,
         apiKey: String,
         context: ModelContext
-    ) {
+    ) async {
         let sessionID = UUID()
         activeStreamingSessionID = sessionID
 
@@ -266,6 +286,9 @@ final class ConversationStore {
             apiKey: apiKey
         )
 
+        // Capture the prettified POST body on the specific user message that triggered this request
+        triggerUserMessage.rawRequestJSON = await engine.prettyRequestJSON(for: request)
+
         let assistantMessage = Message(role: .assistant, content: "", modelID: modelID)
         assistantMessage.chat = chat
         chat.messages.append(assistantMessage)
@@ -273,6 +296,10 @@ final class ConversationStore {
         streamingTask = Task { @MainActor in
             var accumulator = StreamTextAccumulator()
             var renderedContent = ""
+            // Accumulated from the stream to build the response JSON inspector data.
+            // OpenRouter doesn't store messages, so this is our only record of what the API returned.
+            var capturedFinishReason: String?
+            var capturedGenerationID: String?
 
             do {
                 let stream = await engine.streamAssistantResponse(request: request)
@@ -285,7 +312,8 @@ final class ConversationStore {
                                 streamingContent = renderedContent
                             }
                         }
-                    case let .usage(promptTokens, completionTokens):
+                    case let .usage(promptTokens, completionTokens, rawJSON):
+                        assistantMessage.rawUsageJSON = rawJSON
                         let previousPromptTokens = assistantMessage.promptTokens
                         let previousCompletionTokens = assistantMessage.completionTokens
                         let previousCost = assistantMessage.cost
@@ -319,6 +347,10 @@ final class ConversationStore {
                         }
                     case let .modelID(id):
                         assistantMessage.modelID = id
+                    case let .generationID(id):
+                        capturedGenerationID = id
+                    case let .finishReason(reason):
+                        capturedFinishReason = reason
                     case .done:
                         break
                     }
@@ -332,6 +364,14 @@ final class ConversationStore {
                 }
 
                 assistantMessage.content = renderedContent
+                assistantMessage.rawResponseJSON = buildResponseJSON(
+                    generationID: capturedGenerationID,
+                    model: assistantMessage.modelID ?? modelID,
+                    finishReason: capturedFinishReason ?? "stop",
+                    content: renderedContent,
+                    promptTokens: assistantMessage.promptTokens,
+                    completionTokens: assistantMessage.completionTokens
+                )
                 try repository.save(context: context)
                 await generateAutoTitleIfNeeded(for: chat, apiKey: apiKey, context: context)
             } catch is CancellationError {
@@ -422,7 +462,6 @@ final class ConversationStore {
         var parameters = ChatParameters()
         parameters.temperature = 0.2
         parameters.maxTokens = 32
-        parameters.stream = false
         parameters.reasoningEnabled = false
 
         let completion = try await OpenRouterService.shared.sendMessage(
@@ -469,6 +508,48 @@ final class ConversationStore {
 
         guard words.count >= 3 else { return nil }
         return words.prefix(5).joined(separator: " ")
+    }
+
+    /// Reconstructs an OpenRouter-compatible chat completion response object.
+    ///
+    /// Because OpenRouter does not store user or assistant messages, this
+    /// synthetic JSON is the only persistent record of what the API returned.
+    /// The structure follows the ``ChatResponse`` schema from the OpenRouter
+    /// OpenAPI spec (``object: "chat.completion"``).
+    private func buildResponseJSON(
+        generationID: String?,
+        model: String,
+        finishReason: String,
+        content: String,
+        promptTokens: Int,
+        completionTokens: Int
+    ) -> String? {
+        let responseDict: [String: Any] = [
+            "id": generationID ?? "unknown",
+            "object": "chat.completion",
+            "created": Int(Date().timeIntervalSince1970),
+            "model": model,
+            "choices": [[
+                "index": 0,
+                "message": [
+                    "role": "assistant",
+                    "content": content
+                ],
+                "finish_reason": finishReason
+            ]],
+            "usage": [
+                "prompt_tokens": promptTokens,
+                "completion_tokens": completionTokens,
+                "total_tokens": promptTokens + completionTokens
+            ]
+        ]
+
+        guard let data = try? JSONSerialization.data(
+            withJSONObject: responseDict,
+            options: [.prettyPrinted, .sortedKeys]
+        ) else { return nil }
+
+        return String(data: data, encoding: .utf8)
     }
 
     private func shouldAttemptTitleGeneration(basedOn title: String) -> Bool {

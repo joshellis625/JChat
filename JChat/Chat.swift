@@ -33,8 +33,7 @@ final class Chat {
     var minPOverride: Double?
     var topAOverride: Double?
 
-    // Stream + Reasoning + Verbosity overrides
-    var streamOverride: Bool?
+    // Reasoning + Verbosity overrides
     var reasoningEnabledOverride: Bool?
     var reasoningEffortOverride: String?
     var reasoningMaxTokensOverride: Int?
@@ -70,8 +69,7 @@ final class Chat {
     var effectiveMinP: Double { minPOverride ?? 0.0 }
     var effectiveTopA: Double { topAOverride ?? 0.0 }
 
-    // Stream + Reasoning + Verbosity
-    var effectiveStream: Bool { streamOverride ?? true }
+    // Reasoning + Verbosity
     var effectiveReasoningEnabled: Bool { reasoningEnabledOverride ?? true }
     var effectiveReasoningEffort: String { reasoningEffortOverride ?? "medium" }
     var effectiveReasoningMaxTokens: Int? { reasoningMaxTokensOverride }
@@ -91,7 +89,6 @@ final class Chat {
         repetitionPenaltyOverride = source.repetitionPenaltyOverride
         minPOverride = source.minPOverride
         topAOverride = source.topAOverride
-        streamOverride = source.streamOverride
         reasoningEnabledOverride = source.reasoningEnabledOverride
         reasoningEffortOverride = source.reasoningEffortOverride
         reasoningMaxTokensOverride = source.reasoningMaxTokensOverride
@@ -110,7 +107,6 @@ final class Chat {
         repetitionPenaltyOverride = nil
         minPOverride = nil
         topAOverride = nil
-        streamOverride = nil
         reasoningEnabledOverride = nil
         reasoningEffortOverride = nil
         reasoningMaxTokensOverride = nil
@@ -131,7 +127,6 @@ final class Chat {
         if repetitionPenaltyOverride != nil { count += 1 }
         if minPOverride != nil { count += 1 }
         if topAOverride != nil { count += 1 }
-        if streamOverride != nil { count += 1 }
         if reasoningEnabledOverride != nil { count += 1 }
         if reasoningEffortOverride != nil { count += 1 }
         if reasoningMaxTokensOverride != nil { count += 1 }
@@ -153,7 +148,6 @@ final class Chat {
         if let v = repetitionPenaltyOverride, v != 1.0 { count += 1 }
         if let v = minPOverride, v != 0.0 { count += 1 }
         if let v = topAOverride, v != 0.0 { count += 1 }
-        if let v = streamOverride, v != true { count += 1 }
         if let v = reasoningEnabledOverride, v != true { count += 1 }
         if let v = reasoningEffortOverride, v != "medium" { count += 1 }
         if let v = reasoningMaxTokensOverride, v != 0 { count += 1 }
@@ -188,6 +182,9 @@ final class Message {
     var cost: Double
     var modelID: String?
     var isEdited: Bool
+    var rawRequestJSON: String?   // prettified POST body captured at send time (user messages)
+    var rawResponseJSON: String?  // assistant content response JSON (assistant messages)
+    var rawUsageJSON: String?     // final streaming usage chunk from OpenRouter (assistant messages)
     @Relationship(inverse: \Chat.messages) var chat: Chat?
 
     init(
