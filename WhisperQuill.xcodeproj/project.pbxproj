@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		03D0F6EA2F37402A00FEC0AF /* JChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		03D0F6FB2F37402A00FEC0AF /* JChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		03D0F7052F37402A00FEC0AF /* JChatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JChatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		03D0F6EA2F37402A00FEC0AF /* WhisperQuill.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhisperQuill.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		03D0F6FB2F37402A00FEC0AF /* WhisperQuillTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WhisperQuillTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		03D0F7052F37402A00FEC0AF /* WhisperQuillUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WhisperQuillUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -85,9 +85,9 @@
 		03D0F6EB2F37402A00FEC0AF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				03D0F6EA2F37402A00FEC0AF /* JChat.app */,
-				03D0F6FB2F37402A00FEC0AF /* JChatTests.xctest */,
-				03D0F7052F37402A00FEC0AF /* JChatUITests.xctest */,
+				03D0F6EA2F37402A00FEC0AF /* WhisperQuill.app */,
+				03D0F6FB2F37402A00FEC0AF /* WhisperQuillTests.xctest */,
+				03D0F7052F37402A00FEC0AF /* WhisperQuillUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,9 +95,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		03D0F6E92F37402A00FEC0AF /* JChat */ = {
+		03D0F6E92F37402A00FEC0AF /* WhisperQuill */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 03D0F70E2F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "JChat" */;
+			buildConfigurationList = 03D0F70E2F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "WhisperQuill" */;
 			buildPhases = (
 				03D0F6E62F37402A00FEC0AF /* Sources */,
 				03D0F6E72F37402A00FEC0AF /* Frameworks */,
@@ -110,16 +110,16 @@
 			fileSystemSynchronizedGroups = (
 				03D0F7622F37409300FEC0AF /* JChat */,
 			);
-			name = JChat;
+			name = WhisperQuill;
 			packageProductDependencies = (
 			);
 			productName = JChat;
-			productReference = 03D0F6EA2F37402A00FEC0AF /* JChat.app */;
+			productReference = 03D0F6EA2F37402A00FEC0AF /* WhisperQuill.app */;
 			productType = "com.apple.product-type.application";
 		};
-		03D0F6FA2F37402A00FEC0AF /* JChatTests */ = {
+		03D0F6FA2F37402A00FEC0AF /* WhisperQuillTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 03D0F7132F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "JChatTests" */;
+			buildConfigurationList = 03D0F7132F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "WhisperQuillTests" */;
 			buildPhases = (
 				03D0F6F72F37402A00FEC0AF /* Sources */,
 				03D0F6F82F37402A00FEC0AF /* Frameworks */,
@@ -133,16 +133,16 @@
 			fileSystemSynchronizedGroups = (
 				03D0F6FE2F37402A00FEC0AF /* JChatTests */,
 			);
-			name = JChatTests;
+			name = WhisperQuillTests;
 			packageProductDependencies = (
 			);
 			productName = JChatTests;
-			productReference = 03D0F6FB2F37402A00FEC0AF /* JChatTests.xctest */;
+			productReference = 03D0F6FB2F37402A00FEC0AF /* WhisperQuillTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		03D0F7042F37402A00FEC0AF /* JChatUITests */ = {
+		03D0F7042F37402A00FEC0AF /* WhisperQuillUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 03D0F7162F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "JChatUITests" */;
+			buildConfigurationList = 03D0F7162F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "WhisperQuillUITests" */;
 			buildPhases = (
 				03D0F7012F37402A00FEC0AF /* Sources */,
 				03D0F7022F37402A00FEC0AF /* Frameworks */,
@@ -156,11 +156,11 @@
 			fileSystemSynchronizedGroups = (
 				03D0F7082F37402A00FEC0AF /* JChatUITests */,
 			);
-			name = JChatUITests;
+			name = WhisperQuillUITests;
 			packageProductDependencies = (
 			);
 			productName = JChatUITests;
-			productReference = 03D0F7052F37402A00FEC0AF /* JChatUITests.xctest */;
+			productReference = 03D0F7052F37402A00FEC0AF /* WhisperQuillUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -186,7 +186,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 03D0F6E52F37402A00FEC0AF /* Build configuration list for PBXProject "JChat" */;
+			buildConfigurationList = 03D0F6E52F37402A00FEC0AF /* Build configuration list for PBXProject "WhisperQuill" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -200,9 +200,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				03D0F6E92F37402A00FEC0AF /* JChat */,
-				03D0F6FA2F37402A00FEC0AF /* JChatTests */,
-				03D0F7042F37402A00FEC0AF /* JChatUITests */,
+				03D0F6E92F37402A00FEC0AF /* WhisperQuill */,
+				03D0F6FA2F37402A00FEC0AF /* WhisperQuillTests */,
+				03D0F7042F37402A00FEC0AF /* WhisperQuillUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,12 +258,12 @@
 /* Begin PBXTargetDependency section */
 		03D0F6FD2F37402A00FEC0AF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 03D0F6E92F37402A00FEC0AF /* JChat */;
+			target = 03D0F6E92F37402A00FEC0AF /* WhisperQuill */;
 			targetProxy = 03D0F6FC2F37402A00FEC0AF /* PBXContainerItemProxy */;
 		};
 		03D0F7072F37402A00FEC0AF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 03D0F6E92F37402A00FEC0AF /* JChat */;
+			target = 03D0F6E92F37402A00FEC0AF /* WhisperQuill */;
 			targetProxy = 03D0F7062F37402A00FEC0AF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -275,6 +275,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -291,12 +292,13 @@
 				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
-				INFOPLIST_KEY_CFBundleDisplayName = JChat;
+				INFOPLIST_KEY_CFBundleDisplayName = WhisperQuill;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -317,6 +319,12 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = macosx;
@@ -326,7 +334,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				XROS_DEPLOYMENT_TARGET = 26.0;
+				XROS_DEPLOYMENT_TARGET = "";
 			};
 			name = Debug;
 		};
@@ -336,6 +344,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -352,12 +361,13 @@
 				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
-				INFOPLIST_KEY_CFBundleDisplayName = JChat;
+				INFOPLIST_KEY_CFBundleDisplayName = WhisperQuill;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -378,6 +388,12 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = macosx;
@@ -387,7 +403,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				XROS_DEPLOYMENT_TARGET = 26.0;
+				XROS_DEPLOYMENT_TARGET = "";
 			};
 			name = Release;
 		};
@@ -535,7 +551,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JChat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JChat";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WhisperQuill.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WhisperQuill";
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
@@ -565,7 +581,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JChat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JChat";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WhisperQuill.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WhisperQuill";
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
@@ -625,7 +641,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		03D0F6E52F37402A00FEC0AF /* Build configuration list for PBXProject "JChat" */ = {
+		03D0F6E52F37402A00FEC0AF /* Build configuration list for PBXProject "WhisperQuill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				03D0F7112F37402A00FEC0AF /* Debug */,
@@ -634,7 +650,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		03D0F70E2F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "JChat" */ = {
+		03D0F70E2F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "WhisperQuill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				03D0F70F2F37402A00FEC0AF /* Debug */,
@@ -643,7 +659,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		03D0F7132F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "JChatTests" */ = {
+		03D0F7132F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "WhisperQuillTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				03D0F7142F37402A00FEC0AF /* Debug */,
@@ -652,7 +668,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		03D0F7162F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "JChatUITests" */ = {
+		03D0F7162F37402A00FEC0AF /* Build configuration list for PBXNativeTarget "WhisperQuillUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				03D0F7172F37402A00FEC0AF /* Debug */,

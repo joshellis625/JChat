@@ -24,7 +24,7 @@ struct V2SidebarView: View {
         VStack(spacing: 0) {
             // Header
             HStack(alignment: .center, spacing: 6) {
-                Text("JChat")
+                Text("Chats")
                     .appFont(size: 24, weight: .bold, design: .rounded)
                     .foregroundStyle(.primary)
                 Text("\(chats.count)")

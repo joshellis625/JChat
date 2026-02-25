@@ -3,8 +3,8 @@ schemaVersion: 1
 enabledWorkflows: ["macos", "simulator"]
 
 sessionDefaults:
-  projectPath: "./JChat.xcodeproj"
-  scheme: "JChat"
+  projectPath: "./WhisperQuill.xcodeproj"
+  scheme: "WhisperQuill"
   arch: "arm64"
   platform: "macOS"
   configuration: "Debug"

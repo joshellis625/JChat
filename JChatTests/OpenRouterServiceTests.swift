@@ -1,5 +1,5 @@
 import Foundation
-@testable import JChat
+@testable import WhisperQuill
 import Testing
 
 @Suite(.serialized)
