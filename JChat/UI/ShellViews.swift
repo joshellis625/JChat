@@ -667,12 +667,13 @@ private struct MessageInspectorSheet: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .contentTransition(.symbolEffect(.replace))
                         Text(copied ? "Copied" : "Copy")
+                            .transition(.opacity)
                     }
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(copied ? .green : .secondary)
-                    .contentTransition(.interpolate)
-                    .animation(.easeInOut(duration: 0.25), value: copied)
+                    .animation(.easeInOut(duration: 0.2), value: copied)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -882,10 +883,11 @@ private struct MessageRow: View, Equatable {
                 }
             }
 
-            // Delete — two-tap safety pattern to prevent accidental deletion.
-            // First tap arms (turns red), second tap within 3 seconds confirms.
-            // Timer auto-disarms after 3 seconds if the user doesn't confirm.
-            if !isEditing {
+            // Delete — hidden while the message is actively streaming to prevent
+            // ghost messages and stuck stop-button state from the stream/delete race.
+            // Two-tap safety pattern otherwise: first tap arms (turns red),
+            // second tap within 3 seconds confirms. Timer auto-disarms after 3 seconds.
+            if !isEditing && !isLiveStreaming {
                 MessageActionButton(
                     systemImage: "trash",
                     activeTint: deleteArmed ? .red : nil

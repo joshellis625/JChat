@@ -6,26 +6,14 @@ Tracked here until migrated to GitHub Issues or Linear.
 
 ## Bugs
 
-### BUG-001: Floating-point precision in parameter values
-**Severity:** Medium (cosmetic, but appears in API requests)
-**Where:** Parameter inspector JSON, API request body
-**What:** Values like `top_p` and `temperature` display with IEEE 754 floating-point noise — e.g. `0.9500000000000001` instead of `0.95`, or `1.2000000000000002` instead of `1.20`.
-**Root cause:** Swift `Double` representation. When the user sets `0.95` via a slider or field, the stored Double isn't exactly `0.95` in binary. This bleeds through to both the JSON request body sent to OpenRouter and the inspector display.
-**Fix approach:** Round parameter values to 2 decimal places at the serialization boundary (when building `ModelCallRequest`), not at the storage layer. Something like `(value * 100).rounded() / 100` or a `Decimal`-based format.
-**Screenshots:** `Parameter values need to be limited to two decimal places.png`, `Parameter values not limited to two decimal places #2.png`
+### ~~BUG-001: Floating-point precision in parameter values~~ ✅ Resolved 2026-03-06
+Added `round2(_:)` helper in `OpenRouterService.buildRequestBody(from:)` — rounds all `Double` parameters to 2 decimal places at the serialization boundary using `(value * 100).rounded() / 100`. Eliminates IEEE 754 noise from both the API payload and the JSON inspector without touching the storage layer.
 
-### BUG-002: Deleting a message mid-stream causes ghost message / stuck stop button
-**Severity:** High (state corruption)
-**Where:** Message action toolbar delete button during active streaming
-**What:** If you click the delete button twice on a message that's currently streaming, it deletes successfully but leaves the input bar's square "stop" icon stuck in the stop state. Sometimes the full message reappears after deletion because the stream task continues writing to the (now-deleted) message object. Some model providers don't support stream cancellation.
-**Fix approach:** Hide the delete button entirely while a message is actively streaming (`isLiveStreaming == true`). Only show it once the stream is complete. This avoids the race condition between stream task writes and SwiftData deletion.
+### ~~BUG-002: Deleting a message mid-stream causes ghost message / stuck stop button~~ ✅ Resolved 2026-03-06
+Delete button in `MessageRow.actionToolbar` is now hidden while `isLiveStreaming == true`. The prop was already threaded into `MessageRow`; added `&& !isLiveStreaming` to the existing `if !isEditing` guard.
 
-### BUG-003: JSON Inspector Copy button transition has visible crossover
-**Severity:** Low (cosmetic)
-**Where:** `MessageInspectorSheet` header bar Copy/Copied button
-**What:** When clicking Copy, the transition from "Copy" to "Copied" (with green checkmark) shows both labels overlapping briefly — the old icon/text and the new one are visible simultaneously during the animation frame.
-**Fix approach:** Use `.contentTransition(.symbolEffect(.replace))` or wrap in an explicit `.animation` with `.transition(.opacity)` so the old content fully fades before the new content appears. Alternatively, use a fixed-width frame on the button to prevent layout shift.
-**Screenshot:** `JSON Inspector Copy Button UI Tweak.png`
+### ~~BUG-003: JSON Inspector Copy button transition has visible crossover~~ ✅ Resolved 2026-03-06
+Applied `.contentTransition(.symbolEffect(.replace))` to the `Image` and `.transition(.opacity)` to the `Text` label independently inside `MessageInspectorSheet`. This prevents the old and new content from rendering simultaneously during the animation frame.
 
 ---
 
@@ -72,4 +60,4 @@ Replaced manual `.thinMaterial + stroke` background with `.buttonStyle(.glass)` 
 | **FR** | Feature request or enhancement |
 | **Severity/Priority** | High > Medium > Low |
 
-*Last updated: 2026-02-25*
+*Last updated: 2026-03-06*

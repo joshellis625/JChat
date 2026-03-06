@@ -499,6 +499,14 @@ actor OpenRouterService {
         }
     }
 
+    // MARK: - Numeric Helpers
+
+    /// Rounds a Double to 2 decimal places, eliminating IEEE 754 noise at the
+    /// serialization boundary (e.g. 0.9500000000000001 → 0.95).
+    private static func round2(_ value: Double) -> Double {
+        (value * 100).rounded() / 100
+    }
+
     // MARK: - Cost Calculation
 
     func calculateCost(
@@ -528,18 +536,20 @@ actor OpenRouterService {
             stream: modelRequest.stream
         )
 
-        // Core sampling — only sent when non-default
-        if let temp = parameters.temperature, temp != 1.0 { body.temperature = temp }
+        // Core sampling — only sent when non-default.
+        // Round to 2 decimal places at the serialization boundary to eliminate IEEE 754
+        // noise (e.g. 0.9500000000000001 → 0.95) from both the API payload and the inspector.
+        if let temp = parameters.temperature.map(Self.round2), temp != 1.0 { body.temperature = temp }
         if let maxTok = parameters.maxTokens, maxTok > 0 { body.max_tokens = maxTok }
-        if let topP = parameters.topP, topP != 1.0 { body.top_p = topP }
+        if let topP = parameters.topP.map(Self.round2), topP != 1.0 { body.top_p = topP }
 
         // Optional sampling parameters
         if let topK = parameters.topK, topK > 0 { body.top_k = topK }
-        if let fp = parameters.frequencyPenalty, fp != 0 { body.frequency_penalty = fp }
-        if let pp = parameters.presencePenalty, pp != 0 { body.presence_penalty = pp }
-        if let rp = parameters.repetitionPenalty, rp != 1.0 { body.repetition_penalty = rp }
-        if let mp = parameters.minP, mp != 0 { body.min_p = mp }
-        if let ta = parameters.topA, ta != 0 { body.top_a = ta }
+        if let fp = parameters.frequencyPenalty.map(Self.round2), fp != 0 { body.frequency_penalty = fp }
+        if let pp = parameters.presencePenalty.map(Self.round2), pp != 0 { body.presence_penalty = pp }
+        if let rp = parameters.repetitionPenalty.map(Self.round2), rp != 1.0 { body.repetition_penalty = rp }
+        if let mp = parameters.minP.map(Self.round2), mp != 0 { body.min_p = mp }
+        if let ta = parameters.topA.map(Self.round2), ta != 0 { body.top_a = ta }
 
         // Stream options - include usage for cost accounting
         if modelRequest.stream {

@@ -12,6 +12,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-06] - Bug Fixes: BUG-001, BUG-002, BUG-003
+
+### Fixed
+- **BUG-001**: Added `round2(_:)` helper in `OpenRouterService.buildRequestBody(from:)` — all `Double` parameters now rounded to 2 decimal places at serialization, eliminating IEEE 754 noise from API payloads and the JSON inspector
+- **BUG-002**: Delete button in `MessageRow.actionToolbar` now hidden while `isLiveStreaming == true`, preventing ghost messages and stuck stop-button state from the stream/delete race condition
+- **BUG-003**: Copy button in `MessageInspectorSheet` now uses `.contentTransition(.symbolEffect(.replace))` on the icon and `.transition(.opacity)` on the label text, eliminating the double-render crossover during the Copy→Copied transition
+
+---
+
 ## [2026-03-06] - Code Quality Fixes and DRY Refactoring
 
 ### Changed
