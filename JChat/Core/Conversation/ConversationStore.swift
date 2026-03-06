@@ -370,7 +370,8 @@ final class ConversationStore {
                     finishReason: capturedFinishReason ?? "stop",
                     content: renderedContent,
                     promptTokens: assistantMessage.promptTokens,
-                    completionTokens: assistantMessage.completionTokens
+                    completionTokens: assistantMessage.completionTokens,
+                    cost: assistantMessage.cost
                 )
                 try repository.save(context: context)
                 await generateAutoTitleIfNeeded(for: chat, apiKey: apiKey, context: context)
@@ -450,11 +451,16 @@ final class ConversationStore {
         let assistantExcerpt = String(firstAssistant.content.trimmingCharacters(in: .whitespacesAndNewlines).prefix(600))
 
         let userPrompt = """
-        Generate a short conversation title using the following: + \(userExcerpt) + \(assistantExcerpt)
-        Output only the title and nothing else.
-        Use 3 to 5 words.
-        No markdown.
-        No punctuation.
+        You are a conversation title generator. Your only job is to output a short title.
+
+        Rules:
+        - Output ONLY the title. No preamble, no explanation, no punctuation, no quotes.
+        - 2 to 5 words maximum.
+        - No markdown formatting.
+
+        Conversation to title:
+        User: \(userExcerpt)
+        Assistant: \(assistantExcerpt)
         """
 
         var parameters = ChatParameters()
@@ -475,41 +481,39 @@ final class ConversationStore {
     }
 
     /// Returns the model ID to use for auto-title generation.
-    /// Prefers the chat's own selected model so titling stays consistent
-    /// with the conversation. Falls back to a lightweight model only when
-    /// the chat has no selected model (e.g. edge cases during migration).
+    /// Always uses a dedicated fast/cheap model — never the chat's selected model,
+    /// which may be a large reasoning model (slow, expensive, prone to preamble).
     private func autoTitleModelID(for chat: Chat) -> String {
-        // Chosen as fallback: small, fast, cheap — adequate for 3–5 word title generation.
-        let autoTitleFallbackModelID = "google/gemma-3-12b-it"
-        guard let selected = chat.selectedModelID?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !selected.isEmpty else {
-            return autoTitleFallbackModelID
-        }
-        return selected
+        // google/gemini-flash-1.5-8b: fast, cheap, excellent instruction-following for short tasks.
+        "google/gemini-flash-1.5-8b"
     }
 
     private func normalizedAutoTitle(_ raw: String) -> String? {
+        // Take only the first non-empty line — guards against preamble from verbose models.
         let firstLine = raw
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: .newlines)
-            .first?
+            .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         guard !firstLine.isEmpty else { return nil }
 
+        // Strip surrounding straight/curly quotes and markdown decoration only.
+        // Using unicode escapes for curly quotes to avoid Swift string literal parse errors.
+        let quotePattern = "^[\"'\\u2018\\u2019\\u201C\\u201D]+|[\"'\\u2018\\u2019\\u201C\\u201D]+$"
         let normalized = firstLine
-            .replacingOccurrences(of: "conversation title", with: "", options: [.caseInsensitive, .regularExpression])
-            .replacingOccurrences(of: "title", with: "", options: [.caseInsensitive, .regularExpression])
-            .replacingOccurrences(of: "[*_`#:\\-—–|\\[\\]\\(\\)\"'“”.,!?;]+", with: " ", options: .regularExpression)
+            .replacingOccurrences(of: quotePattern, with: "", options: .regularExpression)
+            .replacingOccurrences(of: "[*_`#|]+", with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !normalized.isEmpty else { return nil }
+
         let words = normalized
             .split(whereSeparator: \.isWhitespace)
             .map(String.init)
             .filter { !$0.isEmpty }
 
-        guard words.count >= 3 else { return nil }
+        guard !words.isEmpty else { return nil }
         return words.prefix(5).joined(separator: " ")
     }
 
@@ -525,7 +529,8 @@ final class ConversationStore {
         finishReason: String,
         content: String,
         promptTokens: Int,
-        completionTokens: Int
+        completionTokens: Int,
+        cost: Double
     ) -> String? {
         let responseDict: [String: Any] = [
             "id": generationID ?? "unknown",
@@ -544,7 +549,8 @@ final class ConversationStore {
                 "prompt_tokens": promptTokens,
                 "completion_tokens": completionTokens,
                 "total_tokens": promptTokens + completionTokens
-            ]
+            ],
+            "jchat_cost_usd": cost
         ]
 
         guard let data = try? JSONSerialization.data(

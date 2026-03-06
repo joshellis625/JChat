@@ -142,13 +142,8 @@ actor OpenRouterService {
         var repetition_penalty: Double?
         var min_p: Double?
         var top_a: Double?
-        var stream_options: StreamOptions?
         var reasoning: ReasoningPayload?
         var verbosity: String?
-    }
-
-    private struct StreamOptions: Encodable {
-        var include_usage: Bool = true
     }
 
     private struct ReasoningPayload: Encodable {
@@ -550,11 +545,6 @@ actor OpenRouterService {
         if let rp = parameters.repetitionPenalty.map(Self.round2), rp != 1.0 { body.repetition_penalty = rp }
         if let mp = parameters.minP.map(Self.round2), mp != 0 { body.min_p = mp }
         if let ta = parameters.topA.map(Self.round2), ta != 0 { body.top_a = ta }
-
-        // Stream options - include usage for cost accounting
-        if modelRequest.stream {
-            body.stream_options = StreamOptions(include_usage: true)
-        }
 
         // Reasoning payload
         var reasoning = ReasoningPayload()

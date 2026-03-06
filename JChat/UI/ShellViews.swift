@@ -451,6 +451,9 @@ struct ConversationPane: View {
                     get: { chat.selectedModelID },
                     set: { newValue in
                         chat.selectedModelID = newValue
+                        // Persist as the global default so new chats inherit this choice.
+                        let settings = AppSettings.fetchOrCreate(in: modelContext)
+                        settings.defaultModelID = newValue
                         try? modelContext.save()
                     }
                 ),
@@ -684,7 +687,7 @@ private struct MessageInspectorSheet: View {
                     dismiss()
                 } label: {
                     Text("Done")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -760,6 +763,7 @@ private struct MessageRow: View, Equatable {
                         .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .transition(.opacity)
                 }
 
                 Group {
@@ -798,6 +802,9 @@ private struct MessageRow: View, Equatable {
                     if row.role == .assistant, row.completionTokens > 0 {
                         Text("\(row.completionTokens) tokens")
                     }
+                    if row.role == .user, row.promptTokens > 0 {
+                        Text("\(row.promptTokens) tokens")
+                    }
                     if row.cost > 0 {
                         Text(row.cost, format: .currency(code: "USD"))
                     }
@@ -828,6 +835,8 @@ private struct MessageRow: View, Equatable {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 6)
+        .transition(.opacity)
+        .animation(.easeIn(duration: 0.18), value: isLiveStreaming)
     }
 
     // MARK: - Action Toolbar
