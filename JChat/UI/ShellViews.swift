@@ -448,7 +448,15 @@ struct ConversationPane: View {
 
             InlineModelPicker(
                 selectedModelID: Binding(
-                    get: { chat.selectedModelID },
+                    get: {
+                        // Fall back to AppSettings.defaultModelID when the chat has no model set,
+                        // so the picker never shows blank after a chat deletion or selection change.
+                        if let modelID = chat.selectedModelID, !modelID.isEmpty {
+                            return modelID
+                        }
+                        let settings = AppSettings.fetchOrCreate(in: modelContext)
+                        return settings.defaultModelID
+                    },
                     set: { newValue in
                         chat.selectedModelID = newValue
                         // Persist as the global default so new chats inherit this choice.
@@ -544,12 +552,23 @@ struct ConversationPane: View {
         let isLast = row.id == rows.last?.id
         let isOrphaned = isLast && row.role == .user && !store.isLoading && !store.isStreaming
 
+        // For user messages, find the row immediately after this one that is an assistant message
+        // so we can display its prompt token count and cost underneath the user bubble.
+        // (The API reports prompt tokens on the assistant response, not the user message.)
+        let rowIndex = rows.firstIndex(where: { $0.id == row.id })
+        let nextAssistant: MessageRowViewData? = rowIndex.flatMap { idx in
+            let next = idx + 1
+            return next < rows.count && rows[next].role == .assistant ? rows[next] : nil
+        }
+
         MessageRow(
             row: row,
             displayedContent: liveStreamingContent ?? row.content,
             isLiveStreaming: liveAssistantID == row.id,
             resolvedModelName: row.modelID.map { ModelNaming.displayName(forModelID: $0, namesByID: modelNamesByID) },
             isOrphanedLastUserMessage: isOrphaned,
+            followingPromptTokens: nextAssistant?.promptTokens ?? 0,
+            followingCost: nextAssistant?.cost ?? 0,
             onDelete: {
                 store.deleteMessage(withID: row.id, in: modelContext)
                 refreshRows()
@@ -677,6 +696,7 @@ private struct MessageInspectorSheet: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(copied ? .green : .secondary)
                     .animation(.easeInOut(duration: 0.2), value: copied)
+                    .frame(minWidth: 72)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -689,6 +709,7 @@ private struct MessageInspectorSheet: View {
                     Text("Done")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .frame(minWidth: 72)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(.quaternary, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -722,6 +743,11 @@ private struct MessageRow: View, Equatable {
     let isLiveStreaming: Bool
     let resolvedModelName: String?
     let isOrphanedLastUserMessage: Bool
+    /// Prompt token count from the following assistant message — only meaningful for user rows.
+    /// The API reports prompt tokens on the assistant response, not the user message that caused it.
+    var followingPromptTokens: Int = 0
+    /// Cost from the following assistant message, used to show cost under user messages.
+    var followingCost: Double = 0
     var onDelete: () -> Void = {}
     var onEdit: (_ newContent: String) -> Void = { _ in }
     var onRegenerate: () -> Void = {}
@@ -748,7 +774,9 @@ private struct MessageRow: View, Equatable {
             lhs.displayedContent == rhs.displayedContent &&
             lhs.isLiveStreaming == rhs.isLiveStreaming &&
             lhs.resolvedModelName == rhs.resolvedModelName &&
-            lhs.isOrphanedLastUserMessage == rhs.isOrphanedLastUserMessage
+            lhs.isOrphanedLastUserMessage == rhs.isOrphanedLastUserMessage &&
+            lhs.followingPromptTokens == rhs.followingPromptTokens &&
+            lhs.followingCost == rhs.followingCost
     }
 
     var body: some View {
@@ -802,11 +830,15 @@ private struct MessageRow: View, Equatable {
                     if row.role == .assistant, row.completionTokens > 0 {
                         Text("\(row.completionTokens) tokens")
                     }
-                    if row.role == .user, row.promptTokens > 0 {
-                        Text("\(row.promptTokens) tokens")
+                    if row.role == .user, followingPromptTokens > 0 {
+                        Text("\(followingPromptTokens) tokens")
                     }
-                    if row.cost > 0 {
-                        Text(row.cost, format: .currency(code: "USD"))
+                    // For assistant rows, show the message's own cost.
+                    // For user rows, show the following assistant's cost (since the API
+                    // charges for the whole prompt+completion bundle on the response side).
+                    let displayCost = isUser ? followingCost : row.cost
+                    if displayCost > 0 {
+                        Text(displayCost, format: .currency(code: "USD"))
                     }
                 }
                 .font(.system(size: TextSizeConfig.scaled(11, base: textBaseSize), weight: .medium, design: .rounded))
@@ -836,7 +868,7 @@ private struct MessageRow: View, Equatable {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 6)
         .transition(.opacity)
-        .animation(.easeIn(duration: 0.18), value: isLiveStreaming)
+        .animation(.easeIn(duration: 0.5), value: isLiveStreaming)
     }
 
     // MARK: - Action Toolbar

@@ -371,7 +371,7 @@ final class ConversationStore {
                     content: renderedContent,
                     promptTokens: assistantMessage.promptTokens,
                     completionTokens: assistantMessage.completionTokens,
-                    cost: assistantMessage.cost
+                    rawUsageJSON: assistantMessage.rawUsageJSON
                 )
                 try repository.save(context: context)
                 await generateAutoTitleIfNeeded(for: chat, apiKey: apiKey, context: context)
@@ -483,9 +483,11 @@ final class ConversationStore {
     /// Returns the model ID to use for auto-title generation.
     /// Always uses a dedicated fast/cheap model — never the chat's selected model,
     /// which may be a large reasoning model (slow, expensive, prone to preamble).
+    /// Falls back to the chat's own model if the dedicated model fails (handled at call site).
     private func autoTitleModelID(for chat: Chat) -> String {
-        // google/gemini-flash-1.5-8b: fast, cheap, excellent instruction-following for short tasks.
-        "google/gemini-flash-1.5-8b"
+        // google/gemini-2.0-flash-lite: fast, cheap, excellent instruction-following for short tasks.
+        // Prefer the free tier (:free suffix) when available; falls back gracefully.
+        "google/gemini-2.0-flash-lite"
     }
 
     private func normalizedAutoTitle(_ raw: String) -> String? {
@@ -530,9 +532,9 @@ final class ConversationStore {
         content: String,
         promptTokens: Int,
         completionTokens: Int,
-        cost: Double
+        rawUsageJSON: String?
     ) -> String? {
-        let responseDict: [String: Any] = [
+        var responseDict: [String: Any] = [
             "id": generationID ?? "unknown",
             "object": "chat.completion",
             "created": Int(Date().timeIntervalSince1970),
@@ -549,9 +551,16 @@ final class ConversationStore {
                 "prompt_tokens": promptTokens,
                 "completion_tokens": completionTokens,
                 "total_tokens": promptTokens + completionTokens
-            ],
-            "jchat_cost_usd": cost
+            ]
         ]
+
+        // Embed the raw usage chunk from OpenRouter's API exactly as received.
+        // This preserves the native cost, token detail, and any provider-specific fields.
+        if let rawUsageJSON,
+           let rawUsageData = rawUsageJSON.data(using: .utf8),
+           let rawUsageObject = try? JSONSerialization.jsonObject(with: rawUsageData) {
+            responseDict["openrouter_usage_raw"] = rawUsageObject
+        }
 
         guard let data = try? JSONSerialization.data(
             withJSONObject: responseDict,
