@@ -164,7 +164,7 @@ struct InlineModelPicker: View {
     }
 
     private var filteredFavorites: [CachedModel] {
-        let favorites = sortModels(cachedModels.filter { $0.isFavorite })
+        let favorites = modelManager.sorted(cachedModels.filter { $0.isFavorite }, by: modelManager.sortOrder)
         if pickerSearchText.isEmpty { return favorites }
         let query = pickerSearchText.lowercased()
         return favorites.filter {
@@ -175,26 +175,13 @@ struct InlineModelPicker: View {
     }
 
     private var filteredAllModels: [CachedModel] {
-        let all = sortModels(cachedModels.filter { !$0.isFavorite })
+        let all = modelManager.sorted(cachedModels.filter { !$0.isFavorite }, by: modelManager.sortOrder)
         if pickerSearchText.isEmpty { return Array(all.prefix(70)) }
         let query = pickerSearchText.lowercased()
         return all.filter {
             $0.name.lowercased().contains(query) ||
                 $0.id.lowercased().contains(query) ||
                 $0.providerName.lowercased().contains(query)
-        }
-    }
-
-    private func sortModels(_ models: [CachedModel]) -> [CachedModel] {
-        switch modelManager.sortOrder {
-        case .name:
-            return models.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        case .priceAsc:
-            return models.sorted { ($0.promptPricePerMillion + $0.completionPricePerMillion) < ($1.promptPricePerMillion + $1.completionPricePerMillion) }
-        case .priceDesc:
-            return models.sorted { ($0.promptPricePerMillion + $0.completionPricePerMillion) > ($1.promptPricePerMillion + $1.completionPricePerMillion) }
-        case .contextLength:
-            return models.sorted { $0.contextLength > $1.contextLength }
         }
     }
 
@@ -266,17 +253,7 @@ struct InlineModelPicker: View {
 
     private func compactPrice(for model: CachedModel) -> String {
         guard !model.isFree else { return "Free" }
-        return "$\(compact(model.promptPricePerMillion)) / $\(compact(model.completionPricePerMillion))"
-    }
-
-    private func compact(_ value: Double) -> String {
-        if value < 0.01 {
-            return String(format: "%.4f", value)
-        }
-        if value < 1.0 {
-            return String(format: "%.2f", value)
-        }
-        return String(format: "%.1f", value)
+        return "$\(model.promptPricePerMillion.formattedPrice) / $\(model.completionPricePerMillion.formattedPrice)"
     }
 }
 

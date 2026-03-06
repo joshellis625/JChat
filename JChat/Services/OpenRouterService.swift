@@ -720,13 +720,7 @@ actor OpenRouterService {
                     }
 
                     let usage = chatResponse.usage
-                    let prettyJSON: String
-                    if let jsonObject = try? JSONSerialization.jsonObject(with: data),
-                       let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]) {
-                        prettyJSON = String(data: prettyData, encoding: .utf8) ?? String(data: data, encoding: .utf8) ?? "{}"
-                    } else {
-                        prettyJSON = String(data: data, encoding: .utf8) ?? "{}"
-                    }
+                    let prettyJSON = Self.prettyJSON(from: data, fallback: String(data: data, encoding: .utf8) ?? "{}")
 
                     continuation.yield(.usage(
                         promptTokens: usage?.prompt_tokens ?? 0,
@@ -846,13 +840,7 @@ actor OpenRouterService {
         if let usage = chunk.usage,
            let promptTokens = usage.prompt_tokens,
            let completionTokens = usage.completion_tokens {
-            let prettyJSON: String
-            if let jsonObject = try? JSONSerialization.jsonObject(with: jsonData),
-               let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]) {
-                prettyJSON = String(data: prettyData, encoding: .utf8) ?? trimmed
-            } else {
-                prettyJSON = trimmed
-            }
+            let prettyJSON = Self.prettyJSON(from: jsonData, fallback: trimmed)
             events.append(.usage(promptTokens: promptTokens, completionTokens: completionTokens, rawJSON: prettyJSON))
         }
 
@@ -909,6 +897,16 @@ actor OpenRouterService {
 
         let fallback = String(data: data, encoding: .utf8) ?? ""
         return normalizedErrorBody(from: fallback)
+    }
+
+    /// Pretty-prints raw JSON data. Falls back to `fallback` if re-serialization fails.
+    private static func prettyJSON(from data: Data, fallback: String) -> String {
+        if let jsonObject = try? JSONSerialization.jsonObject(with: data),
+           let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]),
+           let pretty = String(data: prettyData, encoding: .utf8) {
+            return pretty
+        }
+        return fallback
     }
 
     private static func normalizedErrorBody(from body: String) -> String {

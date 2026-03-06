@@ -141,17 +141,6 @@ struct SettingsView: View {
         }
     }
 
-    private func normalizeKey(_ key: String) -> String {
-        var normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
-        if normalized.lowercased().hasPrefix("bearer ") {
-            normalized = String(normalized.dropFirst(7))
-        }
-        if normalized.hasPrefix("\"") && normalized.hasSuffix("\"") && normalized.count >= 2 {
-            normalized = String(normalized.dropFirst().dropLast())
-        }
-        return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     private func validateKey() async {
         isValidatingKey = true
         keyValidationMessage = nil
@@ -159,7 +148,7 @@ struct SettingsView: View {
         lastRequestInfo = nil
         creditsBalance = nil
 
-        let normalizedKey = normalizeKey(apiKey)
+        let normalizedKey = KeychainManager.normalizeKey(apiKey)
         apiKey = normalizedKey
 
         guard !normalizedKey.isEmpty else {
@@ -200,8 +189,8 @@ struct SettingsView: View {
             do {
                 let credits = try await service.fetchCredits(apiKey: normalizedKey)
                 let total = credits.data.total_credits ?? 0
-                let used = credits.data.total_usage ?? 0
-                creditsBalance = String(format: "$%.2f", total - used)
+                let totalUsage = credits.data.total_usage ?? 0
+                creditsBalance = String(format: "$%.2f", total - totalUsage)
             } catch {
                 // Credits endpoint requires management key — not an error for regular keys
             }
@@ -212,7 +201,7 @@ struct SettingsView: View {
 
     private func saveSettings() {
         // Save API key
-        let normalizedKey = normalizeKey(apiKey)
+        let normalizedKey = KeychainManager.normalizeKey(apiKey)
         apiKey = normalizedKey
         do {
             if normalizedKey.isEmpty {
@@ -221,7 +210,10 @@ struct SettingsView: View {
                 try KeychainManager.shared.saveAPIKey(normalizedKey)
             }
         } catch {
-            // Silently handle keychain errors for now
+            // Keychain errors are OS-level failures (e.g. permission denied, corrupted keychain).
+            // We log them for debugging but cannot recover — the UI has no meaningful way to
+            // communicate a keychain write failure to the user in this dismiss-on-save flow.
+            print("[Settings] Keychain save failed: \(error)")
         }
 
         // Save defaults

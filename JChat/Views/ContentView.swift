@@ -72,14 +72,10 @@ struct ContentView: View {
             loadAPIKeyStatus()
             await modelManager.refreshIfStale(context: modelContext)
             await conversationStore.generatePendingAutoTitles(in: modelContext)
-            if conversationStore.selectedChat == nil {
-                conversationStore.selectedChat = chats.first
-            }
+            selectFirstChatIfNeeded()
         }
         .onChange(of: chats.count) { _, _ in
-            if conversationStore.selectedChat == nil {
-                conversationStore.selectedChat = chats.first
-            }
+            selectFirstChatIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: AppCommandNotification.textSizeIncrease)) { _ in
             adjustTextSize(by: TextSizeConfig.step)
@@ -121,6 +117,12 @@ struct ContentView: View {
 
     private func clampedTextSize(_ value: Double) -> CGFloat {
         CGFloat(min(max(value, Double(TextSizeConfig.minimum)), Double(TextSizeConfig.maximum)))
+    }
+
+    private func selectFirstChatIfNeeded() {
+        if conversationStore.selectedChat == nil {
+            conversationStore.selectedChat = chats.first
+        }
     }
 
     private func loadAPIKeyStatus() {
@@ -236,11 +238,21 @@ private func makePreviewContainer() throws -> (ModelContainer, Chat) {
 }
 #Preview("Active Chat") {
     // Seed data and pre-select the primary chat so ConversationPane renders immediately.
-    let (container, chat) = try! makePreviewContainer()
-    let store = ConversationStore()
-    store.selectedChat = chat
-    return ContentView(previewStore: store)
-        .frame(minWidth: 900, minHeight: 700)
-        .modelContainer(container)
+    // Falls back to an empty in-memory container if seeding fails, so the preview
+    // still renders rather than crashing the canvas.
+    let schema = Schema([Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self])
+    let fallback = try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+    do {
+        let (container, chat) = try makePreviewContainer()
+        let store = ConversationStore()
+        store.selectedChat = chat
+        return ContentView(previewStore: store)
+            .frame(minWidth: 900, minHeight: 700)
+            .modelContainer(container)
+    } catch {
+        return ContentView()
+            .frame(minWidth: 900, minHeight: 700)
+            .modelContainer(fallback)
+    }
 }
 

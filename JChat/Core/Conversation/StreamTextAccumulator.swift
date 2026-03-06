@@ -6,7 +6,7 @@
 import Foundation
 
 struct StreamTextAccumulator {
-    private(set) var pending = ""
+    private(set) var bufferedText = ""
     private var lastFlushTime = ContinuousClock.now
     private let minCharactersBeforeFlush: Int
     private let maxInterval: Duration
@@ -21,10 +21,10 @@ struct StreamTextAccumulator {
 
     mutating func append(_ chunk: String) -> String? {
         guard !chunk.isEmpty else { return nil }
-        pending += chunk
+        bufferedText += chunk
 
         let now = ContinuousClock.now
-        let shouldFlushForSize = pending.count >= minCharactersBeforeFlush
+        let shouldFlushForSize = bufferedText.count >= minCharactersBeforeFlush
         let shouldFlushForTime = now - lastFlushTime >= maxInterval
 
         if shouldFlushForSize || shouldFlushForTime {
@@ -38,18 +38,18 @@ struct StreamTextAccumulator {
     }
 
     mutating func reset() {
-        pending = ""
+        bufferedText = ""
         lastFlushTime = ContinuousClock.now
     }
 
     private mutating func flush(now: ContinuousClock.Instant) -> String? {
-        guard !pending.isEmpty else {
+        guard !bufferedText.isEmpty else {
             lastFlushTime = now
             return nil
         }
 
-        let output = pending
-        pending = ""
+        let output = bufferedText
+        bufferedText = ""
         lastFlushTime = now
         return output
     }

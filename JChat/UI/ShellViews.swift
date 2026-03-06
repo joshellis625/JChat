@@ -188,7 +188,7 @@ private struct SidebarRow: View {
                 AutoTitleLoadingTitleView(fontSize: 15, width: 170)
             } else {
                 HStack(spacing: 6) {
-                    Text(displayTitle)
+                    Text(chat.displayTitle)
                         .appFont(size: 15, weight: .semibold, design: .rounded)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
@@ -240,11 +240,6 @@ private struct SidebarRow: View {
             return String(singleLine.prefix(88))
         }
         return "New conversation"
-    }
-
-    private var displayTitle: String {
-        let trimmed = chat.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "New Chat" : trimmed
     }
 
     private var chatTimestampText: String {
@@ -431,7 +426,7 @@ struct ConversationPane: View {
                     AutoTitleLoadingTitleView(fontSize: TextSizeConfig.scaled(17, base: textBaseSize), width: 220)
                 } else {
                     HStack(spacing: 8) {
-                        Text(displayTitle)
+                        Text(chat.displayTitle)
                             .font(.system(size: TextSizeConfig.scaled(17, base: textBaseSize), weight: .semibold, design: .rounded))
                             .foregroundStyle(.primary)
                             .lineLimit(1)
@@ -492,11 +487,6 @@ struct ConversationPane: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .glassEffect(in: .rect(cornerRadius: 12))
-    }
-
-    private var displayTitle: String {
-        let trimmed = chat.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "New Chat" : trimmed
     }
 
     private func scrollToBottom(proxy: ScrollViewProxy, animated: Bool) {

@@ -47,16 +47,7 @@ class ModelManager {
         }
 
         // Apply sort
-        switch sortOrder {
-        case .name:
-            result.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        case .priceAsc:
-            result.sort { ($0.promptPricePerMillion + $0.completionPricePerMillion) < ($1.promptPricePerMillion + $1.completionPricePerMillion) }
-        case .priceDesc:
-            result.sort { ($0.promptPricePerMillion + $0.completionPricePerMillion) > ($1.promptPricePerMillion + $1.completionPricePerMillion) }
-        case .contextLength:
-            result.sort { $0.contextLength > $1.contextLength }
-        }
+        result = sorted(result, by: sortOrder)
 
         return result
     }
@@ -156,7 +147,11 @@ class ModelManager {
             let settings = AppSettings.fetchOrCreate(in: context)
             settings.lastModelFetchDate = Date()
 
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                print("[ModelManager] Save after model fetch failed: \(error)")
+            }
 
             // Refresh local cache
             loadModels(from: context)
@@ -188,11 +183,32 @@ class ModelManager {
         await fetchAndCacheModels(context: context)
     }
 
+    // MARK: - Sorting
+
+    /// Sorts a model array by the given sort order.
+    /// Used by both ModelManager's own filteredModels and InlineModelPicker.
+    func sorted(_ models: [CachedModel], by order: ModelSortOrder) -> [CachedModel] {
+        switch order {
+        case .name:
+            return models.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .priceAsc:
+            return models.sorted { ($0.promptPricePerMillion + $0.completionPricePerMillion) < ($1.promptPricePerMillion + $1.completionPricePerMillion) }
+        case .priceDesc:
+            return models.sorted { ($0.promptPricePerMillion + $0.completionPricePerMillion) > ($1.promptPricePerMillion + $1.completionPricePerMillion) }
+        case .contextLength:
+            return models.sorted { $0.contextLength > $1.contextLength }
+        }
+    }
+
     // MARK: - Actions
 
     func toggleFavorite(_ model: CachedModel, context: ModelContext) {
         model.isFavorite.toggle()
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("[ModelManager] Save after favorite toggle failed: \(error)")
+        }
         loadModels(from: context)
     }
 
