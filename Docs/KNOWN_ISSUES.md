@@ -56,17 +56,11 @@ Tracked here until migrated to GitHub Issues or Linear.
 3. Accurately reflect the sum of all API calls made for this chat
 **Note:** All the raw data is already in the metadata JSON. This is about ensuring `Chat.totalPromptTokens`, `Chat.totalCompletionTokens`, and `Chat.totalCost` are correctly accumulated and never subtracted from.
 
-### FR-004: Settings popover needs professional redesign
-**Priority:** Medium
-**Where:** Settings popover/sheet (accessed from sidebar)
-**What:** The current settings UI is functional but visually rough — spacing, typography, and grouping need a professional pass. Note that character/persona implementation hasn't been done yet, so the "Default Character" picker is a placeholder.
-**Screenshot:** `Screenshot 2026-02-25 at 6.22.24 AM.png`
+### ~~FR-004: Settings popover needs professional redesign~~ ✅ Resolved 2026-03-06
+Keychain note moved to section footer. Validate button uses `.buttonStyle(.glass)`. Validation result replaced with `KeyValidationStatusView` — compact status card with checkmark/x icon, inline model count + credits chips on success, debug endpoint/status only on failure. Animated entry with `.easeOut`.
 
-### FR-005: Inline model picker needs visual polish
-**Priority:** Low (cosmetic)
-**Where:** Chat header bar, model picker dropdown (e.g. "DeepSeek V3.2")
-**What:** The model picker pill/capsule in the chat header doesn't visually fit well around the model name. It looks unpolished — the padding, border radius, or background treatment needs refinement to feel like a native macOS control.
-**Screenshot:** `Screenshot 2026-02-25 at 6.23.46 AM.png`
+### ~~FR-005: Inline model picker needs visual polish~~ ✅ Resolved 2026-03-06
+Replaced manual `.thinMaterial + stroke` background with `.buttonStyle(.glass)` — now a native Liquid Glass interactive control with fluid hover/press response.
 
 ---
 

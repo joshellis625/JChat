@@ -7,37 +7,46 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @State private var conversationStore = ConversationStore()
+    @State private var conversationStore: ConversationStore
     @State private var modelManager = ModelManager()
+
+    // previewForceSetup: pins needsSetup=true in previews without touching the real keychain
+    private let previewForceSetup: Bool
+
+    init(previewStore: ConversationStore? = nil, previewForceSetup: Bool = false) {
+        _conversationStore = State(initialValue: previewStore ?? ConversationStore())
+        self.previewForceSetup = previewForceSetup
+    }
     @State private var textBaseSize: CGFloat = TextSizeConfig.defaultSize
     @State private var hasAPIKey = false
 
     // Setup screen only — sidebar owns its own copies for normal use
     @State private var showingSettingsFromSetup = false
-    @State private var showingModelManagerFromSetup = false
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Chat.createdAt, order: .reverse) private var chats: [Chat]
 
     var body: some View {
         NavigationSplitView {
-            V2SidebarView(store: conversationStore, modelManager: modelManager)
+            SidebarView(store: conversationStore, modelManager: modelManager)
                 .navigationSplitViewColumnWidth(min: 270, ideal: 300, max: 360)
         } detail: {
             if needsSetup {
-                setupRequiredView
-                    .padding(24)
+                ZStack {
+                    setupRequiredView
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let selectedChat = conversationStore.selectedChat {
-                V2ConversationPane(
+                ConversationPane(
                     store: conversationStore,
                     modelManager: modelManager,
                     chat: selectedChat
                 )
             } else {
-                V2EmptyStateView()
+                EmptyStateView()
             }
         }
-        .background(V2CanvasBackground())
+        .background(CanvasBackground())
         .environment(\.textBaseSize, textBaseSize)
         .environment(\.font, .system(size: TextSizeConfig.size(for: .body, base: textBaseSize)))
         .toolbar {
@@ -57,9 +66,6 @@ struct ContentView: View {
                 loadTextSize()
                 loadAPIKeyStatus()
             }
-        }
-        .sheet(isPresented: $showingModelManagerFromSetup) {
-            ModelManagerView(modelManager: modelManager)
         }
         .task {
             loadTextSize()
@@ -127,70 +133,35 @@ struct ContentView: View {
     }
 
     private var needsSetup: Bool {
-        !hasAPIKey
+        previewForceSetup || !hasAPIKey
     }
 
     private var setupRequiredView: some View {
-        VStack(spacing: 18) {
-            Image(systemName: "sparkles.rectangle.stack")
-                .font(.system(size: TextSizeConfig.scaled(38, base: textBaseSize), weight: .semibold))
+        VStack(spacing: 16) {
+            Image(systemName: "key.fill")
+                .font(.system(size: TextSizeConfig.scaled(32, base: textBaseSize), weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text("Complete Setup")
-                .font(.system(size: TextSizeConfig.scaled(30, base: textBaseSize), weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-
-            Text("Add your OpenRouter key to begin.")
+            Text("Add your OpenRouter API key to get started.")
                 .font(.system(size: TextSizeConfig.scaled(15, base: textBaseSize), weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 440)
+                .frame(maxWidth: 340)
 
-            VStack(alignment: .leading, spacing: 12) {
-                setupItemRow(
-                    title: "OpenRouter API Key",
-                    isComplete: hasAPIKey,
-                    detail: "Add your API key in Settings."
-                )
+            Button("Open Settings") {
+                showingSettingsFromSetup = true
             }
-            .frame(maxWidth: 420, alignment: .leading)
-            .padding(.top, 6)
-
-            HStack(spacing: 10) {
-                Button("Open Settings") {
-                    showingSettingsFromSetup = true
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button("Open Model Manager") {
-                    showingModelManagerFromSetup = true
-                }
-                .buttonStyle(.bordered)
-            }
+            .buttonStyle(.borderedProminent)
             .padding(.top, 4)
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 26)
-        .surfaceCard(cornerRadius: 22, borderOpacity: 0.16, fillOpacity: 0.06)
+        .padding(.horizontal, 32)
+        .padding(.vertical, 28)
+        .glassEffect(in: .rect(cornerRadius: 22))
     }
 
-    private func setupItemRow(title: String, isComplete: Bool, detail: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: isComplete ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                .foregroundStyle(isComplete ? Color.green.opacity(0.9) : Color.orange.opacity(0.9))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary)
-                Text(detail)
-                    .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .medium, design: .rounded))
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
 }
 
-private struct V2EmptyStateView: View {
+private struct EmptyStateView: View {
     @Environment(\.textBaseSize) private var textBaseSize
 
     var body: some View {
@@ -207,8 +178,69 @@ private struct V2EmptyStateView: View {
     }
 }
 
-#Preview {
-    ContentView()
+// MARK: - Previews
+
+@MainActor
+private func makePreviewContainer() throws -> (ModelContainer, Chat) {
+    let schema = Schema([Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self])
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let container = try ModelContainer(for: schema, configurations: [config])
+    let ctx = container.mainContext
+
+    // Seed a few favorite models so the inline model picker has something to show
+    let models: [(String, String)] = [
+        ("anthropic/claude-sonnet-4-5", "Claude Sonnet 4.5"),
+        ("google/gemini-2.0-flash-001", "Gemini 2.0 Flash"),
+        ("openai/gpt-4o", "GPT-4o"),
+    ]
+    for (idx, (modelID, name)) in models.enumerated() {
+        let m = CachedModel(id: modelID, name: name, contextLength: 200_000, isFavorite: true, sortOrder: idx)
+        ctx.insert(m)
+    }
+
+    // Primary seeded chat — "What is Liquid Glass?"
+    let chat = Chat(title: "What is Liquid Glass?")
+    chat.selectedModelID = "anthropic/claude-sonnet-4-5"
+    chat.totalPromptTokens = 1_242
+    chat.totalCompletionTokens = 387
+    chat.totalCost = 0.00183
+    ctx.insert(chat)
+
+    let msgs: [(MessageRole, String, Int, Int)] = [
+        (.user,      "What is Liquid Glass in SwiftUI?", 18, 0),
+        (.assistant, "Liquid Glass is a new dynamic material introduced in macOS/iOS 26. It provides an adaptive translucent surface that automatically responds to what's behind it — adjusting blur, reflection, and tint based on the underlying content and system appearance.", 18, 68),
+        (.user,      "How do I use it in my own views?", 12, 0),
+        (.assistant, "Use `.glassEffect(in: shape)` to apply the material to any view:\n\n```swift\nText(\"Hello\")\n    .padding()\n    .glassEffect(in: .rect(cornerRadius: 12))\n```\n\nFor interactive controls, `.buttonStyle(.glass)` gives you a first-class Liquid Glass button that handles hover, press, and dark/tinted appearances automatically.", 12, 92),
+    ]
+    var t = Date(timeIntervalSinceNow: -300)
+    for (role, content, prompt, completion) in msgs {
+        let msg = Message(role: role, content: content, promptTokens: prompt, completionTokens: completion, cost: 0.0, modelID: "anthropic/claude-sonnet-4-5")
+        msg.timestamp = t
+        chat.messages.append(msg)
+        t += 30
+    }
+
+    // Second chat for sidebar population
+    let chat2 = Chat(title: "SwiftData relationships")
+    chat2.totalPromptTokens = 540
+    ctx.insert(chat2)
+
+    try ctx.save()
+    return (container, chat)
+}
+
+#Preview("Empty / Setup") {
+    ContentView(previewForceSetup: true)
         .frame(minWidth: 900, minHeight: 700)
         .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }
+#Preview("Active Chat") {
+    // Seed data and pre-select the primary chat so ConversationPane renders immediately.
+    let (container, chat) = try! makePreviewContainer()
+    let store = ConversationStore()
+    store.selectedChat = chat
+    return ContentView(previewStore: store)
+        .frame(minWidth: 900, minHeight: 700)
+        .modelContainer(container)
+}
+
