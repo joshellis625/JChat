@@ -12,6 +12,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-06] - Quick Wins Batch: BUG-004/005/006/007/008, FR-001/007
+
+### Fixed
+- **BUG-004**: Removed deprecated `stream_options.include_usage` — deleted `StreamOptions` struct, `stream_options` field on `ChatRequest`, and the conditional assignment block in `OpenRouterService.buildRequestBody`
+- **BUG-005**: `buildResponseJSON(...)` in `ConversationStore` now accepts a `cost: Double` parameter and includes `jchat_cost_usd` in the synthesized response object shown in the JSON inspector
+- **BUG-006**: Done button in `MessageInspectorSheet` font weight changed `.semibold` → `.medium` to match the Copy button; both buttons now visually identical in weight
+- **BUG-007**: Auto-title reliability overhauled — `autoTitleModelID(for:)` always returns `google/gemini-flash-1.5-8b` (no longer uses chat's active model); prompt rewritten with explicit system framing and `User:/Assistant:` format (removed erroneous literal `+` separators); `normalizedAutoTitle` relaxed to accept 1+ word titles and now only strips surrounding quotes/markdown characters using unicode escapes
+- **BUG-008**: `InlineModelPicker` binding setter in `ConversationPane` now writes the selected model ID back to `AppSettings.defaultModelID` so new chats and post-restart sessions inherit the last-used model
+
+### Added
+- **FR-001**: User messages now show prompt token count in the metadata row (`if row.role == .user, row.promptTokens > 0`) — mirrors the existing assistant message metadata layout
+- **FR-007**: New assistant message bubble fades in during streaming — `.transition(.opacity)` + `.animation(.easeIn(duration: 0.18), value: isLiveStreaming)` on the outer HStack in `MessageRow.body`
+
+### Notes
+- All changes on branch `fix/quick-wins`; build passes clean
+- Backlog items also added to `KNOWN_ISSUES.md` this session: BUG-004 through BUG-008, FR-006 through FR-014
+
+---
+
 ## [2026-03-06] - Bug Fixes: BUG-001, BUG-002, BUG-003
 
 ### Fixed
