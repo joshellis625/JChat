@@ -284,16 +284,16 @@ struct JChatTests {
     @Test func streamAccumulatorEmptyStringIsNoop() {
         var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 3, maxIntervalMilliseconds: 9999)
         #expect(accumulator.append("") == nil)
-        #expect(accumulator.pending == "")
+        #expect(accumulator.bufferedText == "")
         #expect(accumulator.append("ab") == nil)
-        #expect(accumulator.pending == "ab")
+        #expect(accumulator.bufferedText == "ab")
     }
 
     @Test func streamAccumulatorExactThresholdFlushes() {
         var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 4, maxIntervalMilliseconds: 9999)
         #expect(accumulator.append("abc") == nil)
         #expect(accumulator.append("d") == "abcd")
-        #expect(accumulator.pending == "")
+        #expect(accumulator.bufferedText == "")
     }
 
     @Test func streamAccumulatorUnicodeCharacterCount() {
@@ -307,7 +307,7 @@ struct JChatTests {
         var accumulator = StreamTextAccumulator(minCharactersBeforeFlush: 100, maxIntervalMilliseconds: 9999)
         _ = accumulator.append("hello world")
         accumulator.reset()
-        #expect(accumulator.pending == "")
+        #expect(accumulator.bufferedText == "")
         #expect(accumulator.flush() == nil)
     }
 

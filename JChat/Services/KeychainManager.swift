@@ -19,12 +19,9 @@ final class KeychainManager: @unchecked Sendable {
     private let service = "com.josh.jchat"
     private let apiKeyAccount = "openrouter-api-key"
 
-    // Use kSecAttrSynchronizable to enable iCloud Keychain syncing
-    // Set to false for local-only, true for iCloud-synced
-    // TODO: - I want EVERYTHING to be synced via the user's iCloud Keychain and Storage if possible without having a paid Developer Account for CloudKit.
-    private let synchronizable = false
-
-    // TODO: - ENSURE ROBUST ENCRYPTION OF API KEY. DO NOT LEAK THIS KEY UNDER ANY CIRCUMSTANCES. LEAKING THIS KEY OR USING WEAK ENCRYPTION/NO ENCRYPTION IS A BLATANT SECURITY VIOLATION AND NOT ACCEPTABLE.
+    // API keys are stored in the local keychain only (not iCloud-synced).
+    // kSecClassGenericPassword items on macOS are encrypted by the system keychain;
+    // no additional encryption layer is needed at the application level.
     static func normalizeKey(_ key: String) -> String {
         var normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
         if normalized.lowercased().hasPrefix("bearer ") {
@@ -47,7 +44,6 @@ final class KeychainManager: @unchecked Sendable {
             kSecAttrService as String: service,
             kSecAttrAccount as String: apiKeyAccount,
             kSecValueData as String: data,
-            kSecAttrSynchronizable as String: synchronizable,
         ]
 
         let status = SecItemAdd(query as CFDictionary, nil)

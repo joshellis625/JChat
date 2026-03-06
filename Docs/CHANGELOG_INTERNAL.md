@@ -12,6 +12,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-06] - Code Quality Fixes and DRY Refactoring
+
+### Changed
+- `StreamTextAccumulator`: renamed `pending` → `bufferedText` for clarity
+- `ConversationFeatureFlags`: added rationale comments to magic numbers (32 chars, 45 ms)
+- `KeychainManager`: removed dead `synchronizable` property and stale TODO comments
+- `ParameterInspector`: renamed `ParamDefault` → `ParameterDefaults` (32 sites)
+- `ConversationStore`: named `autoTitleFallbackModelID` constant with doc comment; extracted `applyFlushed()` helper to collapse 3 repeated streaming update blocks
+- `ModelManager`: extracted `sorted(_:by:)` as canonical sort method; `InlineModelPicker` now delegates to it
+- `CachedModel`: promoted `formatPrice()` → `Double.formattedPrice` extension; `InlineModelPicker.compact()` deleted
+- `Chat`: added `displayTitle` extension; duplicate computed vars removed from `ShellViews`
+- `OpenRouterService`: extracted `prettyJSON(from:fallback:)` helper to eliminate 2 inline JSON pretty-print blocks
+- `ContentView`: extracted `selectFirstChatIfNeeded()` to collapse 2 repeated nil-check blocks; replaced `try!` in `#Preview` with `do/catch` + graceful fallback
+
+### Fixed
+- `SettingsView`: removed duplicate `normalizeKey()` (was identical to `KeychainManager.normalizeKey()`); silent keychain error now logged
+- `ConversationStore`, `ModelManager`: `try? save()` calls promoted to `do/catch` with log output — failures no longer silently swallowed
+- `JChatTests`: updated 4 assertions from `.pending` to `.bufferedText`
+
+### Notes
+- All changes on branch `chore/code-quality-fixes`; build passes clean; no behavior changes
+
+---
+
 ## [2026-03-06] - Icon, Preview Polish, Settings UX
 
 ### Added

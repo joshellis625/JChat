@@ -301,17 +301,22 @@ final class ConversationStore {
             var capturedFinishReason: String?
             var capturedGenerationID: String?
 
+            // Appends flushed text to renderedContent and updates the live streaming view
+            // only when this task still owns the active session (prevents stale updates).
+            @MainActor func applyFlushed(_ text: String?) {
+                guard let text else { return }
+                renderedContent += text
+                if activeStreamingSessionID == sessionID {
+                    streamingContent = renderedContent
+                }
+            }
+
             do {
                 let stream = await engine.streamAssistantResponse(request: request)
                 for try await event in stream {
                     switch event {
                     case let .delta(text):
-                        if let flushed = accumulator.append(text) {
-                            renderedContent += flushed
-                            if activeStreamingSessionID == sessionID {
-                                streamingContent = renderedContent
-                            }
-                        }
+                        applyFlushed(accumulator.append(text))
                     case let .usage(promptTokens, completionTokens, rawJSON):
                         assistantMessage.rawUsageJSON = rawJSON
                         let previousPromptTokens = assistantMessage.promptTokens
@@ -356,12 +361,7 @@ final class ConversationStore {
                     }
                 }
 
-                if let remaining = accumulator.flush() {
-                    renderedContent += remaining
-                    if activeStreamingSessionID == sessionID {
-                        streamingContent = renderedContent
-                    }
-                }
+                applyFlushed(accumulator.flush())
 
                 assistantMessage.content = renderedContent
                 assistantMessage.rawResponseJSON = buildResponseJSON(
@@ -375,28 +375,26 @@ final class ConversationStore {
                 try repository.save(context: context)
                 await generateAutoTitleIfNeeded(for: chat, apiKey: apiKey, context: context)
             } catch is CancellationError {
-                if let remaining = accumulator.flush() {
-                    renderedContent += remaining
-                    if activeStreamingSessionID == sessionID {
-                        streamingContent = renderedContent
-                    }
-                }
+                applyFlushed(accumulator.flush())
                 assistantMessage.content = renderedContent
-                try? repository.save(context: context)
-            } catch {
-                if let remaining = accumulator.flush() {
-                    renderedContent += remaining
-                    if activeStreamingSessionID == sessionID {
-                        streamingContent = renderedContent
-                    }
+                do {
+                    try repository.save(context: context)
+                } catch {
+                    print("[ConversationStore] Save after cancellation failed: \(error)")
                 }
+            } catch {
+                applyFlushed(accumulator.flush())
                 setError((error as? JChatError) ?? .unknown(error))
                 assistantMessage.content = renderedContent
                 if assistantMessage.content.isEmpty {
                     chat.messages.removeAll { $0.id == assistantMessage.id }
                     context.delete(assistantMessage)
                 }
-                try? context.save()
+                do {
+                    try context.save()
+                } catch {
+                    print("[ConversationStore] Save after stream error failed: \(error)")
+                }
             }
 
             if activeStreamingSessionID == sessionID {
@@ -476,11 +474,16 @@ final class ConversationStore {
         return completion.content
     }
 
+    /// Returns the model ID to use for auto-title generation.
+    /// Prefers the chat's own selected model so titling stays consistent
+    /// with the conversation. Falls back to a lightweight model only when
+    /// the chat has no selected model (e.g. edge cases during migration).
     private func autoTitleModelID(for chat: Chat) -> String {
-        let fallback = "google/gemma-12b-it"
+        // Chosen as fallback: small, fast, cheap — adequate for 3–5 word title generation.
+        let autoTitleFallbackModelID = "google/gemma-3-12b-it"
         guard let selected = chat.selectedModelID?.trimmingCharacters(in: .whitespacesAndNewlines),
               !selected.isEmpty else {
-            return fallback
+            return autoTitleFallbackModelID
         }
         return selected
     }

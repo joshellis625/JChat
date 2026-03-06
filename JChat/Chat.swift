@@ -232,3 +232,13 @@ enum MessageRole: String, Codable {
     case assistant
     case system
 }
+
+// MARK: - Display Helpers
+
+extension Chat {
+    /// Title suitable for display: trims whitespace and falls back to "New Chat" if empty.
+    var displayTitle: String {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "New Chat" : trimmed
+    }
+}

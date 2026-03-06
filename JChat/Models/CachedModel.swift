@@ -126,7 +126,7 @@ final class CachedModel {
         if isFree {
             return "Free"
         }
-        return "$\(formatPrice(promptPricePerMillion)) / $\(formatPrice(completionPricePerMillion)) per 1M tokens"
+        return "$\(promptPricePerMillion.formattedPrice) / $\(completionPricePerMillion.formattedPrice) per 1M tokens"
     }
 
     var contextLengthFormatted: String {
@@ -152,12 +152,19 @@ final class CachedModel {
         max(0, Double(completionPricing) ?? 0.0)
     }
 
-    private func formatPrice(_ price: Double) -> String {
-        if price < 0.01 {
-            return String(format: "%.4f", price)
-        } else if price < 1.0 {
-            return String(format: "%.2f", price)
+}
+
+// MARK: - Price Formatting
+
+extension Double {
+    /// Formats a per-million-token price for compact display.
+    /// Uses more decimal places for sub-cent prices to avoid showing "$0.00".
+    var formattedPrice: String {
+        if self < 0.01 {
+            return String(format: "%.4f", self)
+        } else if self < 1.0 {
+            return String(format: "%.2f", self)
         }
-        return String(format: "%.1f", price)
+        return String(format: "%.1f", self)
     }
 }

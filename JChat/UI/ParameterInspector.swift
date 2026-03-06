@@ -8,7 +8,7 @@ import SwiftUI
 
 // MARK: - Default values (source of truth for "is this overridden?")
 
-private enum ParamDefault {
+private enum ParameterDefaults {
     static let temperature: Double = 1.0
     static let maxTokens: Int = 0 // 0 = unlimited / Off
     static let topP: Double = 1.0
@@ -198,11 +198,11 @@ struct ParameterInspector: View {
         Section("Basic") {
             SliderRow(
                 title: "Temperature",
-                isOverridden: chat.temperatureOverride != nil && chat.temperatureOverride != ParamDefault.temperature,
+                isOverridden: chat.temperatureOverride != nil && chat.temperatureOverride != ParameterDefaults.temperature,
                 value: Binding(
                     get: { chat.effectiveTemperature },
                     set: { newVal in
-                        chat.temperatureOverride = (newVal == ParamDefault.temperature) ? nil : newVal
+                        chat.temperatureOverride = (newVal == ParameterDefaults.temperature) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -213,11 +213,11 @@ struct ParameterInspector: View {
 
             IntSliderRow(
                 title: "Max Tokens",
-                isOverridden: chat.maxTokensOverride != nil && chat.maxTokensOverride != ParamDefault.maxTokens,
+                isOverridden: chat.maxTokensOverride != nil && chat.maxTokensOverride != ParameterDefaults.maxTokens,
                 value: Binding(
                     get: { chat.effectiveMaxTokens },
                     set: { newVal in
-                        chat.maxTokensOverride = (newVal == ParamDefault.maxTokens) ? nil : newVal
+                        chat.maxTokensOverride = (newVal == ParameterDefaults.maxTokens) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -234,11 +234,11 @@ struct ParameterInspector: View {
         Section("Sampling") {
             SliderRow(
                 title: "Top P",
-                isOverridden: chat.topPOverride != nil && chat.topPOverride != ParamDefault.topP,
+                isOverridden: chat.topPOverride != nil && chat.topPOverride != ParameterDefaults.topP,
                 value: Binding(
                     get: { chat.effectiveTopP },
                     set: { newVal in
-                        chat.topPOverride = (newVal == ParamDefault.topP) ? nil : newVal
+                        chat.topPOverride = (newVal == ParameterDefaults.topP) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -249,11 +249,11 @@ struct ParameterInspector: View {
 
             IntSliderRow(
                 title: "Top K",
-                isOverridden: chat.topKOverride != nil && chat.topKOverride != ParamDefault.topK,
+                isOverridden: chat.topKOverride != nil && chat.topKOverride != ParameterDefaults.topK,
                 value: Binding(
                     get: { chat.effectiveTopK },
                     set: { newVal in
-                        chat.topKOverride = (newVal == ParamDefault.topK) ? nil : newVal
+                        chat.topKOverride = (newVal == ParameterDefaults.topK) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -264,11 +264,11 @@ struct ParameterInspector: View {
 
             SliderRow(
                 title: "Min P",
-                isOverridden: chat.minPOverride != nil && chat.minPOverride != ParamDefault.minP,
+                isOverridden: chat.minPOverride != nil && chat.minPOverride != ParameterDefaults.minP,
                 value: Binding(
                     get: { chat.effectiveMinP },
                     set: { newVal in
-                        chat.minPOverride = (newVal == ParamDefault.minP) ? nil : newVal
+                        chat.minPOverride = (newVal == ParameterDefaults.minP) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -279,11 +279,11 @@ struct ParameterInspector: View {
 
             SliderRow(
                 title: "Top A",
-                isOverridden: chat.topAOverride != nil && chat.topAOverride != ParamDefault.topA,
+                isOverridden: chat.topAOverride != nil && chat.topAOverride != ParameterDefaults.topA,
                 value: Binding(
                     get: { chat.effectiveTopA },
                     set: { newVal in
-                        chat.topAOverride = (newVal == ParamDefault.topA) ? nil : newVal
+                        chat.topAOverride = (newVal == ParameterDefaults.topA) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -300,11 +300,11 @@ struct ParameterInspector: View {
         Section("Penalties") {
             SliderRow(
                 title: "Frequency",
-                isOverridden: chat.frequencyPenaltyOverride != nil && chat.frequencyPenaltyOverride != ParamDefault.frequencyPenalty,
+                isOverridden: chat.frequencyPenaltyOverride != nil && chat.frequencyPenaltyOverride != ParameterDefaults.frequencyPenalty,
                 value: Binding(
                     get: { chat.effectiveFrequencyPenalty },
                     set: { newVal in
-                        chat.frequencyPenaltyOverride = (newVal == ParamDefault.frequencyPenalty) ? nil : newVal
+                        chat.frequencyPenaltyOverride = (newVal == ParameterDefaults.frequencyPenalty) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -315,11 +315,11 @@ struct ParameterInspector: View {
 
             SliderRow(
                 title: "Presence",
-                isOverridden: chat.presencePenaltyOverride != nil && chat.presencePenaltyOverride != ParamDefault.presencePenalty,
+                isOverridden: chat.presencePenaltyOverride != nil && chat.presencePenaltyOverride != ParameterDefaults.presencePenalty,
                 value: Binding(
                     get: { chat.effectivePresencePenalty },
                     set: { newVal in
-                        chat.presencePenaltyOverride = (newVal == ParamDefault.presencePenalty) ? nil : newVal
+                        chat.presencePenaltyOverride = (newVal == ParameterDefaults.presencePenalty) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -330,11 +330,11 @@ struct ParameterInspector: View {
 
             SliderRow(
                 title: "Repetition",
-                isOverridden: chat.repetitionPenaltyOverride != nil && chat.repetitionPenaltyOverride != ParamDefault.repetitionPenalty,
+                isOverridden: chat.repetitionPenaltyOverride != nil && chat.repetitionPenaltyOverride != ParameterDefaults.repetitionPenalty,
                 value: Binding(
                     get: { chat.effectiveRepetitionPenalty },
                     set: { newVal in
-                        chat.repetitionPenaltyOverride = (newVal == ParamDefault.repetitionPenalty) ? nil : newVal
+                        chat.repetitionPenaltyOverride = (newVal == ParameterDefaults.repetitionPenalty) ? nil : newVal
                         saveQuiet()
                     }
                 ),
@@ -352,19 +352,19 @@ struct ParameterInspector: View {
             Toggle(isOn: Binding(
                 get: { chat.effectiveReasoningEnabled },
                 set: { newVal in
-                    chat.reasoningEnabledOverride = (newVal == ParamDefault.reasoningEnabled) ? nil : newVal
+                    chat.reasoningEnabledOverride = (newVal == ParameterDefaults.reasoningEnabled) ? nil : newVal
                     saveQuiet()
                 }
             )) {
-                paramLabel("Reasoning", isOverridden: chat.reasoningEnabledOverride != nil && chat.reasoningEnabledOverride != ParamDefault.reasoningEnabled)
+                paramLabel("Reasoning", isOverridden: chat.reasoningEnabledOverride != nil && chat.reasoningEnabledOverride != ParameterDefaults.reasoningEnabled)
             }
 
             // Reasoning Effort (segmented, mutually exclusive with Reasoning Max Tokens)
             LabeledContent {
                 Picker("", selection: Binding(
-                    get: { chat.reasoningEffortOverride ?? ParamDefault.reasoningEffort },
+                    get: { chat.reasoningEffortOverride ?? ParameterDefaults.reasoningEffort },
                     set: { newVal in
-                        chat.reasoningEffortOverride = (newVal == ParamDefault.reasoningEffort) ? nil : newVal
+                        chat.reasoningEffortOverride = (newVal == ParameterDefaults.reasoningEffort) ? nil : newVal
                         chat.reasoningMaxTokensOverride = nil // mutually exclusive
                         saveQuiet()
                     }
@@ -376,17 +376,17 @@ struct ParameterInspector: View {
                 .pickerStyle(.segmented)
                 .frame(width: 160)
             } label: {
-                paramLabel("Effort", isOverridden: chat.reasoningEffortOverride != nil && chat.reasoningEffortOverride != ParamDefault.reasoningEffort)
+                paramLabel("Effort", isOverridden: chat.reasoningEffortOverride != nil && chat.reasoningEffortOverride != ParameterDefaults.reasoningEffort)
             }
 
             // Reasoning Max Tokens (mutually exclusive with Effort)
             IntSliderRow(
                 title: "Rsn Tokens",
-                isOverridden: chat.reasoningMaxTokensOverride != nil && chat.reasoningMaxTokensOverride != ParamDefault.reasoningMaxTokens,
+                isOverridden: chat.reasoningMaxTokensOverride != nil && chat.reasoningMaxTokensOverride != ParameterDefaults.reasoningMaxTokens,
                 value: Binding(
-                    get: { chat.reasoningMaxTokensOverride ?? ParamDefault.reasoningMaxTokens },
+                    get: { chat.reasoningMaxTokensOverride ?? ParameterDefaults.reasoningMaxTokens },
                     set: { newVal in
-                        if newVal == ParamDefault.reasoningMaxTokens {
+                        if newVal == ParameterDefaults.reasoningMaxTokens {
                             chat.reasoningMaxTokensOverride = nil
                         } else {
                             chat.reasoningMaxTokensOverride = newVal
@@ -401,21 +401,21 @@ struct ParameterInspector: View {
             )
 
             Toggle(isOn: Binding(
-                get: { chat.effectiveReasoningExclude ?? ParamDefault.reasoningExclude },
+                get: { chat.effectiveReasoningExclude ?? ParameterDefaults.reasoningExclude },
                 set: { newVal in
-                    chat.reasoningExcludeOverride = (newVal == ParamDefault.reasoningExclude) ? nil : newVal
+                    chat.reasoningExcludeOverride = (newVal == ParameterDefaults.reasoningExclude) ? nil : newVal
                     saveQuiet()
                 }
             )) {
-                paramLabel("Exclude from Output", isOverridden: chat.reasoningExcludeOverride != nil && chat.reasoningExcludeOverride != ParamDefault.reasoningExclude)
+                paramLabel("Exclude from Output", isOverridden: chat.reasoningExcludeOverride != nil && chat.reasoningExcludeOverride != ParameterDefaults.reasoningExclude)
             }
 
             // Verbosity — segmented picker matching Effort style
             LabeledContent {
                 Picker("", selection: Binding(
-                    get: { chat.verbosityOverride ?? ParamDefault.verbosity },
+                    get: { chat.verbosityOverride ?? ParameterDefaults.verbosity },
                     set: { newVal in
-                        chat.verbosityOverride = (newVal == ParamDefault.verbosity) ? nil : newVal
+                        chat.verbosityOverride = (newVal == ParameterDefaults.verbosity) ? nil : newVal
                         saveQuiet()
                     }
                 )) {
@@ -426,7 +426,7 @@ struct ParameterInspector: View {
                 .pickerStyle(.segmented)
                 .frame(width: 160)
             } label: {
-                paramLabel("Verbosity", isOverridden: chat.verbosityOverride != nil && chat.verbosityOverride != ParamDefault.verbosity)
+                paramLabel("Verbosity", isOverridden: chat.verbosityOverride != nil && chat.verbosityOverride != ParameterDefaults.verbosity)
             }
         }
     }
