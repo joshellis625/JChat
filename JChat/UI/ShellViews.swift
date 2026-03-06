@@ -689,6 +689,7 @@ private struct MessageInspectorSheet: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .frame(width: 12, height: 12)
                             .contentTransition(.symbolEffect(.replace))
                         Text(copied ? "Copied" : "Copy")
                             .transition(.opacity)

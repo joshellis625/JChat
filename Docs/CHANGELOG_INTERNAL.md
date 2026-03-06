@@ -12,6 +12,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-06] - Cost Architecture Overhaul: /generation API + UI Fixes (Session 2)
+
+### Added
+- **`OpenRouterService`**: `GenerationStats` + `GenerationResponse` Codable structs mapping the full `GET /generation` response schema (total_cost, tokens_prompt/completion, native_tokens_*, cache_discount, upstream_inference_cost, provider_name, latency, finish_reason, streamed, cancelled)
+- **`OpenRouterService.fetchGeneration(id:apiKey:)`**: new method — calls `GET /generation?id=<genID>`, decodes stats, returns `(stats: GenerationStats, rawJSON: String)`
+- **`ConversationStore.settleGenerationStats(...)`**: called after every stream completes — fetches `/generation`, stores the raw API JSON as `rawResponseJSON` on the assistant message, then corrects chat-level token/cost totals (removes streaming estimate, adds settled values)
+
+### Changed
+- **`ConversationStore.startAssistantResponse`**: removed `capturedFinishReason`; after stream loop now calls `settleGenerationStats` instead of `buildResponseJSON`. Live streaming estimate (`CachedModel.calculateCost`) is still used during the stream for real-time display, replaced by authoritative values once `/generation` responds.
+
+### Removed
+- **`ConversationStore.buildResponseJSON`**: deleted entirely — the synthetic JSON builder is now obsolete. `rawResponseJSON` contains the real `/generation` API record.
+
+### Fixed
+- **BUG-007** (follow-up): `autoTitleModelID` now returns `google/gemini-2.0-flash-lite` — `gemini-flash-1.5-8b` was deprecated on OpenRouter causing "Title Generation Failed" errors
+- **BUG-009**: JSON inspector now shows authoritative API data — `total_cost`, native token counts, provider info, latency — instead of app-synthesized values
+- **BUG-010**: Copy button `Image(systemName: "doc.on.doc")` in `MessageInspectorSheet` now wrapped in `.frame(width: 12, height: 12)` — eliminates height mismatch vs text-only Done button
+
+### Notes
+- All changes on branch `fix/quick-wins`; build passes clean
+- The `/generation` fetch is fire-and-forget after stream end — failure is logged but silently ignored so a network blip here doesn't surface to the user
+
+---
+
 ## [2026-03-06] - Quick Wins Batch: BUG-004/005/006/007/008, FR-001/007
 
 ### Fixed

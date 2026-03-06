@@ -2,6 +2,8 @@
 
 Tracked here until migrated to GitHub Issues or Linear.
 
+**Reference links:** [Apple HIG](https://developer.apple.com/design/human-interface-guidelines) · [SwiftUI Docs](https://developer.apple.com/documentation/swiftui) · [SwiftData Docs](https://developer.apple.com/documentation/swiftdata) · [OpenRouter API Reference](https://openrouter.ai/docs/api-reference/overview) · [OpenRouter OpenAPI Spec](https://openrouter.ai/openapi.yaml) · [Local OpenAPI Spec](openapi.json)
+
 ---
 
 ## Bugs
@@ -25,12 +27,18 @@ Added `cost: Double` parameter to `buildResponseJSON(...)` in `ConversationStore
 Matched font weight (`.medium`) on the Done button label to align with the Copy button. Both buttons now share identical padding, font size, and visual weight.
 
 ### ~~BUG-007: Auto-chat-title generation is unreliable~~ ✅ Resolved 2026-03-06
-- `autoTitleModelID(for:)` now always returns `google/gemini-flash-1.5-8b` — never the chat's selected model
+- `autoTitleModelID(for:)` now always returns `google/gemini-2.0-flash-lite` — never the chat's selected model (original fix used `gemini-flash-1.5-8b` which was deprecated; corrected to `gemini-2.0-flash-lite`)
 - Rewrote the title prompt with explicit system-prompt framing, "Output ONLY the title" instruction, and clean User:/Assistant: message formatting (removed the erroneous literal `+` separators)
 - Relaxed `normalizedAutoTitle` to accept 1+ word titles (was 3+), replaced aggressive word stripping with surgical quote/markdown-character-only cleanup using unicode escapes for curly quotes
 
 ### ~~BUG-008: Selected model not persisted / reselected on app relaunch~~ ✅ Resolved 2026-03-06
 The `InlineModelPicker` binding setter in `ConversationPane` now writes the selected model ID back to `AppSettings.defaultModelID` on every pick. `ChatRepository.createNewChat` already reads this value — so new chats and post-restart sessions now inherit the last used model.
+
+### ~~BUG-009: JSON inspector cost/token data was synthesized, not from API~~ ✅ Resolved 2026-03-06
+Replaced the `buildResponseJSON` synthesis approach entirely. After each stream completes, `settleGenerationStats` calls `GET /generation?id=<genID>` on OpenRouter and stores the raw API response as `rawResponseJSON`. This gives the inspector the actual settled record: `total_cost`, `tokens_prompt`, `tokens_completion`, `native_tokens_*`, `cache_discount`, `upstream_inference_cost`, `provider_name`, `latency`, `finish_reason`, etc. — all directly from OpenRouter. The `buildResponseJSON` method in `ConversationStore` and the `GenerationStats`/`GenerationResponse` structs + `fetchGeneration` method were added to `OpenRouterService`.
+
+### ~~BUG-010: Copy button in JSON inspector was taller than Done button~~ ✅ Resolved 2026-03-06
+The `doc.on.doc` SF Symbol has a taller natural bounding box than the text-only Done button. Added `.frame(width: 12, height: 12)` to the `Image` view in `MessageInspectorSheet`'s Copy button label — caps the icon's layout footprint so both buttons share identical height.
 
 ---
 
@@ -174,4 +182,4 @@ The data layer is already in place — `Character` model, `Chat.character` relat
 | **FR** | Feature request or enhancement |
 | **Severity/Priority** | High > Medium > Low |
 
-*Last updated: 2026-03-06*
+*Last updated: 2026-03-06 (session 2)*

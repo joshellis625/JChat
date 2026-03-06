@@ -240,6 +240,36 @@ actor OpenRouterService {
         }
     }
 
+    // MARK: - Generation Stats API Types
+
+    /// Settled generation record from GET /generation.
+    /// This is the authoritative source for cost and token counts — preferred over
+    /// local CachedModel price estimation because it reflects actual provider billing,
+    /// cache discounts, and native token counts.
+    struct GenerationStats: Codable, Sendable {
+        let id: String?
+        let model: String?
+        let total_cost: Double?
+        let tokens_prompt: Int?
+        let tokens_completion: Int?
+        let native_tokens_prompt: Int?
+        let native_tokens_completion: Int?
+        let native_tokens_reasoning: Int?
+        let native_tokens_cached: Int?
+        let cache_discount: Double?
+        let upstream_inference_cost: Double?
+        let provider_name: String?
+        let latency: Int?
+        let generation_time: Int?
+        let finish_reason: String?
+        let streamed: Bool?
+        let cancelled: Bool?
+    }
+
+    struct GenerationResponse: Codable, Sendable {
+        let data: GenerationStats?
+    }
+
     // MARK: - Model Fetching
 
     func fetchModels(apiKey: String) async throws -> [OpenRouterModel] {
@@ -327,6 +357,39 @@ actor OpenRouterService {
         let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
         try throwIfNotSuccess(httpResponse: httpResponse, data: data)
         return try JSONDecoder().decode(CreditsResponse.self, from: data)
+    }
+
+    // MARK: - Generation Stats Fetch
+
+    /// Fetches the settled generation record for a given generation ID.
+    ///
+    /// The `/generation` endpoint returns authoritative cost and token counts after
+    /// the provider has finalized billing — including cache discounts, native token counts,
+    /// and the exact `total_cost` in USD. This is preferred over local price estimation.
+    ///
+    /// Returns a tuple of the decoded `GenerationStats` and the raw pretty-printed JSON
+    /// string so callers can store the full record for display in the JSON inspector.
+    func fetchGeneration(id: String, apiKey: String) async throws -> (stats: GenerationStats, rawJSON: String) {
+        guard let url = URL(string: "\(baseURL)/generation?id=\(id)") else {
+            throw JChatError.serverError(statusCode: 0, message: "Invalid generation URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("JChat/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("JChat", forHTTPHeaderField: "X-Title")
+
+        let (data, httpResponse) = try await performDataRequest(request: request, retryPolicy: nil)
+        try throwIfNotSuccess(httpResponse: httpResponse, data: data)
+
+        let response = try JSONDecoder().decode(GenerationResponse.self, from: data)
+        guard let stats = response.data else {
+            throw JChatError.decodingError("Generation response contained no data")
+        }
+
+        let rawJSON = Self.prettyJSON(from: data, fallback: String(data: data, encoding: .utf8) ?? "{}")
+        return (stats: stats, rawJSON: rawJSON)
     }
 
     // MARK: - Non-Streaming Message Send

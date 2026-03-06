@@ -296,9 +296,6 @@ final class ConversationStore {
         streamingTask = Task { @MainActor in
             var accumulator = StreamTextAccumulator()
             var renderedContent = ""
-            // Accumulated from the stream to build the response JSON inspector data.
-            // OpenRouter doesn't store messages, so this is our only record of what the API returned.
-            var capturedFinishReason: String?
             var capturedGenerationID: String?
 
             // Appends flushed text to renderedContent and updates the live streaming view
@@ -318,24 +315,28 @@ final class ConversationStore {
                     case let .delta(text):
                         applyFlushed(accumulator.append(text))
                     case let .usage(promptTokens, completionTokens, rawJSON):
+                        // Store the raw SSE usage chunk. This is the streaming token count —
+                        // it will be superseded by the /generation fetch below once the stream ends.
                         assistantMessage.rawUsageJSON = rawJSON
-                        let previousPromptTokens = assistantMessage.promptTokens
-                        let previousCompletionTokens = assistantMessage.completionTokens
-                        let previousCost = assistantMessage.cost
+                        let prevPrompt = assistantMessage.promptTokens
+                        let prevCompletion = assistantMessage.completionTokens
+                        let prevCost = assistantMessage.cost
 
                         assistantMessage.promptTokens = promptTokens
                         assistantMessage.completionTokens = completionTokens
 
-                        var updatedCost = previousCost
+                        // Use CachedModel pricing as a live estimate during streaming.
+                        // This will be replaced with the authoritative /generation cost after the stream.
+                        var estimatedCost = prevCost
                         let modelDescriptor = FetchDescriptor<CachedModel>(predicate: #Predicate { $0.id == modelID })
                         if let cachedModel = try? context.fetch(modelDescriptor).first {
-                            updatedCost = cachedModel.calculateCost(promptTokens: promptTokens, completionTokens: completionTokens)
+                            estimatedCost = cachedModel.calculateCost(promptTokens: promptTokens, completionTokens: completionTokens)
                         }
-                        assistantMessage.cost = updatedCost
+                        assistantMessage.cost = estimatedCost
 
-                        let promptDelta = promptTokens - previousPromptTokens
-                        let completionDelta = completionTokens - previousCompletionTokens
-                        let costDelta = updatedCost - previousCost
+                        let promptDelta = promptTokens - prevPrompt
+                        let completionDelta = completionTokens - prevCompletion
+                        let costDelta = estimatedCost - prevCost
 
                         if promptDelta > 0 || completionDelta > 0 || costDelta > 0 {
                             chat.addUsage(
@@ -354,26 +355,30 @@ final class ConversationStore {
                         assistantMessage.modelID = id
                     case let .generationID(id):
                         capturedGenerationID = id
-                    case let .finishReason(reason):
-                        capturedFinishReason = reason
+                    case let .finishReason(_):
+                        break // finish reason is captured in the /generation response
                     case .done:
                         break
                     }
                 }
 
                 applyFlushed(accumulator.flush())
-
                 assistantMessage.content = renderedContent
-                assistantMessage.rawResponseJSON = buildResponseJSON(
-                    generationID: capturedGenerationID,
-                    model: assistantMessage.modelID ?? modelID,
-                    finishReason: capturedFinishReason ?? "stop",
-                    content: renderedContent,
-                    promptTokens: assistantMessage.promptTokens,
-                    completionTokens: assistantMessage.completionTokens,
-                    rawUsageJSON: assistantMessage.rawUsageJSON
-                )
                 try repository.save(context: context)
+
+                // Settle cost and token counts from the authoritative /generation endpoint.
+                // This replaces the streaming estimate with the exact billed values,
+                // and stores the raw /generation JSON as the inspector record.
+                if let genID = capturedGenerationID {
+                    await settleGenerationStats(
+                        generationID: genID,
+                        assistantMessage: assistantMessage,
+                        chat: chat,
+                        apiKey: apiKey,
+                        context: context
+                    )
+                }
+
                 await generateAutoTitleIfNeeded(for: chat, apiKey: apiKey, context: context)
             } catch is CancellationError {
                 applyFlushed(accumulator.flush())
@@ -407,6 +412,61 @@ final class ConversationStore {
             if activeStreamingSessionID == nil {
                 streamingTask = nil
             }
+        }
+    }
+
+    /// Fetches the settled generation record from OpenRouter's /generation endpoint and
+    /// replaces the streaming estimate with authoritative cost and token counts.
+    ///
+    /// - The raw /generation JSON becomes the message's `rawResponseJSON` for the inspector.
+    /// - Chat-level totals are corrected: the streaming estimate is removed and the real values added.
+    /// - Silently skips on error so a network failure here doesn't surface to the user.
+    private func settleGenerationStats(
+        generationID: String,
+        assistantMessage: Message,
+        chat: Chat,
+        apiKey: String,
+        context: ModelContext
+    ) async {
+        do {
+            let (stats, rawJSON) = try await OpenRouterService.shared.fetchGeneration(
+                id: generationID,
+                apiKey: apiKey
+            )
+
+            // Store the raw /generation JSON as the response inspector record.
+            // This is the definitive API record — actual billed tokens, cost, provider, latency.
+            assistantMessage.rawResponseJSON = rawJSON
+
+            // Settle token counts if the API provides them (prefer native tokens from provider).
+            let settledPrompt = stats.tokens_prompt ?? assistantMessage.promptTokens
+            let settledCompletion = stats.tokens_completion ?? assistantMessage.completionTokens
+            let settledCost = stats.total_cost ?? assistantMessage.cost
+
+            // Remove the streaming estimate from chat totals, add the settled values.
+            chat.removeUsage(
+                promptTokens: assistantMessage.promptTokens,
+                completionTokens: assistantMessage.completionTokens,
+                cost: assistantMessage.cost
+            )
+            assistantMessage.promptTokens = settledPrompt
+            assistantMessage.completionTokens = settledCompletion
+            assistantMessage.cost = settledCost
+            chat.addUsage(
+                promptTokens: settledPrompt,
+                completionTokens: settledCompletion,
+                cost: settledCost
+            )
+
+            do {
+                try repository.save(context: context)
+            } catch {
+                print("[ConversationStore] Save after generation settle failed: \(error)")
+            }
+            print("[ConversationStore] Generation settled: \(generationID) — \(settledPrompt)p/\(settledCompletion)c tokens, $\(settledCost)")
+        } catch {
+            // Non-fatal: streaming data is already saved. The inspector will show rawUsageJSON as fallback.
+            print("[ConversationStore] /generation fetch failed for \(generationID): \(error)")
         }
     }
 
@@ -517,57 +577,6 @@ final class ConversationStore {
 
         guard !words.isEmpty else { return nil }
         return words.prefix(5).joined(separator: " ")
-    }
-
-    /// Reconstructs an OpenRouter-compatible chat completion response object.
-    ///
-    /// Because OpenRouter does not store user or assistant messages, this
-    /// synthetic JSON is the only persistent record of what the API returned.
-    /// The structure follows the ``ChatResponse`` schema from the OpenRouter
-    /// OpenAPI spec (``object: "chat.completion"``).
-    private func buildResponseJSON(
-        generationID: String?,
-        model: String,
-        finishReason: String,
-        content: String,
-        promptTokens: Int,
-        completionTokens: Int,
-        rawUsageJSON: String?
-    ) -> String? {
-        var responseDict: [String: Any] = [
-            "id": generationID ?? "unknown",
-            "object": "chat.completion",
-            "created": Int(Date().timeIntervalSince1970),
-            "model": model,
-            "choices": [[
-                "index": 0,
-                "message": [
-                    "role": "assistant",
-                    "content": content
-                ],
-                "finish_reason": finishReason
-            ]],
-            "usage": [
-                "prompt_tokens": promptTokens,
-                "completion_tokens": completionTokens,
-                "total_tokens": promptTokens + completionTokens
-            ]
-        ]
-
-        // Embed the raw usage chunk from OpenRouter's API exactly as received.
-        // This preserves the native cost, token detail, and any provider-specific fields.
-        if let rawUsageJSON,
-           let rawUsageData = rawUsageJSON.data(using: .utf8),
-           let rawUsageObject = try? JSONSerialization.jsonObject(with: rawUsageData) {
-            responseDict["openrouter_usage_raw"] = rawUsageObject
-        }
-
-        guard let data = try? JSONSerialization.data(
-            withJSONObject: responseDict,
-            options: [.prettyPrinted, .sortedKeys]
-        ) else { return nil }
-
-        return String(data: data, encoding: .utf8)
     }
 
     private func shouldAttemptTitleGeneration(basedOn title: String) -> Bool {

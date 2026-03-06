@@ -11,6 +11,33 @@ Current direction:
 - UI: native SwiftUI, Liquid Glass/material surfaces, SF Symbols.
 - Source of truth for UI standards: [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui) and Apple HIG.
 
+## Reference Links
+
+### Apple Developer Documentation
+| Resource | URL |
+|----------|-----|
+| SwiftUI Documentation | https://developer.apple.com/documentation/swiftui |
+| SwiftData Documentation | https://developer.apple.com/documentation/swiftdata |
+| Human Interface Guidelines (HIG) | https://developer.apple.com/design/human-interface-guidelines |
+| HIG — macOS Patterns | https://developer.apple.com/design/human-interface-guidelines/designing-for-macos |
+| HIG — Toolbars | https://developer.apple.com/design/human-interface-guidelines/toolbars |
+| HIG — Sheets | https://developer.apple.com/design/human-interface-guidelines/sheets |
+| SF Symbols Browser | https://developer.apple.com/sf-symbols |
+| Foundation (Keychain, URLSession) | https://developer.apple.com/documentation/foundation |
+| Security / Keychain Services | https://developer.apple.com/documentation/security/keychain_services |
+| Swift Concurrency (async/await) | https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency |
+
+### OpenRouter API
+| Resource | URL |
+|----------|-----|
+| OpenRouter API Reference | https://openrouter.ai/docs/api-reference/overview |
+| OpenAPI Spec (YAML) | https://openrouter.ai/openapi.yaml |
+| OpenAPI Spec (local copy) | `Docs/openapi.json` |
+| Chat Completions endpoint | https://openrouter.ai/docs/api-reference/chat-completion |
+| Generation Stats endpoint (`GET /generation`) | https://openrouter.ai/docs/api-reference/get-a-generation |
+| Streaming (SSE) | https://openrouter.ai/docs/api-reference/streaming |
+| Models list | https://openrouter.ai/models |
+
 ## Runtime Architecture
 - UI shell: `NavigationSplitView` with `SidebarView` + `ConversationPane`
 - State owner: `ConversationStore`

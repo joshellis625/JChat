@@ -64,3 +64,19 @@ git push origin --delete feature/<topic>
 No CI. Local validation is the quality gate. No PR flow.
 
 Validation commands: `Docs/PROJECT_GUIDE.md`
+
+---
+
+## Reference Links
+
+See `Docs/PROJECT_GUIDE.md` for the full reference table. Quick links:
+
+| Resource | URL |
+|----------|-----|
+| Apple HIG | https://developer.apple.com/design/human-interface-guidelines |
+| SwiftUI Docs | https://developer.apple.com/documentation/swiftui |
+| SwiftData Docs | https://developer.apple.com/documentation/swiftdata |
+| OpenRouter API Reference | https://openrouter.ai/docs/api-reference/overview |
+| OpenAPI Spec (YAML) | https://openrouter.ai/openapi.yaml |
+| OpenAPI Spec (local copy) | `Docs/openapi.json` |
+| Conventional Commits | https://www.conventionalcommits.org |
