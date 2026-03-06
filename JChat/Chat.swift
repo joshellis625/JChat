@@ -6,6 +6,8 @@
 import Foundation
 import SwiftData
 
+/// A SwiftData model representing a single conversation, including messages,
+/// model selection, per-chat generation overrides, and aggregated usage totals.
 @Model
 final class Chat {
     @Attribute(.unique) var id: UUID
@@ -57,6 +59,10 @@ final class Chat {
         messages.sorted { $0.timestamp < $1.timestamp }
     }
 
+    /// Resolves per-chat generation settings into effective values.
+    ///
+    /// Each computed property in this section prefers the chat-level override and
+    /// falls back to the app's default value when no override is set.
     // MARK: - Effective Parameter Resolution (chat override → global default)
 
     var effectiveTemperature: Double { temperatureOverride ?? 1.0 }
@@ -114,6 +120,10 @@ final class Chat {
         verbosityOverride = nil
     }
 
+    /// Groups computed values that summarize how many parameter overrides are currently set.
+    ///
+    /// This section includes both raw override counts and counts that only include overrides
+    /// that differ from default values.
     // MARK: - Overrides Summary
 
     var overrideCount: Int {
@@ -158,6 +168,12 @@ final class Chat {
 
     // MARK: - Usage Totals
 
+    /// Adds a message's usage metrics to the chat-level running totals.
+    ///
+    /// - Parameters:
+    ///   - promptTokens: Number of prompt/input tokens consumed.
+    ///   - completionTokens: Number of completion/output tokens generated.
+    ///   - cost: Monetary cost to add for this usage event.
     func addUsage(promptTokens: Int, completionTokens: Int, cost: Double) {
         totalPromptTokens += promptTokens
         totalCompletionTokens += completionTokens

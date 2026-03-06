@@ -1,19 +1,66 @@
-# JChat Claude Compatibility Notes
+# WhisperQuill — Claude Code Context
 
-Canonical project documentation moved to:
-- `/Users/josh/Projects/JChat/Docs/PROJECT_GUIDE.md`
+WhisperQuill is a native SwiftUI chat app for macOS that connects to OpenRouter. Solo hobby project.
 
-UI source of truth:
-- [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui)
-- Follow current Apple HIG behavior, prefer Liquid Glass/material surfaces, and use SF Symbols.
+## Canonical Docs
 
-Workflow standards moved to:
-- `/Users/josh/Projects/JChat/CONTRIBUTING.md`
+| Doc | Contents |
+|-----|----------|
+| `Docs/PROJECT_GUIDE.md` | Architecture, build environment, xcodebuildmcp defaults, validation, regression checklist, roadmap |
+| `CONTRIBUTING.md` | Git workflow, branching rules, commit style, definition of done |
+| `Docs/KNOWN_ISSUES.md` | Active bugs and feature requests |
+| `Docs/CHANGELOG_INTERNAL.md` | Session-by-session history of changes and decisions |
 
-Xcode task policy:
-- Use `xcodebuildmcp` for all Xcode tasks in this repo; do not use raw `xcodebuild`.
+**Read `Docs/PROJECT_GUIDE.md` first** — it is the single source of truth for how this project is built and run.
 
-Multi-agent usage policy (Codex vs Plan mode vs OpenSpec) is defined in:
-- `/Users/josh/Projects/JChat/CONTRIBUTING.md`
+---
 
-Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+## AI Tool Policy
+
+### Always Use
+- **xcodebuildmcp** for all Xcode tasks — never raw `xcodebuild`
+- **Context7 MCP** for library/API documentation, code generation, setup steps — proactively, without being asked
+- **MCP Codriver** (`mcp__codriver__desktop_screenshot`) for UI validation and regression screenshots
+
+### Mode Selection Guide
+| Situation | Use |
+|-----------|-----|
+| Small, low-risk tweak | Direct (just do it) |
+| Multiple valid approaches or unclear path | Plan mode first, then execute |
+| Behavior, state flow, cost/accounting, or user-facing UX changing | OpenSpec before coding |
+| Uncertain scope | Start direct; escalate to Plan or OpenSpec only if scope grows |
+
+---
+
+## Multi-Agent File Boundaries
+
+Each AI tool has its own config directory. Do not cross-pollinate:
+
+| Directory | Owner |
+|-----------|-------|
+| `.claude/` | Claude Code config only |
+| `.codex/` | Codex config only |
+| `.gemini/` | Gemini config only |
+| `Docs/` | Shared human-readable project docs (universal) |
+
+**Rules:**
+- One canonical policy per topic; reference it, don't copy it
+- If two docs conflict, update the canonical source first, then update references
+
+---
+
+## End-of-Session Changelog Policy
+
+At the end of every session that involves code or doc changes, update `Docs/CHANGELOG_INTERNAL.md` automatically using Keep a Changelog format:
+
+```markdown
+## [YYYY-MM-DD] - Session Title
+
+### Added
+### Changed
+### Fixed
+### Removed
+### Notes
+```
+
+Omit empty sections. Keep entries short and scannable.

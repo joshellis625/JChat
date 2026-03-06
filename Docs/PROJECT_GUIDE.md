@@ -3,33 +3,32 @@
 This is the single source of truth for architecture, workflow, validation, and active direction.
 
 ## Product Overview
-JChat is a native SwiftUI chat app that uses OpenRouter.
+WhisperQuill is a native SwiftUI chat app for macOS that connects to OpenRouter.
 
 Current direction:
-- V2 conversation UI is the default experience.
 - Stability and responsiveness are prioritized over feature breadth.
 - macOS (`arm64`) is the primary daily target.
+- UI: native SwiftUI, Liquid Glass/material surfaces, SF Symbols.
+- Source of truth for UI standards: [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui) and Apple HIG.
 
-## UI Standards
-- Source of truth: [Apple SwiftUI Documentation](https://developer.apple.com/documentation/swiftui) and current Apple HIG behavior.
-- Prefer native SwiftUI controls, Liquid Glass/material surfaces, and SF Symbols.
-
-## Runtime Architecture (V2)
-- UI shell: `NavigationSplitView` with `V2SidebarView` + `V2ConversationPane`.
-- State owner: `ConversationStore`.
-- Persistence: `ChatRepositoryProtocol` + `SwiftDataChatRepository`.
-- Engine: `ChatEngineProtocol` + `OpenRouterChatEngine`.
-- Networking: `OpenRouterService` unified on `ModelCallRequest` (send + stream).
+## Runtime Architecture
+- UI shell: `NavigationSplitView` with `SidebarView` + `ConversationPane`
+- State owner: `ConversationStore`
+- Persistence: `ChatRepositoryProtocol` + `SwiftDataChatRepository`
+- Engine: `ChatEngineProtocol` + `OpenRouterChatEngine`
+- Networking: `OpenRouterService` unified on `ModelCallRequest` (send + stream)
+- Design system: `AppPalette` color tokens in `UI/Design/AppDesign.swift`; chrome/controls use native `.glassEffect(in:)` and `.buttonStyle(.glass)` directly
 
 Primary files:
-- `/Users/josh/Projects/JChat/JChat/Views/ContentView.swift`
-- `/Users/josh/Projects/JChat/JChat/V2/UI/V2ShellViews.swift`
-- `/Users/josh/Projects/JChat/JChat/V2/Design/V2Design.swift`
-- `/Users/josh/Projects/JChat/JChat/Core/Conversation/ConversationStore.swift`
-- `/Users/josh/Projects/JChat/JChat/Core/Conversation/ChatEngine.swift`
-- `/Users/josh/Projects/JChat/JChat/Core/Conversation/ChatRepository.swift`
-- `/Users/josh/Projects/JChat/JChat/Services/OpenRouterService.swift`
-- `/Users/josh/Projects/JChat/JChat/Chat.swift`
+- `JChat/Views/ContentView.swift`
+- `JChat/UI/ShellViews.swift`
+- `JChat/UI/Design/AppDesign.swift`
+- `JChat/UI/ParameterInspector.swift`
+- `JChat/Core/Conversation/ConversationStore.swift`
+- `JChat/Core/Conversation/ChatEngine.swift`
+- `JChat/Core/Conversation/ChatRepository.swift`
+- `JChat/Services/OpenRouterService.swift`
+- `JChat/Chat.swift`
 
 ## Behavioral Rules
 - Parameter precedence: chat override -> global settings fallback.
@@ -38,55 +37,76 @@ Primary files:
 - Message delete/regenerate does not refund usage totals.
 - Markdown rendering is intentionally disabled in current stability mode (plain text transcript rows).
 
-## XcodeBuildMCP Defaults (Set Once)
-Use `xcodebuildmcp` for all Xcode tasks in this repo. Do not use raw `xcodebuild`.
+## Build Environment
+- **macOS:** 26.3 Stable
+- **Xcode:** 26.3 RC2 (not 26.4 Beta 2 — risk of breaking changes)
+- **Target:** arm64 ONLY (no Intel, no simulators)
+- **Destination:** "Any Mac - arm64 only" or "My Mac - arm64"
+- **Signing:** Auto-signed by Xcode (Apple Developer account registered)
+- **Persistence:** SwiftData + Keychain (`com.josh.jchat` / `openrouter-api-key`)
 
-Canonical defaults schema:
+## XcodeBuildMCP Defaults (Required — Set Once per Session)
+Use `xcodebuildmcp` for all Xcode tasks. Do not use raw `xcodebuild`.
+
+**Canonical defaults schema:**
 ```json
 {
-  "projectPath": "/Users/josh/Projects/JChat/JChat.xcodeproj",
+  "projectPath": "/Users/josh/Projects/JChat/WhisperQuill.xcodeproj",
+  "scheme": "WhisperQuill",
   "configuration": "Debug",
   "arch": "arm64",
   "platform": "macOS"
 }
 ```
 
-Suggested one-time setup:
-```text
+**One-time setup command:**
+```
 session-set-defaults {
-  "projectPath": "/Users/josh/Projects/JChat/JChat.xcodeproj",
+  "projectPath": "/Users/josh/Projects/JChat/WhisperQuill.xcodeproj",
+  "scheme": "WhisperQuill",
   "configuration": "Debug",
   "arch": "arm64",
   "platform": "macOS"
 }
-session-set-defaults { "scheme": "JChat" }
 ```
 
-Hint: Save a default with `session-set-defaults { projectPath: '...' }` or `{ workspacePath: '...' }`.
-JChat hint: Consider saving a default scheme with `session-set-defaults { scheme: "JChat" }` to avoid repeating it.
-
-Notes:
-- If you open a workspace, use `workspacePath` instead of `projectPath`.
-- Do not re-set these defaults every new chat thread.
+**Notes:**
+- Set defaults once per session — they persist within the session
+- No simulators; macOS arm64 only
 
 ## Validation Commands
-Fast default:
+
+**Always clean before build** to avoid stale artifacts.
+
+**Clean + build (fast iteration):**
 ```bash
-xcodebuildmcp macos clean --platform macOS --output text
+xcodebuildmcp macos clean --platform macOS
 xcodebuildmcp macos build --output text
 ```
 
-Launch/stop sanity check:
+**Launch/stop sanity check:**
 ```bash
-xcodebuildmcp macos clean --platform macOS --output text
+xcodebuildmcp macos clean --platform macOS
 xcodebuildmcp macos build-and-run --output text
-xcodebuildmcp macos stop --app-name JChat --output text
+xcodebuildmcp macos stop --app-name WhisperQuill --output text
 ```
 
-Full suite checkpoint:
+**Run app (attach to running process):**
+```bash
+xcodebuildmcp macos run --output text
+```
+
+**Full test suite:**
 ```bash
 xcodebuildmcp macos test --output text
 ```
+
+**Screenshotting:**
+Use the MCP Codriver to take screenshots of the running app:
+```bash
+mcp__codriver__desktop_screenshot
+```
+Useful for UI validation and regression testing.
 
 ## Regression Checklist
 Run before shipping behavior-affecting changes (chat/streaming/layout/persistence):
@@ -99,12 +119,6 @@ Run before shipping behavior-affecting changes (chat/streaming/layout/persistenc
 - Setup guardrails still work (missing API key vs configured key).
 - Persistence works after restart (chats/settings/key access).
 - Update `/Users/josh/Projects/JChat/Docs/CHANGELOG_INTERNAL.md` for behavior changes.
-
-## Workflow Rules
-- Code changes: `codex/<topic>` branch.
-- Docs-only changes: direct to `main` allowed.
-- Push only with explicit approval.
-- No PR flow and no CI gate for this solo workflow.
 
 ## Roadmap (Current)
 Priority order:

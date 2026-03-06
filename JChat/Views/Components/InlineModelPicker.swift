@@ -24,35 +24,24 @@ struct InlineModelPicker: View {
         Button {
             showingPopover = true
         } label: {
-            HStack(spacing: 7) {
+            HStack(spacing: 6) {
                 Image(systemName: "cpu")
-                    .font(.system(size: TextSizeConfig.scaled(13, base: textBaseSize), weight: .semibold))
+                    .font(.system(size: TextSizeConfig.scaled(12, base: textBaseSize), weight: .semibold))
                     .foregroundStyle(.secondary)
 
                 Text(selectedModelName)
-                    .font(.system(size: TextSizeConfig.scaled(15, base: textBaseSize), weight: .semibold, design: .rounded))
+                    .font(.system(size: TextSizeConfig.scaled(14, base: textBaseSize), weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
                     .fixedSize(horizontal: true, vertical: false)
-                    .minimumScaleFactor(0.85)
-                    .allowsTightening(true)
+                    .lineLimit(1)
 
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: TextSizeConfig.scaled(10, base: textBaseSize), weight: .semibold))
+                    .font(.system(size: TextSizeConfig.scaled(9, base: textBaseSize), weight: .semibold))
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 9)
-            .padding(.vertical, 7)
-            .frame(width: preferredInlineWidth, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(.thinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .stroke(Color.primary.opacity(0.12), lineWidth: 1)
-            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.glass)
+        .controlSize(.small)
         .popover(isPresented: $showingPopover) {
             pickerPopover
         }
@@ -64,22 +53,6 @@ struct InlineModelPicker: View {
     private var selectedModelName: String {
         guard let id = selectedModelID else { return "Select Model" }
         return ModelNaming.displayName(forModelID: id, namesByID: modelNamesByID)
-    }
-
-    private var preferredInlineWidth: CGFloat {
-        let estimated = measuredSelectedModelNameWidth + 52
-        return max(estimated, 120)
-    }
-
-    private var measuredSelectedModelNameWidth: CGFloat {
-        let fontSize = TextSizeConfig.scaled(15, base: textBaseSize)
-        #if os(macOS)
-            let font = NSFont.systemFont(ofSize: fontSize, weight: .semibold)
-            let width = (selectedModelName as NSString).size(withAttributes: [.font: font]).width
-            return ceil(width)
-        #else
-            return CGFloat(selectedModelName.count) * (fontSize * 0.6)
-        #endif
     }
 
     private var modelNamesByID: [String: String] {

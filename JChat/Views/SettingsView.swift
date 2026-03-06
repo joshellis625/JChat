@@ -35,68 +35,37 @@ struct SettingsView: View {
                     SecureField("OpenRouter API Key", text: $apiKey)
                         .textFieldStyle(.roundedBorder)
 
-                    HStack {
-                        Text("Stored securely in your keychain.")
+                    HStack(alignment: .center, spacing: 10) {
+                        if keyValidationMessage != nil || lastRequestInfo != nil {
+                            KeyValidationStatusView(
+                                message: keyValidationMessage,
+                                details: keyValidationDetails,
+                                credits: creditsBalance,
+                                requestInfo: lastRequestInfo
+                            )
+                            .transition(
+                                .opacity.combined(with: .move(edge: .leading))
+                            )
+                        }
+
                         Spacer()
+
                         if isValidatingKey {
                             ProgressView()
-                                .scaleEffect(0.6)
+                                .scaleEffect(0.7)
                         } else {
                             Button("Validate") {
                                 Task { await validateKey() }
                             }
-                            .appFont(.caption)
+                            .buttonStyle(.glass)
                             .disabled(apiKey.isEmpty)
                         }
                     }
-
-                    // TODO: - Make keyValidationMessage and creditsBalance look prettier and have a cleaner presentation, be creative.
-                    if let message = keyValidationMessage {
-                        Text(message)
-                            .bold()
-                            .foregroundStyle(message.contains("Valid") ? .green : .red)
-                    }
-
-                    if let details = keyValidationDetails {
-                        Text(details)
-                    }
-
-                    if let credits = creditsBalance {
-                        Text("Credits: \(credits)")
-                            .appFont(.footnote)
-                            .bold()
-                            .foregroundStyle(.green)
-                    }
-
-                    if let requestInfo = lastRequestInfo {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(alignment: .firstTextBaseline, spacing: 0) {
-                                Text("Endpoint: ")
-                                    .appFont(.footnote)
-                                    .bold()
-                                Text(requestInfo.endpoint)
-                                    .appFont(.footnote, design: .monospaced)
-                            }
-                            HStack(alignment: .firstTextBaseline, spacing: 0) {
-                                Text("Status: ")
-                                    .appFont(.footnote)
-                                    .bold()
-                                if case requestInfo.statusCode = 200 {
-                                    Text(requestInfo.statusText)
-                                        .foregroundStyle(.green)
-                                }
-                            }
-                        }
-                        if let errorBody = requestInfo.errorBody, !errorBody.isEmpty {
-                            Text("Error: \(errorBody)")
-                                .appFont(.footnote)
-                                .foregroundStyle(.red)
-                        }
-                    }
-                }
-            header: {
+                } header: {
                     Text("API Configuration")
-                        .bold()
+                } footer: {
+                    Text("Your API key is stored securely in the system keychain and never leaves your device.")
+                        .appFont(.caption2)
                 }
 
                 // MARK: - Defaults
@@ -131,18 +100,21 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
+            .animation(.easeOut(duration: 0.2), value: keyValidationMessage)
             .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .buttonStyle(.glass)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         saveSettings()
                         dismiss()
                     }
+                    .buttonStyle(.glassProminent)
                 }
             }
         }
@@ -270,7 +242,96 @@ private struct RequestInfo: Sendable {
     }
 }
 
-#Preview {
+// MARK: - Validation status card
+
+private struct KeyValidationStatusView: View {
+    let message: String?
+    let details: String?
+    let credits: String?
+    let requestInfo: RequestInfo?
+
+    private var isValid: Bool {
+        message?.contains("Valid") == true
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            // Status icon
+            Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(isValid ? Color.green : Color.red)
+
+            VStack(alignment: .leading, spacing: 4) {
+                // Primary status line
+                HStack(spacing: 8) {
+                    Text(isValid ? "Valid API Key" : (message ?? "Validation Failed"))
+                        .appFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(isValid ? Color.green : Color.red)
+
+                    // Inline chips for model count and credits on success
+                    if isValid {
+                        if let details, details.contains("Models available:") {
+                            let count = details.replacingOccurrences(of: "Models available: ", with: "")
+                            StatChip(label: "\(count) models", color: .secondary)
+                        }
+                        if let credits {
+                            StatChip(label: credits, color: .green)
+                                .transition(.opacity)
+                                .animation(.easeOut(duration: 0.15), value: credits)
+                        }
+                    }
+                }
+
+                // Failure detail: show error message and debug info
+                if !isValid {
+                    if let details, !details.isEmpty {
+                        Text(details)
+                            .appFont(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let info = requestInfo {
+                        HStack(spacing: 4) {
+                            Text(info.endpoint)
+                                .appFont(.caption2, design: .monospaced)
+                                .foregroundStyle(.tertiary)
+                            Text("·")
+                                .appFont(.caption2)
+                                .foregroundStyle(.tertiary)
+                            Text(info.statusText)
+                                .appFont(.caption2, design: .monospaced)
+                                .foregroundStyle(info.statusCode == 200 ? .green : .red)
+                        }
+                        if let errorBody = info.errorBody, !errorBody.isEmpty {
+                            Text(errorBody)
+                                .appFont(.caption2)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct StatChip: View {
+    let label: String
+    let color: Color
+
+    var body: some View {
+        Text(label)
+            .appFont(.caption, weight: .semibold)
+            .foregroundStyle(color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(color.opacity(0.12))
+            .clipShape(Capsule())
+    }
+}
+
+#Preview (traits: PreviewTrait(.fixedLayout(width: 450, height: 500))) {
     SettingsView()
         .modelContainer(for: [Chat.self, Message.self, AppSettings.self, Character.self, CachedModel.self], inMemory: true)
 }
