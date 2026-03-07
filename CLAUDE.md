@@ -14,6 +14,12 @@ WhisperQuill is a native SwiftUI chat app for macOS that connects to OpenRouter.
 
 ---
 
+## Reference Docs Policy
+
+Before writing any SwiftUI, UI layout, or HIG-related code — consult the Apple HIG and SwiftUI links in `Docs/PROJECT_GUIDE.md` (Reference Links section). Before writing any OpenRouter API code — consult `Docs/openapi.json` (local copy) or the OpenRouter API Reference link in PROJECT_GUIDE. Do not guess at API shapes or UI conventions; check the source.
+
+---
+
 ## AI Tool Policy
 
 ### Always Use
