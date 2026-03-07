@@ -2,7 +2,7 @@
 
 Tracked here until migrated to GitHub Issues or Linear.
 
-**Reference links:** [Apple HIG](https://developer.apple.com/design/human-interface-guidelines) · [SwiftUI Docs](https://developer.apple.com/documentation/swiftui) · [SwiftData Docs](https://developer.apple.com/documentation/swiftdata) · [OpenRouter API Reference](https://openrouter.ai/docs/api-reference/overview) · [OpenRouter OpenAPI Spec](https://openrouter.ai/openapi.yaml) · [Local OpenAPI Spec](openapi.json)
+**Reference links:** see `Docs/PROJECT_GUIDE.md` — Reference Links section.
 
 ---
 

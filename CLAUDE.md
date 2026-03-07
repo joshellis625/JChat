@@ -6,8 +6,7 @@ WhisperQuill is a native SwiftUI chat app for macOS that connects to OpenRouter.
 
 | Doc | Contents |
 |-----|----------|
-| `Docs/PROJECT_GUIDE.md` | Architecture, build environment, xcodebuildmcp defaults, validation, regression checklist, roadmap |
-| `CONTRIBUTING.md` | Git workflow, branching rules, commit style, definition of done |
+| `Docs/PROJECT_GUIDE.md` | Architecture, build environment, xcodebuildmcp defaults, validation, regression checklist, git workflow, reference links |
 | `Docs/KNOWN_ISSUES.md` | Active bugs and feature requests |
 | `Docs/CHANGELOG_INTERNAL.md` | Session-by-session history of changes and decisions |
 

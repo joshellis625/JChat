@@ -77,18 +77,7 @@ Primary files (paths relative to repo root, as seen in Xcode project navigator u
 ## XcodeBuildMCP Defaults (Required — Set Once per Session)
 Use `xcodebuildmcp` for all Xcode tasks. Do not use raw `xcodebuild`.
 
-**Canonical defaults schema:**
-```json
-{
-  "projectPath": "/Users/josh/Projects/JChat/WhisperQuill.xcodeproj",
-  "scheme": "WhisperQuill",
-  "configuration": "Debug",
-  "arch": "arm64",
-  "platform": "macOS"
-}
-```
-
-**One-time setup command:**
+**One-time setup command (run at the start of each session):**
 ```
 session-set-defaults {
   "projectPath": "/Users/josh/Projects/JChat/WhisperQuill.xcodeproj",
@@ -162,11 +151,14 @@ Near-term backlog:
 - Add stress coverage for streaming/cancellation edge cases.
 - Add targeted UI tests for long-chat scroll + send/regenerate.
 
-## Active Branch
-- **Current branch:** `fix/quick-wins`
-- **Status:** All committed and pushed as of 2026-03-06 session 2. No in-flight work.
-- **Merge target:** `main` — when ready to merge, do a fast-forward or squash merge locally. No CI, no PR required per `CONTRIBUTING.md`.
-- **Next priorities:** See `Docs/KNOWN_ISSUES.md` — FR-006 (parameter inspector redesign), FR-008 (Markdown rendering), FR-010 (toolbar overhaul), FR-011 (composer redesign) are all High priority.
+## Git Workflow
+
+**Branch naming:** `feature/<topic>`, `fix/<topic>`, `chore/<topic>`, `docs/<topic>`
+
+**Commit style** ([Conventional Commits](https://www.conventionalcommits.org)):
+- `feat:` new behavior · `fix:` bug fix · `refactor:` internal cleanup · `docs:` docs only · `chore:` tooling
+
+**Before pushing:** build passes, behavior changes are documented, `Docs/CHANGELOG_INTERNAL.md` is updated.
 
 ## History
 - Internal changelog: `Docs/CHANGELOG_INTERNAL.md`
