@@ -21,7 +21,7 @@ Applied `.contentTransition(.symbolEffect(.replace))` to the `Image` and `.trans
 Deleted `private struct StreamOptions`, the `stream_options` field on `ChatRequest`, and the `if modelRequest.stream { body.stream_options = ... }` assignment in `buildRequestBody`. OpenRouter now always returns full usage data regardless of this field.
 
 ### ~~BUG-005: Raw JSON viewer (message inspector) missing cost and full usage info~~ ✅ Resolved 2026-03-06
-Added `cost: Double` parameter to `buildResponseJSON(...)` in `ConversationStore`. The synthesized response JSON now includes a `jchat_cost_usd` field alongside the standard `usage` object.
+Initially patched by adding a `cost` param to `buildResponseJSON(...)`. Fully superseded by BUG-009: `buildResponseJSON` has since been deleted and the inspector now shows the real `/generation` API record with authoritative cost and token data.
 
 ### ~~BUG-006: Copy and Done button sizes mismatched in raw JSON viewer~~ ✅ Resolved 2026-03-06
 Matched font weight (`.medium`) on the Done button label to align with the Copy button. Both buttons now share identical padding, font size, and visual weight.

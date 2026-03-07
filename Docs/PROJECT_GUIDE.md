@@ -46,16 +46,18 @@ Current direction:
 - Networking: `OpenRouterService` unified on `ModelCallRequest` (send + stream)
 - Design system: `AppPalette` color tokens in `UI/Design/AppDesign.swift`; chrome/controls use native `.glassEffect(in:)` and `.buttonStyle(.glass)` directly
 
-Primary files:
-- `JChat/Views/ContentView.swift`
-- `JChat/UI/ShellViews.swift`
-- `JChat/UI/Design/AppDesign.swift`
-- `JChat/UI/ParameterInspector.swift`
-- `JChat/Core/Conversation/ConversationStore.swift`
-- `JChat/Core/Conversation/ChatEngine.swift`
-- `JChat/Core/Conversation/ChatRepository.swift`
-- `JChat/Services/OpenRouterService.swift`
-- `JChat/Chat.swift`
+Primary files (paths relative to repo root, as seen in Xcode project navigator under `WhisperQuill/JChat/`):
+- `WhisperQuill/JChat/Views/ContentView.swift`
+- `WhisperQuill/JChat/UI/ShellViews.swift`
+- `WhisperQuill/JChat/UI/Design/AppDesign.swift`
+- `WhisperQuill/JChat/UI/ParameterInspector.swift`
+- `WhisperQuill/JChat/Core/Conversation/ConversationStore.swift`
+- `WhisperQuill/JChat/Core/Conversation/ChatEngine.swift`
+- `WhisperQuill/JChat/Core/Conversation/ChatRepository.swift`
+- `WhisperQuill/JChat/Services/OpenRouterService.swift`
+- `WhisperQuill/JChat/Chat.swift`
+- `WhisperQuill/JChat/Models/AppSettings.swift`
+- `WhisperQuill/JChat/Models/CachedModel.swift`
 
 ## Behavioral Rules
 - Parameter precedence: chat override -> global settings fallback.
@@ -160,5 +162,11 @@ Near-term backlog:
 - Add stress coverage for streaming/cancellation edge cases.
 - Add targeted UI tests for long-chat scroll + send/regenerate.
 
+## Active Branch
+- **Current branch:** `fix/quick-wins`
+- **Status:** All committed and pushed as of 2026-03-06 session 2. No in-flight work.
+- **Merge target:** `main` — when ready to merge, do a fast-forward or squash merge locally. No CI, no PR required per `CONTRIBUTING.md`.
+- **Next priorities:** See `Docs/KNOWN_ISSUES.md` — FR-006 (parameter inspector redesign), FR-008 (Markdown rendering), FR-010 (toolbar overhaul), FR-011 (composer redesign) are all High priority.
+
 ## History
-- Internal changelog: `/Users/josh/Projects/JChat/Docs/CHANGELOG_INTERNAL.md`
+- Internal changelog: `Docs/CHANGELOG_INTERNAL.md`
