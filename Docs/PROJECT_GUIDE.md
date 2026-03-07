@@ -146,10 +146,7 @@ Priority order:
 4. Documentation simplicity and low-friction solo workflow.
 5. Feature re-expansion only after stability is locked.
 
-Near-term backlog:
-- Improve conversation list density/readability.
-- Add stress coverage for streaming/cancellation edge cases.
-- Add targeted UI tests for long-chat scroll + send/regenerate.
+**Active backlog:** [GitHub Issues](https://github.com/joshellis625/JChat/issues)
 
 ## Git Workflow
 

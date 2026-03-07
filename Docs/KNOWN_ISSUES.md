@@ -1,8 +1,10 @@
 # JChat — Known Issues & Feature Requests
 
-Tracked here until migrated to GitHub Issues or Linear.
+**Open bugs and feature requests are tracked in [GitHub Issues](https://github.com/joshellis625/JChat/issues).** Add new items there, not here.
 
 **Reference links:** see `Docs/PROJECT_GUIDE.md` — Reference Links section.
+
+This file is now a **resolved issue log only** — a record of what was fixed and how.
 
 ---
 
