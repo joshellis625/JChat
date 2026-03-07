@@ -355,7 +355,7 @@ final class ConversationStore {
                         assistantMessage.modelID = id
                     case let .generationID(id):
                         capturedGenerationID = id
-                    case let .finishReason(_):
+                    case .finishReason:
                         break // finish reason is captured in the /generation response
                     case .done:
                         break
