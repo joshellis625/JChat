@@ -12,6 +12,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-07] - Doc Cleanup, GitHub Issues Migration, Tooling
+
+### Added
+- **GitHub Issues**: migrated all open bugs and FRs from `KNOWN_ISSUES.md` — 13 open issues (#7–19) with `bug`, `feature`, `priority: high`, `priority: low` labels
+- **`CLAUDE.md`**: Reference Docs Policy section — agents must consult Apple HIG/SwiftUI and `Docs/openapi.json` before writing UI or API code
+
+### Changed
+- **`KNOWN_ISSUES.md`**: now a resolved-issue log only; open backlog lives at GitHub Issues
+- **`PROJECT_GUIDE.md`**: near-term backlog bullets replaced with GitHub Issues link; primary file paths corrected to `WhisperQuill/JChat/` prefix; duplicate MCP JSON schema block removed; Active Branch section removed (volatile, wrong place for it); Git Workflow section added (absorbed from deleted CONTRIBUTING.md)
+- **`CLAUDE.md`**: canonical docs table updated — CONTRIBUTING.md removed, KNOWN_ISSUES.md description updated to reflect new role
+- **GitHub labels**: deleted 7 unused defaults (`documentation`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix`); created `priority: high` and `priority: low`; renamed `enhancement` → `feature`
+
+### Removed
+- **`CONTRIBUTING.md`**: deleted — content folded into PROJECT_GUIDE.md (Git Workflow section)
+- Duplicate reference link tables from CONTRIBUTING.md and KNOWN_ISSUES.md (canonical table remains in PROJECT_GUIDE.md)
+
+### Notes
+- All changes on branch `fix/quick-wins`; merged to `main` this session
+
+---
+
 ## [2026-03-06] - Cost Architecture Overhaul: /generation API + UI Fixes (Session 2)
 
 ### Added

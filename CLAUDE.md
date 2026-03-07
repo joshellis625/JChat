@@ -30,10 +30,10 @@ Before writing any SwiftUI, UI layout, or HIG-related code — consult the Apple
 ### Mode Selection Guide
 | Situation | Use |
 |-----------|-----|
-| Small, low-risk tweak | Direct (just do it) |
+| Small, low-risk tweak | Provide a very brief understanding and what you will do and use Direct mode (ask first for confirmation, then do it) |
 | Multiple valid approaches or unclear path | Plan mode first, then execute |
-| Behavior, state flow, cost/accounting, or user-facing UX changing | OpenSpec before coding |
-| Uncertain scope | Start direct; escalate to Plan or OpenSpec only if scope grows |
+| Behavior, state flow, cost/accounting, or user-facing UX changing | Plan mode before coding |
+| Uncertain scope | Start direct; escalate to Plan only if scope grows or becomes scattered |
 
 ---
 
