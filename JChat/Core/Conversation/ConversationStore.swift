@@ -297,6 +297,10 @@ final class ConversationStore {
             var accumulator = StreamTextAccumulator()
             var renderedContent = ""
             var capturedGenerationID: String?
+            var capturedModelID: String = modelID
+            var capturedFinishReason: String = "stop"
+            var capturedPromptTokens: Int = 0
+            var capturedCompletionTokens: Int = 0
 
             // Appends flushed text to renderedContent and updates the live streaming view
             // only when this task still owns the active session (prevents stale updates).
@@ -315,48 +319,34 @@ final class ConversationStore {
                     case let .delta(text):
                         applyFlushed(accumulator.append(text))
                     case let .usage(promptTokens, completionTokens, rawJSON):
-                        // Store the raw SSE usage chunk. This is the streaming token count —
-                        // it will be superseded by the /generation fetch below once the stream ends.
+                        // Store the raw SSE usage chunk for the rawUsageJSON field.
+                        // Capture token counts for reconstructed inspector JSON and chat totals.
                         assistantMessage.rawUsageJSON = rawJSON
-                        let prevPrompt = assistantMessage.promptTokens
-                        let prevCompletion = assistantMessage.completionTokens
-                        let prevCost = assistantMessage.cost
-
                         assistantMessage.promptTokens = promptTokens
                         assistantMessage.completionTokens = completionTokens
+                        capturedPromptTokens = promptTokens
+                        capturedCompletionTokens = completionTokens
 
-                        // Use CachedModel pricing as a live estimate during streaming.
-                        // This will be replaced with the authoritative /generation cost after the stream.
-                        var estimatedCost = prevCost
+                        // Estimate cost from CachedModel pricing.
+                        // Will be corrected by /generation settle after the stream.
                         let modelDescriptor = FetchDescriptor<CachedModel>(predicate: #Predicate { $0.id == modelID })
                         if let cachedModel = try? context.fetch(modelDescriptor).first {
-                            estimatedCost = cachedModel.calculateCost(promptTokens: promptTokens, completionTokens: completionTokens)
+                            assistantMessage.cost = cachedModel.calculateCost(promptTokens: promptTokens, completionTokens: completionTokens)
                         }
-                        assistantMessage.cost = estimatedCost
 
-                        let promptDelta = promptTokens - prevPrompt
-                        let completionDelta = completionTokens - prevCompletion
-                        let costDelta = estimatedCost - prevCost
-
-                        if promptDelta > 0 || completionDelta > 0 || costDelta > 0 {
-                            chat.addUsage(
-                                promptTokens: max(0, promptDelta),
-                                completionTokens: max(0, completionDelta),
-                                cost: max(0, costDelta)
-                            )
-                        } else if promptDelta < 0 || completionDelta < 0 || costDelta < 0 {
-                            chat.removeUsage(
-                                promptTokens: max(0, -promptDelta),
-                                completionTokens: max(0, -completionDelta),
-                                cost: max(0, -costDelta)
-                            )
-                        }
+                        // Add to chat totals once — usage event fires exactly once per turn.
+                        chat.addUsage(
+                            promptTokens: promptTokens,
+                            completionTokens: completionTokens,
+                            cost: assistantMessage.cost
+                        )
                     case let .modelID(id):
                         assistantMessage.modelID = id
+                        capturedModelID = id
                     case let .generationID(id):
                         capturedGenerationID = id
-                    case .finishReason:
-                        break // finish reason is captured in the /generation response
+                    case let .finishReason(reason):
+                        capturedFinishReason = reason
                     case .done:
                         break
                     }
@@ -364,6 +354,32 @@ final class ConversationStore {
 
                 applyFlushed(accumulator.flush())
                 assistantMessage.content = renderedContent
+
+                // Build a non-streaming ChatResponse-shaped JSON from the collected SSE stream data.
+                // This populates rawResponseJSON immediately (synchronously) so the inspector
+                // always has data without waiting for the /generation async fetch.
+                let responseTimestamp = Int(Date().timeIntervalSince1970)
+                let responseDict: [String: Any] = [
+                    "id": capturedGenerationID ?? "streaming-response-\(assistantMessage.id.uuidString)",
+                    "object": "chat.completion",
+                    "created": responseTimestamp,
+                    "model": capturedModelID,
+                    "choices": [[
+                        "index": 0,
+                        "message": ["role": "assistant", "content": renderedContent],
+                        "finish_reason": capturedFinishReason
+                    ]],
+                    "usage": [
+                        "prompt_tokens": capturedPromptTokens,
+                        "completion_tokens": capturedCompletionTokens,
+                        "total_tokens": capturedPromptTokens + capturedCompletionTokens
+                    ]
+                ]
+                if let jsonData = try? JSONSerialization.data(withJSONObject: responseDict, options: [.prettyPrinted, .sortedKeys]),
+                   let jsonString = String(data: jsonData, encoding: .utf8) {
+                    assistantMessage.rawResponseJSON = jsonString
+                }
+
                 try repository.save(context: context)
 
                 // Settle cost and token counts from the authoritative /generation endpoint.
@@ -416,10 +432,11 @@ final class ConversationStore {
     }
 
     /// Fetches the settled generation record from OpenRouter's /generation endpoint and
-    /// replaces the streaming estimate with authoritative cost and token counts.
+    /// corrects the cost estimate with the authoritative billed amount.
     ///
-    /// - The raw /generation JSON becomes the message's `rawResponseJSON` for the inspector.
-    /// - Chat-level totals are corrected: the streaming estimate is removed and the real values added.
+    /// - Token counts are already accurate from the SSE usage event and are not changed here.
+    /// - Only `assistantMessage.cost` and `chat.totalCost` are updated.
+    /// - `rawResponseJSON` is already populated from SSE reconstruction and is not overwritten.
     /// - Silently skips on error so a network failure here doesn't surface to the user.
     private func settleGenerationStats(
         generationID: String,
@@ -429,43 +446,27 @@ final class ConversationStore {
         context: ModelContext
     ) async {
         do {
-            let (stats, rawJSON) = try await OpenRouterService.shared.fetchGeneration(
+            let (stats, _) = try await OpenRouterService.shared.fetchGeneration(
                 id: generationID,
                 apiKey: apiKey
             )
 
-            // Store the raw /generation JSON as the response inspector record.
-            // This is the definitive API record — actual billed tokens, cost, provider, latency.
-            assistantMessage.rawResponseJSON = rawJSON
+            guard let settledCost = stats.total_cost else { return }
 
-            // Settle token counts if the API provides them (prefer native tokens from provider).
-            let settledPrompt = stats.tokens_prompt ?? assistantMessage.promptTokens
-            let settledCompletion = stats.tokens_completion ?? assistantMessage.completionTokens
-            let settledCost = stats.total_cost ?? assistantMessage.cost
-
-            // Remove the streaming estimate from chat totals, add the settled values.
-            chat.removeUsage(
-                promptTokens: assistantMessage.promptTokens,
-                completionTokens: assistantMessage.completionTokens,
-                cost: assistantMessage.cost
-            )
-            assistantMessage.promptTokens = settledPrompt
-            assistantMessage.completionTokens = settledCompletion
+            // Correct the cost estimate: adjust chat total by the net delta.
+            let estimatedCost = assistantMessage.cost
+            let costDelta = settledCost - estimatedCost
+            chat.totalCost = max(0, chat.totalCost + costDelta)
             assistantMessage.cost = settledCost
-            chat.addUsage(
-                promptTokens: settledPrompt,
-                completionTokens: settledCompletion,
-                cost: settledCost
-            )
 
             do {
                 try repository.save(context: context)
             } catch {
                 print("[ConversationStore] Save after generation settle failed: \(error)")
             }
-            print("[ConversationStore] Generation settled: \(generationID) — \(settledPrompt)p/\(settledCompletion)c tokens, $\(settledCost)")
+            print("[ConversationStore] Cost settled: \(generationID) — $\(settledCost) (was $\(estimatedCost))")
         } catch {
-            // Non-fatal: streaming data is already saved. The inspector will show rawUsageJSON as fallback.
+            // Non-fatal: streaming cost estimate remains. Token counts are unaffected.
             print("[ConversationStore] /generation fetch failed for \(generationID): \(error)")
         }
     }

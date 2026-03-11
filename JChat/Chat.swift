@@ -180,11 +180,6 @@ final class Chat {
         totalCost += cost
     }
 
-    func removeUsage(promptTokens: Int, completionTokens: Int, cost: Double) {
-        totalPromptTokens = max(0, totalPromptTokens - promptTokens)
-        totalCompletionTokens = max(0, totalCompletionTokens - completionTokens)
-        totalCost = max(0, totalCost - cost)
-    }
 }
 
 @Model

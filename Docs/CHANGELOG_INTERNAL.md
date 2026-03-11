@@ -12,6 +12,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-07] - Token Counting Overhaul + Inspector JSON Fix
+
+### Fixed
+- **Inspector "No response data captured"** — `rawResponseJSON` is now built synchronously at stream end from collected SSE data (id, model, content, finish_reason, usage). Inspector is populated the moment `isStreaming` flips to false, with no async dependency. The previous approach relied on an async `/generation` fetch that could silently fail.
+- **Token counting delta math removed** — `.usage` SSE event fires exactly once per turn with final totals; removed the `promptDelta`/`completionDelta`/`costDelta` logic (which was architecturally wrong and could trigger `removeUsage`). `chat.addUsage(promptTokens:completionTokens:cost:)` is now called once per turn.
+- **`generationSettleCount` counter removed** — was a workaround for the async inspector race; no longer needed.
+- **`followingPromptTokens`/`followingCost` renamed to `turnPromptTokens`/`turnCost`** in `MessageRow` — semantic name reflects "the API turn initiated by this user message" rather than "the row that follows".
+
+### Changed
+- **`settleGenerationStats`** now only corrects `assistantMessage.cost` and `chat.totalCost` from `/generation`. Token counts and `rawResponseJSON` are no longer touched (already set from SSE). Cost correction uses a net delta adjustment on `chat.totalCost`.
+- **`Chat.removeUsage`** deleted — no longer needed; chat totals are monotonically increasing.
+
+### Notes
+- `rawResponseJSON` shape matches non-streaming `ChatResponse`: `id`, `object`, `created`, `model`, `choices[0].message`, `finish_reason`, `usage` with `prompt_tokens`/`completion_tokens`/`total_tokens`.
+- `/generation` is still called after stream ends to settle the authoritative billed cost from OpenRouter.
+
+---
+
 ## [2026-03-07] - Doc Cleanup, GitHub Issues Migration, Tooling
 
 ### Added

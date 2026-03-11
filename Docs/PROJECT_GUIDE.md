@@ -30,9 +30,9 @@ Current direction:
 ### OpenRouter API
 | Resource | URL |
 |----------|-----|
-| OpenRouter API Reference | https://openrouter.ai/docs/api-reference/overview |
+| OpenRouter API Reference | https://openrouter.ai/docs/api-reference|
 | OpenAPI Spec (YAML) | https://openrouter.ai/openapi.yaml |
-| OpenAPI Spec (local copy) | `Docs/openapi.json` |
+| OpenAPI Spec (JSON) | https://openrouter.ai/openapi.json |
 | Chat Completions endpoint | https://openrouter.ai/docs/api-reference/chat-completion |
 | Generation Stats endpoint (`GET /generation`) | https://openrouter.ai/docs/api-reference/get-a-generation |
 | Streaming (SSE) | https://openrouter.ai/docs/api-reference/streaming |
@@ -61,70 +61,22 @@ Primary files (paths relative to repo root, as seen in Xcode project navigator u
 
 ## Behavioral Rules
 - Parameter precedence: chat override -> global settings fallback.
-- Character stores identity/system prompt/preferred model only.
+- Character stores identity/system prompt/preferred model only. (Not fully implemented yet)
 - API key is Keychain-only (`com.josh.jchat` / `openrouter-api-key`).
-- Message delete/regenerate does not refund usage totals.
-- Markdown rendering is intentionally disabled in current stability mode (plain text transcript rows).
+- Message delete/regenerate does not refund usage totals or costs.
+- Chat-wide token counts and usage costs are monotonal. They can only increment.
+- Markdown rendering is intentionally disabled for stability (plain text transcript rows).
 
 ## Build Environment
 - **macOS:** 26.3 Stable
-- **Xcode:** 26.3 RC2 (not 26.4 Beta 2 — risk of breaking changes)
+- **Xcode:** 26.3 Stable
 - **Target:** arm64 ONLY (no Intel, no simulators)
 - **Destination:** "Any Mac - arm64 only" or "My Mac - arm64"
 - **Signing:** Auto-signed by Xcode (Apple Developer account registered)
 - **Persistence:** SwiftData + Keychain (`com.josh.jchat` / `openrouter-api-key`)
 
-## XcodeBuildMCP Defaults (Required — Set Once per Session)
-Use `xcodebuildmcp` for all Xcode tasks. Do not use raw `xcodebuild`.
-
-**One-time setup command (run at the start of each session):**
-```
-session-set-defaults {
-  "projectPath": "/Users/josh/Projects/JChat/WhisperQuill.xcodeproj",
-  "scheme": "WhisperQuill",
-  "configuration": "Debug",
-  "arch": "arm64",
-  "platform": "macOS"
-}
-```
-
-**Notes:**
-- Set defaults once per session — they persist within the session
-- No simulators; macOS arm64 only
-
-## Validation Commands
-
-**Always clean before build** to avoid stale artifacts.
-
-**Clean + build (fast iteration):**
-```bash
-xcodebuildmcp macos clean --platform macOS
-xcodebuildmcp macos build --output text
-```
-
-**Launch/stop sanity check:**
-```bash
-xcodebuildmcp macos clean --platform macOS
-xcodebuildmcp macos build-and-run --output text
-xcodebuildmcp macos stop --app-name WhisperQuill --output text
-```
-
-**Run app (attach to running process):**
-```bash
-xcodebuildmcp macos run --output text
-```
-
-**Full test suite:**
-```bash
-xcodebuildmcp macos test --output text
-```
-
-**Screenshotting:**
-Use the MCP Codriver to take screenshots of the running app:
-```bash
-mcp__codriver__desktop_screenshot
-```
-Useful for UI validation and regression testing.
+## XcodeBuildMCP (Primary tool to interface directly with Xcode)
+- Utilize Claude skill: "xcodebuildmcp-cli". It contains everything you need.
 
 ## Regression Checklist
 Run before shipping behavior-affecting changes (chat/streaming/layout/persistence):

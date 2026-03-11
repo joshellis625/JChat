@@ -567,8 +567,8 @@ struct ConversationPane: View {
             isLiveStreaming: liveAssistantID == row.id,
             resolvedModelName: row.modelID.map { ModelNaming.displayName(forModelID: $0, namesByID: modelNamesByID) },
             isOrphanedLastUserMessage: isOrphaned,
-            followingPromptTokens: nextAssistant?.promptTokens ?? 0,
-            followingCost: nextAssistant?.cost ?? 0,
+            turnPromptTokens: nextAssistant?.promptTokens ?? 0,
+            turnCost: nextAssistant?.cost ?? 0,
             onDelete: {
                 store.deleteMessage(withID: row.id, in: modelContext)
                 refreshRows()
@@ -744,11 +744,11 @@ private struct MessageRow: View, Equatable {
     let isLiveStreaming: Bool
     let resolvedModelName: String?
     let isOrphanedLastUserMessage: Bool
-    /// Prompt token count from the following assistant message — only meaningful for user rows.
-    /// The API reports prompt tokens on the assistant response, not the user message that caused it.
-    var followingPromptTokens: Int = 0
-    /// Cost from the following assistant message, used to show cost under user messages.
-    var followingCost: Double = 0
+    // For user bubbles: prompt_tokens from the assistant response that follows this user message.
+    // This is the turn's input token count as reported by the API.
+    var turnPromptTokens: Int = 0
+    // For user bubbles: cost from the assistant response that follows this user message.
+    var turnCost: Double = 0
     var onDelete: () -> Void = {}
     var onEdit: (_ newContent: String) -> Void = { _ in }
     var onRegenerate: () -> Void = {}
@@ -776,8 +776,8 @@ private struct MessageRow: View, Equatable {
             lhs.isLiveStreaming == rhs.isLiveStreaming &&
             lhs.resolvedModelName == rhs.resolvedModelName &&
             lhs.isOrphanedLastUserMessage == rhs.isOrphanedLastUserMessage &&
-            lhs.followingPromptTokens == rhs.followingPromptTokens &&
-            lhs.followingCost == rhs.followingCost
+            lhs.turnPromptTokens == rhs.turnPromptTokens &&
+            lhs.turnCost == rhs.turnCost
     }
 
     var body: some View {
@@ -828,16 +828,16 @@ private struct MessageRow: View, Equatable {
 
                 HStack(spacing: 8) {
                     Text(row.timestamp, style: .time)
+                    // Assistant bubble: show completion_tokens (output tokens for this turn).
                     if row.role == .assistant, row.completionTokens > 0 {
                         Text("\(row.completionTokens) tokens")
                     }
-                    if row.role == .user, followingPromptTokens > 0 {
-                        Text("\(followingPromptTokens) tokens")
+                    // User bubble: show prompt_tokens from the following assistant response
+                    // (the API reports input token count on the response, not the request).
+                    if row.role == .user, turnPromptTokens > 0 {
+                        Text("\(turnPromptTokens) tokens")
                     }
-                    // For assistant rows, show the message's own cost.
-                    // For user rows, show the following assistant's cost (since the API
-                    // charges for the whole prompt+completion bundle on the response side).
-                    let displayCost = isUser ? followingCost : row.cost
+                    let displayCost = isUser ? turnCost : row.cost
                     if displayCost > 0 {
                         Text(displayCost, format: .currency(code: "USD"))
                     }
