@@ -12,6 +12,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2026-03-11] - Housekeeping: Commit, Push, Branch Cleanup
+
+### Changed
+- Committed and pushed token counting overhaul + inspector JSON fix + doc updates to `main` (`b32a617`)
+
+### Removed
+- Deleted local branches `chore/code-quality-fixes` and `chore/liquid-glass-cohesion` — both fully merged into `main`
+
+---
+
 ## [2026-03-07] - Token Counting Overhaul + Inspector JSON Fix
 
 ### Fixed
