@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum ModelNaming {
+nonisolated enum ModelNaming {
     static func namesByID(from models: [CachedModel]) -> [String: String] {
         Dictionary(uniqueKeysWithValues: models.map { ($0.id, cleanedDisplayName(for: $0)) })
     }

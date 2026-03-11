@@ -14,7 +14,7 @@ enum ModelVariant: String, CaseIterable, Sendable {
     case extended = ":extended"
     case exacto = ":exacto"
 
-    var displayLabel: String {
+    nonisolated var displayLabel: String {
         switch self {
         case .free: return "Free"
         case .extended: return "Extended"
@@ -22,7 +22,7 @@ enum ModelVariant: String, CaseIterable, Sendable {
         }
     }
 
-    var badgeColor: Color {
+    nonisolated var badgeColor: Color {
         switch self {
         case .free: return .green
         case .extended: return .blue
@@ -159,7 +159,7 @@ final class CachedModel {
 extension Double {
     /// Formats a per-million-token price for compact display.
     /// Uses more decimal places for sub-cent prices to avoid showing "$0.00".
-    var formattedPrice: String {
+    nonisolated var formattedPrice: String {
         if self < 0.01 {
             return String(format: "%.4f", self)
         } else if self < 1.0 {
