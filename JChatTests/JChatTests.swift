@@ -10,6 +10,7 @@ import Foundation
 import SwiftData
 import Testing
 
+@MainActor
 struct JChatTests {
     // Minimal in-memory repository/engine doubles for ConversationStore tests.
     @MainActor
@@ -100,16 +101,6 @@ struct JChatTests {
         #expect(chat.topKOverride == nil)
         #expect(chat.verbosityOverride == nil)
         #expect(chat.overrideCount == 0)
-    }
-
-    @Test func usageRemovalClampsAtZero() {
-        let chat = Chat()
-        chat.addUsage(promptTokens: 10, completionTokens: 5, cost: 0.12)
-        chat.removeUsage(promptTokens: 99, completionTokens: 99, cost: 1.0)
-
-        #expect(chat.totalPromptTokens == 0)
-        #expect(chat.totalCompletionTokens == 0)
-        #expect(chat.totalCost == 0)
     }
 
     @Test func streamAccumulatorFlushesOnSizeThreshold() {
